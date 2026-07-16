@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import React, { useState } from 'react';
-=======
 import { useState } from 'react';
->>>>>>> c46005a (Initialize WanderGen trip planner)
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { Link, useNavigate } from 'react-router-dom';
@@ -24,20 +20,11 @@ function SignUpForm() {
         }
 
         try {
-<<<<<<< HEAD
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            toast.success("Account created successfully!");
-            navigate('/');
-        } catch (err) {
-=======
             await createUserWithEmailAndPassword(auth, email, password);
 
             toast.success("Account created successfully!");
             navigate('/');
         } catch {
->>>>>>> c46005a (Initialize WanderGen trip planner)
             toast.error("Error creating account. Please try again.");
         }
     };

@@ -10,15 +10,11 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-<<<<<<< HEAD
-*.local
-=======
 functions/lib
 .env
 .env.*
 *.local
 *firebase-adminsdk*.json
->>>>>>> c46005a (Initialize WanderGen trip planner)
 
 # Editor directories and files
 .vscode/*

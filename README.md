@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-"# WanderGen" 
-=======
 # WanderGen Nexus ✈️🤖
 
 **WanderGen Nexus** is a **Multi-Agent AI Travel Orchestrator** that uses a swarm of specialized AI agents to collaboratively generate, critique, and refine personalized travel itineraries in real-time. Watch the agents think, debate, and converge on the perfect trip — all streamed live to a glowing terminal UI.
@@ -140,4 +129,3 @@ cd functions && npx jest
 ---
 
 Built with ❤️ using React + Vite + Firebase + Groq
->>>>>>> c46005a (Initialize WanderGen trip planner)

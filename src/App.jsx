@@ -1,16 +1,4 @@
 import { StrictMode } from 'react';
-<<<<<<< HEAD
-import { Outlet } from 'react-router-dom'; // Used for rendering route-specific components
-import Header from './components/ui/custom/Header';
-import { Toaster } from './components/ui/sonner';
-
-function App() {
-  return (
-    <div>
-      <Header />
-      <Toaster />
-      <Outlet />
-=======
 import { useLocation, Outlet } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import Header from './components/ui/custom/Header';
@@ -36,7 +24,6 @@ function App() {
           <Outlet />
         </motion.div>
       </AnimatePresence>
->>>>>>> c46005a (Initialize WanderGen trip planner)
     </div>
   );
 }

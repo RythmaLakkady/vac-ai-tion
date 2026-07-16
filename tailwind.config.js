@@ -6,28 +6,22 @@ module.exports = { // Correct placement of darkMode
     ],
     theme: {
       extend: {
-<<<<<<< HEAD
-=======
         fontFamily: {
           sans: ['Inter', 'sans-serif'],
           serif: ['Playfair Display', 'serif'],
         },
->>>>>>> c46005a (Initialize WanderGen trip planner)
         borderRadius: {
           lg: 'var(--radius)',
           md: 'calc(var(--radius) - 2px)',
           sm: 'calc(var(--radius) - 4px)'
         },
         colors: {
-<<<<<<< HEAD
-=======
           holiday: {
             teal: '#6dbaaf',
             sand: '#edecda',
             dark: '#2c4b47',
             coral: '#fd9c7e',
           },
->>>>>>> c46005a (Initialize WanderGen trip planner)
           background: 'hsl(var(--background))',
           foreground: 'hsl(var(--foreground))',
           card: {

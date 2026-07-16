@@ -1,8 +1,5 @@
 import * as React from "react"
-<<<<<<< HEAD
-=======
 import PropTypes from 'prop-types';
->>>>>>> c46005a (Initialize WanderGen trip planner)
 
 import { cn } from "@/lib/utils"
 
@@ -17,10 +14,6 @@ const Input = React.forwardRef(({ className, type, ...props }, ref) => {
       ref={ref}
       {...props} />)
   );
-<<<<<<< HEAD
-})
-Input.displayName = "Input"
-=======
 });
 
 Input.displayName = "Input";
@@ -29,6 +22,5 @@ Input.propTypes = {
   className: PropTypes.string,
   type: PropTypes.string,
 };
->>>>>>> c46005a (Initialize WanderGen trip planner)
 
 export { Input }
