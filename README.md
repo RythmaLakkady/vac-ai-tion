@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=800&h=300" alt="VAC-AI-TION Banner" style="border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 20px; object-fit: cover;" width="100%" height="250" />
+  <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=800&h=300" alt="WanderGen Banner" style="border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 20px; object-fit: cover;" width="100%" height="250" />
 
-  <h1 align="center" style="font-family: 'Playfair Display', serif; font-size: 3rem; color: #1E293B;">VAC-AI-TION Nexus ✈️🤖</h1>
+  <h1 align="center" style="font-family: 'Playfair Display', serif; font-size: 3rem; color: #1E293B;">WanderGen ✈️🤖</h1>
   
   <p align="center" style="font-size: 1.2rem; color: #64748B;">
     <strong>An Advanced Multi-Agent AI Travel Orchestrator</strong><br/>
@@ -19,28 +19,19 @@
 
 <br/>
 
-## 🌟 Vision & Architecture
+## 🌟 Overview
 
-VAC-AI-TION Nexus isn't just an itinerary generator; it's a **distributed, event-driven microservices architecture** that utilizes a swarm of autonomous LLM agents. Designed for scalability, high availability, and ultra-low latency, it represents the bleeding edge of agentic AI web applications.
-
-When a user requests a trip, a blazing-fast React frontend dispatches an asynchronous job to our **Firebase Cloud Functions** backend. From there, the **Multi-Agent Orchestrator** spins up:
-
-1. 🎯 **Vibe Matcher Agent:** Analyzes the geospatial and demographic constraints of the prompt.
-2. 🗺️ **Planner Agent:** Ingests context to generate rich, structured JSON itineraries including Google Maps deep-links and direct booking URLs.
-3. ⚖️ **Critic Agent:** An adversarial LLM that rigorously validates the Planner's output against strict budget and constraint rules. If it fails, the Critic forces a retry (up to 3 iterations) until the itinerary is mathematically and logically perfect.
-
-All of this happens autonomously in the backend, while **Firestore WebSocket listeners** stream the agents' live "thought processes" directly to the frontend's glowing terminal UI, providing an incredibly engaging, transparent user experience.
+WanderGen is a distributed, event-driven travel application powered by a swarm of autonomous LLM agents. Designed for high scalability and zero hallucination, the system utilizes a robust `Planner ↔ Critic` validation loop running on Firebase Cloud Functions, returning highly personalized, budget-conscious travel itineraries directly to a responsive, glassmorphic React interface.
 
 ---
 
-## ✨ Enterprise-Grade Features
+## ✨ Features
 
-* **Multi-Agent Swarm Logic (Adversarial AI):** Implementing a robust `Planner ↔ Critic` validation loop ensures a near 0% hallucination rate on geospatial coordinates and budget constraints.
-* **Real-Time Telemetry UI:** Sub-second reasoning streaming via Firestore `onSnapshot` listeners, displayed in a gorgeous, glassmorphic terminal.
-* **Intelligent Edge Caching:** Implemented SHA-256 hash-based deduplication for query permutations. Redundant LLM calls are intercepted at the edge, returning cached itineraries in `<200ms` and reducing API overhead by ~85%.
-* **Interactive Drag-and-Drop Editor:** Utilizing `@hello-pangea/dnd`, users can seamlessly reorder their generated itineraries. Days dynamically auto-delete when empty, ensuring perfect data integrity.
-* **Personalized Vendor Scoring Engine:** A deterministic backend algorithm aggregates flight and hotel prices, applying a weighted ranking based on the user's specific eco-conscious and refundability preferences.
-* **Flawless UI/UX:** Built with Tailwind CSS and Framer Motion, featuring glassmorphism, micro-animations, dynamic carousels, and responsive design that looks stunning on every device.
+- **Multi-Agent Swarm (Adversarial AI):** Specialized agents collaborate to generate, critique, and refine itineraries. If the Critic Agent detects budget or logic violations, it forces a retry until constraints are perfectly met.
+- **Real-Time Telemetry:** Firestore WebSocket listeners stream the agents' internal thought processes directly to the frontend's glowing terminal UI.
+- **Intelligent Edge Caching:** SHA-256 hash-based deduplication intercepts redundant LLM calls, returning cached itineraries in `<200ms` and reducing API overhead by ~85%.
+- **Interactive Itinerary Editor:** Seamless drag-and-drop capabilities powered by `@hello-pangea/dnd`. Rearrange activities across days with automatic state synchronization.
+- **Personalized Price Engine:** A deterministic backend algorithm aggregates flight and hotel prices, ranking them based on user-specific eco-conscious and refundability preferences.
 
 ---
 
@@ -65,29 +56,17 @@ graph TD
 
 ---
 
-## 🛠️ Comprehensive Tech Stack
+## 🛠️ Tech Stack
 
-### Frontend Architecture
-- **Framework:** React 18 & Vite (HMR, highly optimized builds)
-- **Styling:** Tailwind CSS + Vanilla CSS (Glassmorphism, custom typography)
-- **Animations:** Framer Motion & CSS Transitions
-- **State & Drag-Drop:** React Hooks, `@hello-pangea/dnd`
-- **Routing:** React Router v6
-
-### Backend & Cloud Infrastructure
-- **Serverless Compute:** Firebase Cloud Functions (Node.js/Express)
-- **Database:** Cloud Firestore (NoSQL, Real-time sync)
-- **Authentication:** Firebase Auth (Email/Password, Google OAuth)
-- **AI/LLM:** Groq API running `llama-3.3-70b-versatile` at ultra-low inference latency
-
-### APIs & Integrations
-- Google Maps Search API
-- Google Places Autocomplete API
-- Chart.js (Data Visualization)
+- **Frontend:** React 18, Vite, Tailwind CSS, Framer Motion
+- **Backend:** Firebase Cloud Functions (Node.js/Express)
+- **Database & Auth:** Cloud Firestore, Firebase Authentication
+- **AI Integration:** Groq API (`llama-3.3-70b-versatile`)
+- **APIs:** Google Maps Search API, Google Places Autocomplete
 
 ---
 
-## 🚀 Quick Start / Local Development
+## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js (v18+ recommended)
@@ -109,8 +88,8 @@ VITE_GROQ_API_KEY=your_groq_api_key
 VITE_GOOGLE_PLACE_API_KEY=your_google_places_api_key
 ```
 
-### 3. Spin Up Local Environment
-You will need two terminal windows:
+### 3. Start Local Environment
+Open two terminal windows:
 
 **Terminal 1 (Backend Emulators):**
 ```bash
@@ -122,20 +101,10 @@ npm run serve
 ```bash
 npm run dev
 ```
-Visit `http://localhost:5173` to interact with the application.
-
----
-
-## 💼 Why This Stands Out (For Reviewers)
-
-> **Architectural Complexity:** Demonstrates a deep understanding of asynchronous cloud architectures by decoupling the heavy AI generation process from the main thread. By moving the LLM orchestration to an event-driven Cloud Function, the frontend remains completely unblocked and highly performant.
->
-> **Production-Ready Reliability:** Implemented adversarial self-correction (the Critic Agent) to solve the notorious LLM JSON validation problem, paired with SHA-256 caching for immediate cache-hits on popular queries.
->
-> **Exemplary Product Sense:** Combines complex backend engineering with an unbelievably polished, consumer-facing UI. The transition from the "Agent Terminal" loading screen to the gorgeous, interactive map-driven itinerary proves an understanding of the complete user journey.
+Navigate to `http://localhost:5173` to explore WanderGen.
 
 ---
 
 <div align="center">
-  <p>Designed and Built by <strong>Rythma Lakkady</strong></p>
+  <p>Built by <strong>Rythma Lakkady</strong></p>
 </div>
