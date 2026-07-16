@@ -1,10 +1,19 @@
+<<<<<<< HEAD
+=======
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+>>>>>>> c46005a (Initialize WanderGen trip planner)
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ... */
 :root {
+<<<<<<< HEAD
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+=======
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+>>>>>>> c46005a (Initialize WanderGen trip planner)
   line-height: 1.5;
   font-weight: 400;
 
@@ -24,7 +33,22 @@ a:hover {
 }
 
 body {
+<<<<<<< HEAD
   margin: 2;
+=======
+  margin: 0;
+  background-color: #FAFAFA; /* Cleaner, highly premium off-white (Airbnb-style) */
+  color: #111827; /* Rich dark gray for maximum legibility */
+  font-family: 'Inter', sans-serif;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 24px 48px -12px rgba(0, 0, 0, 0.08); /* Apple-like deep soft shadow */
+>>>>>>> c46005a (Initialize WanderGen trip planner)
 }
 
 h1 {
@@ -33,6 +57,7 @@ h1 {
   align-items: center;
 }
 
+<<<<<<< HEAD
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -52,6 +77,8 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+=======
+>>>>>>> c46005a (Initialize WanderGen trip planner)
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -60,9 +87,12 @@ button:focus-visible {
   a:hover {
     color: #747bff;
   }
+<<<<<<< HEAD
   button {
     background-color: #f9f9f9;
   }
+=======
+>>>>>>> c46005a (Initialize WanderGen trip planner)
 }
 
 @layer base {
@@ -121,3 +151,32 @@ button:focus-visible {
   }
 }
 
+<<<<<<< HEAD
+=======
+/* Agent Terminal & Orbs animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.85;
+  }
+}
+>>>>>>> c46005a (Initialize WanderGen trip planner)

@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2018",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "strict": false,
+    "types": ["jest", "node"]
+  },
+  "include": ["src/**/*"]
+}

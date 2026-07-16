@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
+=======
+import { useState } from 'react';
+>>>>>>> c46005a (Initialize WanderGen trip planner)
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { Link, useNavigate } from 'react-router-dom';
@@ -17,8 +21,12 @@ function LoginForm() {
         setError("");  
 
         try {
+<<<<<<< HEAD
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+=======
+            await signInWithEmailAndPassword(auth, email, password);
+>>>>>>> c46005a (Initialize WanderGen trip planner)
 
             toast("Logged in successfully!");
             navigate('/');  

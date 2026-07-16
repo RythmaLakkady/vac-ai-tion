@@ -9,6 +9,10 @@ import LoginPage from './LoginPage';
 import Profile from './Profile';
 import Hero from './components/ui/custom/Dashboard';  // Assuming Hero is a component
 import ViewTrip from './view-trip/tripId';
+<<<<<<< HEAD
+=======
+import ComparePrices from './createTrip/ComparePrices';
+>>>>>>> c46005a (Initialize WanderGen trip planner)
 
 const router = createBrowserRouter([
   {
@@ -39,6 +43,13 @@ const router = createBrowserRouter([
         path: '/view-trip/:tripId',
         element: <ViewTrip />,
       },
+<<<<<<< HEAD
+=======
+      {
+        path: '/compare-prices',
+        element: <ComparePrices />,
+      },
+>>>>>>> c46005a (Initialize WanderGen trip planner)
     ],
   },
 ]);
