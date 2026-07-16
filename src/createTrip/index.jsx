@@ -8,7 +8,7 @@ import { auth, db } from "../firebase";
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { toast } from "sonner";
-import Modal from "@/components/ui/custom/modal";
+import Modal from "@/components/ui/custom/Modal";
 import AgentTerminal from "@/components/ui/custom/AgentTerminal";
 import AgentOrbs from "@/components/ui/custom/AgentOrbs";
 
