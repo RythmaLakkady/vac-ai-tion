@@ -5,6 +5,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { auth } from './firebase';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
+import { PlaneTakeoff, Mail, Lock } from 'lucide-react';
 
 function LoginForm() {
     const [email, setEmail] = useState('');
@@ -18,7 +20,6 @@ function LoginForm() {
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-
             toast("Logged in successfully!");
             navigate('/');  
         } catch (err) {
@@ -28,48 +29,72 @@ function LoginForm() {
     };
 
     return (
-        <div className='flex items-center justify-center min-h-screen'>
-            <div className='w-1/3 h-[500px] p-10 border rounded-lg shadow-lg shadow-[#7AB9B3] flex flex-col justify-center'>
-                <h2 className='text-3xl font-serif font-semibold text-[#7AB9B3] my-7 text-center'>Log in to continue your journey!</h2>
-                
-                {error && <div className="text-red-600 text-center mb-4">{error}</div>}
+        <div className='flex items-center justify-center min-h-screen bg-slate-50 relative overflow-hidden'>
+            {/* Background elements */}
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-holiday-teal/20 rounded-full blur-[100px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full blur-[100px]" />
 
-                <form onSubmit={onSubmit}>
-                    <div>
-                        <label className='font-serif text-xl'> Email: </label>
-                        <Input
-                            className='text-center mt-2'
-                            type="email"
-                            placeholder="Enter your email"
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className='w-full max-w-md p-10 bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl z-10'
+            >
+                <div className="flex justify-center mb-6">
+                    <div className="w-16 h-16 bg-holiday-teal/10 rounded-2xl flex items-center justify-center">
+                        <PlaneTakeoff className="w-8 h-8 text-holiday-teal" />
                     </div>
-                    <div className='mt-8'>
-                        <label className='font-serif text-xl'> Password: </label>
-                        <Input
-                            className='text-center mt-2'
-                            type="password"
-                            placeholder="Enter your password"
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                </div>
+
+                <h2 className='text-3xl font-bold text-slate-800 text-center mb-2'>Welcome Back</h2>
+                <p className="text-center text-slate-500 mb-8">Log in to continue your journey!</p>
+                
+                {error && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-red-50 text-red-600 text-sm text-center p-3 rounded-lg mb-6 border border-red-100">
+                        {error}
+                    </motion.div>
+                )}
+
+                <form onSubmit={onSubmit} className="space-y-5">
+                    <div className="space-y-2">
+                        <label className='text-sm font-medium text-slate-700 ml-1'> Email </label>
+                        <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <Input
+                                className='pl-10 py-6 bg-white/50 border-slate-200 focus-visible:ring-holiday-teal'
+                                type="email"
+                                placeholder="Enter your email"
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
                     </div>
-                    <div className='mt-10 flex flex-col items-center'>
-                        <Button className="py-2 px-6 bg-[#7AB9B3] text-white rounded hover:bg-[#66a19b]" type="submit">
-                            Log In
-                        </Button>
+                    
+                    <div className="space-y-2">
+                        <label className='text-sm font-medium text-slate-700 ml-1'> Password </label>
+                        <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <Input
+                                className='pl-10 py-6 bg-white/50 border-slate-200 focus-visible:ring-holiday-teal'
+                                type="password"
+                                placeholder="Enter your password"
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                        </div>
                     </div>
-                    <p className='mt-5 flex flex-col items-center font-serif'>
-                        New user?
-                        <strong>
-                            <Link to={'/signIn'} className='text-[#fd9c7e] font-semibold underline hover:text-[#db7e62]'>
-                                Sign up
-                            </Link>
-                        </strong>
+
+                    <Button className="w-full py-6 mt-4 bg-holiday-teal text-white rounded-xl hover:bg-holiday-teal/90 shadow-lg shadow-holiday-teal/20 transition-all text-lg font-medium" type="submit">
+                        Sign In
+                    </Button>
+
+                    <p className='mt-8 text-center text-slate-500'>
+                        New user?{' '}
+                        <Link to={'/signIn'} className='text-holiday-teal font-semibold hover:underline transition-all'>
+                            Create an account
+                        </Link>
                     </p>
                 </form>
-            </div>
+            </motion.div>
         </div>
     );
 }
