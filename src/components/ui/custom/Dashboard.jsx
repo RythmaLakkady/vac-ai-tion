@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '../button';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { PlaneTakeoff, Compass, MapPin, Globe2 } from 'lucide-react';
+import { PlaneTakeoff, Compass, MapPin } from 'lucide-react';
 import '/src/index.css';
 
 function Dashboard() {
@@ -40,10 +40,7 @@ function Dashboard() {
           className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-holiday-coral/10 rounded-full blur-[120px] -z-10"
         />
 
-        <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 backdrop-blur-md border border-white/50 shadow-sm mb-8">
-          <Globe2 className="w-4 h-4 text-holiday-teal" />
-          <span className="text-sm font-semibold text-holiday-dark tracking-wide uppercase">vac-ai-tion 2.0 is Live</span>
-        </motion.div>
+
 
         <motion.h1 variants={fadeUp} className="font-semibold text-[60px] md:text-[80px] leading-[1.1] drop-shadow-sm max-w-5xl">
           <span className="text-holiday-dark">Design your dream </span><br />
