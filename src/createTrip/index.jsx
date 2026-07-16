@@ -12,7 +12,10 @@ import Modal from "@/components/ui/custom/modal";
 import AgentTerminal from "@/components/ui/custom/AgentTerminal";
 import AgentOrbs from "@/components/ui/custom/AgentOrbs";
 
-const FUNCTION_URL = import.meta.env.VITE_PRICE_FUNCTION_URL || "http://127.0.0.1:5001/wandergen---ai-travel-planner/us-central1/priceAggregator";
+const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const FUNCTION_URL = import.meta.env.VITE_PRICE_FUNCTION_URL || 
+  (isLocal ? "http://127.0.0.1:5001/wandergen---ai-travel-planner/us-central1/priceAggregator" 
+           : "https://us-central1-wandergen---ai-travel-planner.cloudfunctions.net/priceAggregator");
 
 function CreateTrip() {
   const navigate = useNavigate();

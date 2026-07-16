@@ -14,9 +14,10 @@ import { Bar } from "react-chartjs-2";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
-const FUNCTION_URL =
-  import.meta.env.VITE_PRICE_FUNCTION_URL ||
-  "http://127.0.0.1:5001/wandergen---ai-travel-planner/us-central1/priceAggregator";
+const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const FUNCTION_URL = import.meta.env.VITE_PRICE_FUNCTION_URL || 
+  (isLocal ? "http://127.0.0.1:5001/wandergen---ai-travel-planner/us-central1/priceAggregator" 
+           : "https://us-central1-wandergen---ai-travel-planner.cloudfunctions.net/priceAggregator");
 
 const BUDGET_OPTIONS = ["Low-Cost", "Affordable Comfort", "Luxury"];
 
