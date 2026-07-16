@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Header from './components/ui/custom/Header';
 import { Toaster } from './components/ui/sonner';
 import Cursor from './components/ui/custom/Cursor';
+import Footer from './components/ui/custom/Footer';
 
 function App() {
   const location = useLocation();
@@ -24,6 +25,7 @@ function App() {
           <Outlet />
         </motion.div>
       </AnimatePresence>
+      <Footer />
     </div>
   );
 }
