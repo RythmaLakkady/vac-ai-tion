@@ -1,6 +1,6 @@
-# WanderGen Nexus ✈️🤖
+# VAC-AI-TION Nexus ✈️🤖
 
-**WanderGen Nexus** is a **Multi-Agent AI Travel Orchestrator** that uses a swarm of specialized AI agents to collaboratively generate, critique, and refine personalized travel itineraries in real-time. Watch the agents think, debate, and converge on the perfect trip — all streamed live to a glowing terminal UI.
+**VAC-AI-TION Nexus** is a **Multi-Agent AI Travel Orchestrator** that uses a swarm of specialized AI agents to collaboratively generate, critique, and refine personalized travel itineraries in real-time. Watch the agents think, debate, and converge on the perfect trip — all streamed live to a glowing terminal UI.
 
 Built with React, Vite, Tailwind CSS, Firebase Cloud Functions (TypeScript), and the Groq LLM API.
 
@@ -71,8 +71,8 @@ Built with React, Vite, Tailwind CSS, Firebase Cloud Functions (TypeScript), and
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-username/WanderGen.git
-cd WanderGen
+git clone https://github.com/your-username/VAC-AI-TION.git
+cd VAC-AI-TION
 
 # Install frontend deps
 npm install
