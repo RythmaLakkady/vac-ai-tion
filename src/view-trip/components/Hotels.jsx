@@ -44,21 +44,19 @@ function Hotels({ trip }) {
                 )}
 
                 <div className="mt-auto flex flex-col gap-2 pt-2">
-                  {hotel?.booking_url && (
-                    <Link
-                      to={hotel.booking_url}
-                      target="_blank"
-                      className="w-full py-2.5 bg-holiday-teal text-white font-bold rounded-xl hover:bg-holiday-teal/90 transition-colors flex items-center justify-center gap-2 text-sm"
-                    >
-                      <ExternalLink className="w-4 h-4" /> Book Now
-                    </Link>
-                  )}
+                  <Link
+                    to={hotel?.booking_url || `https://www.google.com/search?q=${encodeURIComponent((hotel?.hotel_name || '') + ' ' + (hotel?.address || '') + ' official website booking')}`}
+                    target="_blank"
+                    className="w-full py-2.5 bg-holiday-teal text-white font-bold rounded-xl hover:bg-holiday-teal/90 transition-colors flex items-center justify-center gap-2 text-sm"
+                  >
+                    <ExternalLink className="w-4 h-4" /> {hotel?.booking_url ? 'Book Now' : 'Search Booking'}
+                  </Link>
                   <Link
                     to={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
                       hotel?.hotel_name || ''
                     )} ${encodeURIComponent(hotel?.address || '')}`}
                     target="_blank"
-                    className={`w-full py-2.5 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm ${hotel?.booking_url ? 'bg-holiday-dark/5 text-holiday-dark hover:bg-holiday-dark/10' : 'bg-holiday-teal text-white hover:bg-holiday-teal/90'}`}
+                    className="w-full py-2.5 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm bg-holiday-dark/5 text-holiday-dark hover:bg-holiday-dark/10"
                   >
                     <MapPin className="w-4 h-4" /> View on Map
                   </Link>
