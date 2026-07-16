@@ -3,7 +3,7 @@ import { GrMapLocation } from 'react-icons/gr';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { GripVertical, Trash2, Edit2 } from 'lucide-react';
+import { GripVertical, Trash2, Edit2, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 function Itinerary({ trip }) {
@@ -195,6 +195,17 @@ function Itinerary({ trip }) {
 
                                         {/* Actions & Map Link */}
                                         <div className="pl-6 sm:pl-0 sm:ml-auto flex sm:flex-col items-center justify-center gap-3 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                                          {activity?.booking_url && (
+                                            <Link
+                                              to={activity.booking_url}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="p-3 bg-holiday-coral/10 text-holiday-coral hover:bg-holiday-coral hover:text-white rounded-full transition-colors flex items-center justify-center"
+                                              title="Book / Website"
+                                            >
+                                              <ExternalLink className="w-5 h-5" />
+                                            </Link>
+                                          )}
                                           {activity?.geo_coordinates && (
                                             <Link
                                               to={`https://www.google.com/maps/search/?api=1&query=${activity?.geo_coordinates.latitude},${activity?.geo_coordinates.longitude}`}
@@ -206,7 +217,7 @@ function Itinerary({ trip }) {
                                               <GrMapLocation className="text-xl" />
                                             </Link>
                                           )}
-                                          <button onClick={() => handleDelete(dayIndex, idx)} className="p-3 bg-holiday-coral/10 text-holiday-coral hover:bg-holiday-coral hover:text-white rounded-full transition-colors flex items-center justify-center" title="Delete Activity">
+                                          <button onClick={() => handleDelete(dayIndex, idx)} className="p-3 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-full transition-colors flex items-center justify-center" title="Delete Activity">
                                             <Trash2 className="w-5 h-5" />
                                           </button>
                                         </div>

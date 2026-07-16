@@ -61,11 +61,12 @@ You MUST return your response as a valid JSON object matching this exact structu
     {
       "hotel_name": "String",
       "address": "String",
-      "price": "String (e.g., $150/night)",
+      "price": "String (e.g., $150/night - include details on what this price covers)",
       "rating": "String or Number",
       "image_url": "String (Valid Image URL)",
       "geo_coordinates": { "latitude": Number, "longitude": Number },
-      "description": "String"
+      "booking_url": "String (A real URL to book this hotel or their official website)",
+      "description": "String (Explain why you suggest this hotel and what vibe it offers)"
     }
   ],
   "itinerary": [
@@ -76,11 +77,12 @@ You MUST return your response as a valid JSON object matching this exact structu
       "activities": [
         {
           "place_name": "String",
-          "place_details": "String",
+          "place_details": "String (A short description of what it is, why it's famous, and why they should do it)",
           "image_url": "String (Valid Image URL)",
           "rating": "String or Number",
           "ticket_pricing": "String",
           "time_travel": "String",
+          "booking_url": "String (A real URL for booking tickets or the official website)",
           "geo_coordinates": { "latitude": Number, "longitude": Number }
         }
       ]
@@ -88,4 +90,4 @@ You MUST return your response as a valid JSON object matching this exact structu
   ]
 }
 
-Provide 3-5 hotel options. For the itinerary, provide exactly {eachday} days, and 2-3 activities per day. Keep all descriptions extremely concise (max 1 sentence) to avoid large responses. Ensure all image URLs are real, working URLs. Return ONLY the raw JSON object, without any markdown formatting, backticks, or introductory text.`;
+Provide 3-5 hotel options. For the itinerary, provide exactly {eachday} days, and 2-3 activities per day. Write engaging descriptions, but keep them under 3 sentences to keep the JSON manageable. Ensure all image URLs and booking URLs are real and working. Return ONLY the raw JSON object, without any markdown formatting, backticks, or introductory text.`;
