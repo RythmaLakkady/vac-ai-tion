@@ -11,14 +11,20 @@ const fs = require("fs");
 let serviceAccount = null;
 const keyPath = path.join(__dirname, "../..", "wandergen---ai-travel-planner-firebase-adminsdk-fbsvc-24b2108884.json");
 
-if (fs.existsSync(keyPath)) {
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } catch (e) {
+    console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT env var");
+  }
+} else if (fs.existsSync(keyPath)) {
   serviceAccount = require(keyPath);
 }
 
 if (!admin.apps.length) {
   try {
     if (serviceAccount) {
-      console.log("Found local service account key! Initializing with it...");
+      console.log("Initializing Firebase Admin with service account credentials...");
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount)
       });
