@@ -20,11 +20,17 @@ function LoginForm() {
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            toast("Logged in successfully!");
+            toast.success("Logged in successfully!");
             navigate('/');  
         } catch (err) {
-            toast("Error logging in");
-            setError(err.message);  
+            toast.error("Error logging in");
+            if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+                setError("Invalid email or password. Please try again.");
+            } else if (err.code === 'auth/too-many-requests') {
+                setError("Too many failed attempts. Please try again later.");
+            } else {
+                setError("An error occurred. Please try again.");
+            }
         }
     };
 

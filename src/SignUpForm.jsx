@@ -25,8 +25,15 @@ function SignUpForm() {
             await createUserWithEmailAndPassword(auth, email, password);
             toast.success("Account created successfully!");
             navigate('/');
-        } catch {
-            toast.error("Error creating account. Please try again.");
+        } catch (err) {
+            toast.error("Error creating account");
+            if (err.code === 'auth/email-already-in-use') {
+                toast.error("This email is already in use. Try logging in!");
+            } else if (err.code === 'auth/invalid-email') {
+                toast.error("Invalid email address.");
+            } else {
+                toast.error("An error occurred. Please try again.");
+            }
         }
     };
 
