@@ -5,7 +5,8 @@
     "allowJs": true,
     "esModuleInterop": true,
     "strict": false,
-    "types": ["jest", "node"]
+    "types": ["jest", "node"],
+    "outDir": "lib"
   },
   "include": ["src/**/*"]
 }

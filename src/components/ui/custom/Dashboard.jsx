@@ -79,7 +79,7 @@ function Dashboard() {
         >
           <motion.div variants={fadeUp} className="relative lg:w-1/2">
             <div className="absolute inset-0 bg-gradient-to-tr from-holiday-teal/20 to-transparent rounded-3xl transform -rotate-3 scale-105 -z-10 blur-xl"></div>
-            <img src="/public/paris.jpg" alt="Paris" className="w-full h-[500px] object-cover rounded-[40px] shadow-2xl border-4 border-white/60" />
+            <img src="/paris.jpg" alt="Paris" className="w-full h-[500px] object-cover rounded-[40px] shadow-2xl border-4 border-white/60" />
             <div className="absolute -bottom-10 -right-10 glass p-6 rounded-3xl shadow-xl hidden md:block animate-bounce-slow">
               <p className="font-bold text-holiday-dark flex items-center gap-2 font-sans"><MapPin className="text-holiday-coral"/> Montmartre, Paris</p>
               <p className="text-sm opacity-80 mt-1 font-sans">Added to your itinerary</p>
@@ -100,7 +100,7 @@ function Dashboard() {
         >
           <motion.div variants={fadeUp} className="relative lg:w-1/2">
             <div className="absolute inset-0 bg-gradient-to-tl from-holiday-coral/20 to-transparent rounded-3xl transform rotate-3 scale-105 -z-10 blur-xl"></div>
-            <img src="/public/maldives.jpg" alt="Maldives" className="w-full h-[500px] object-cover rounded-[40px] shadow-2xl border-4 border-white/60" />
+            <img src="/maldives.jpg" alt="Maldives" className="w-full h-[500px] object-cover rounded-[40px] shadow-2xl border-4 border-white/60" />
           </motion.div>
           <motion.div variants={fadeUp} className="lg:w-1/2 text-left">
             <h2 className="text-5xl font-semibold text-holiday-dark leading-tight">Hidden gems over tourist traps.</h2>
