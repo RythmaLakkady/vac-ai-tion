@@ -12,13 +12,18 @@ function Profile() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-      setUser(currentUser);
-      fetchUserTrips(currentUser.email);
-    } else {
-      setLoading(false);
-    }
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        fetchUserTrips(currentUser.email);
+      } else {
+        setUser(null);
+        setTrips([]);
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const fetchUserTrips = async (userEmail) => {
