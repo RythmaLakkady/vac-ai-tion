@@ -1,11 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PlaneTakeoff, Compass, MapPin } from 'lucide-react';
+import { auth } from '@/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import AuthModal from '@/components/ui/custom/AuthModal';
 import '/src/index.css';
 
 function Dashboard() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsLoggedIn(!!user);
+      if (user && pendingAction === 'createTrip') {
+        navigate('/createTrip');
+        setPendingAction(null);
+      }
+    });
+    return () => unsubscribe();
+  }, [pendingAction, navigate]);
+
+  const handleStartExploring = (e) => {
+    e.preventDefault();
+    if (!isLoggedIn) {
+      setPendingAction('createTrip');
+      setIsModalOpen(true);
+    } else {
+      navigate('/createTrip');
+    }
+  };
+
   const fadeUp = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
@@ -52,13 +81,13 @@ function Dashboard() {
         </motion.p>
         
         <motion.div variants={fadeUp} className="mt-10 flex flex-col sm:flex-row gap-4 justify-center font-sans">
-          <Link to="/createTrip">
+          <a href="/createTrip" onClick={handleStartExploring}>
             <Button className="group relative text-lg px-10 py-7 w-full sm:w-auto bg-holiday-teal text-white hover:bg-[#5aa196] shadow-xl hover:shadow-2xl transition-all duration-300 rounded-full border-none overflow-hidden">
               <span className="relative z-10 flex items-center gap-2 font-bold">
                 Start Exploring <PlaneTakeoff className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </span>
             </Button>
-          </Link>
+          </a>
           <Link to="/compare-prices">
             <Button className="text-lg px-10 py-7 w-full sm:w-auto bg-white/60 text-holiday-dark hover:bg-white backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 rounded-full border border-white/50 font-bold">
               Compare Prices
@@ -127,13 +156,15 @@ function Dashboard() {
           <p className="text-xl text-holiday-dark opacity-80 max-w-2xl mx-auto mb-10 font-sans">
             Join thousands of travelers planning their dream vacations with vac-ai-tion's next-generation AI.
           </p>
-          <Link to="/createTrip">
+          <a href="/createTrip" onClick={handleStartExploring}>
             <Button className="text-xl px-14 py-8 bg-holiday-dark text-white hover:bg-black shadow-2xl hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:-translate-y-1 transition-all duration-300 rounded-full border-none font-sans font-bold">
               Start Planning Free
             </Button>
-          </Link>
+          </a>
         </div>
       </motion.div>
+      
+      <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }
