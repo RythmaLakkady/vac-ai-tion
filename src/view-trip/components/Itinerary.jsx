@@ -253,6 +253,7 @@ function Itinerary({ trip, currency, exchangeRates }) {
   );
 }
 
+Itinerary.propTypes = {
   trip: PropTypes.shape({
     tripData: PropTypes.shape({
       itinerary: PropTypes.array,
