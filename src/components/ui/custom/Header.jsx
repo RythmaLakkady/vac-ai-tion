@@ -35,16 +35,16 @@ function Header() {
       <div className="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
         <Link to={'/'}>
           <motion.div 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-3 cursor-pointer"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex items-center gap-2.5 cursor-pointer group"
           >
             <img 
               src="/logo.svg" 
               alt="vac-ai-tion Logo" 
-              className="h-12 w-12" 
+              className="h-9 w-9 object-contain group-hover:-rotate-6 transition-transform duration-300" 
             />
-            <span className="font-bold text-xl tracking-tight text-gray-900 hidden sm:block">vac-ai-tion</span>
+            <span className="font-bold text-2xl tracking-tighter text-holiday-dark hidden sm:block mt-0.5">vac-ai-tion</span>
           </motion.div>
         </Link>
 
