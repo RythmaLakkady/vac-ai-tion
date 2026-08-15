@@ -22,22 +22,31 @@ async function callGroq(apiKey, systemPrompt, userPrompt, maxTokens = 2500, json
     body.response_format = { type: "json_object" };
   }
 
-  const res = await fetch(GROQ_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(body),
-  });
+  let maxCallRetries = 3;
+  for (let i = 0; i < maxCallRetries; i++) {
+    const res = await fetch(GROQ_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(body),
+    });
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Groq API error ${res.status}: ${errText}`);
+    if (!res.ok) {
+      if (res.status === 429) {
+        // Wait 12 seconds to clear the rate limit before retrying
+        await new Promise(resolve => setTimeout(resolve, 12000));
+        continue;
+      }
+      const errText = await res.text();
+      throw new Error(`Groq API error ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    return data.choices[0].message.content;
   }
-
-  const data = await res.json();
-  return data.choices[0].message.content;
+  throw new Error("Groq API error: Max rate limit retries reached (429).");
 }
 
 // ── Helper: append log to Firestore job doc ──────────────
@@ -78,7 +87,7 @@ function buildPlannerPrompt(params, feedback) {
     ? `\n\nCRITICAL REQUIREMENT - DIETARY PREFERENCES:\nThe user has specified a strict dietary preference: "${params.foodPreferences}". You MUST ensure that the activities include restaurant and dining recommendations (at least 1 per day) that explicitly cater to this diet. State how they accommodate it in the 'place_details' field.\n`
     : "";
 
-  return `Generate a ${params.days}-day travel itinerary for ${params.travelers} traveling to ${params.destination}, with a budget of ${params.budget} and a travel style of ${params.travelStyle}.${notesSection}${foodSection}${feedbackSection}
+  return `Generate a ${params.days}-day travel itinerary for ${params.travelers} traveling to ${params.destination}, with a budget of ${params.budget} and a travel style of ${params.travelStyle}. You MUST generate EXACTLY ${params.days} days in the itinerary array. No fewer and no more.${notesSection}${foodSection}${feedbackSection}
 
 IMPORTANT: The first day MUST be designated as the "Arrival Day" (theme should reflect arrival/check-in/light exploration) and the final day MUST be designated as the "Departure Day" (theme should reflect departure/packing/final sightseeing).
 
@@ -118,7 +127,7 @@ You MUST return your response as a valid JSON object matching this exact structu
   ]
 }
 
-Provide 3-5 hotel options. For the itinerary, provide exactly ${params.days} days, and 2-3 activities per day. Write engaging descriptions, but keep them under 3 sentences to keep the JSON manageable. Ensure all image URLs and booking URLs are real and working. Return ONLY the raw JSON object, without any markdown formatting, backticks, or introductory text.`;
+Provide 3-5 hotel options. For the itinerary, you ABSOLUTELY MUST provide an array containing EXACTLY ${params.days} day objects. DO NOT provide 3 days if asked for 10. Generate exactly ${params.days}. Provide 2-3 activities per day. Write engaging descriptions, but keep them under 3 sentences to keep the JSON manageable. Ensure all image URLs and booking URLs are real and working. Return ONLY the raw JSON object, without any markdown formatting, backticks, or introductory text.`;
 }
 
 function buildCriticPrompt(itineraryJson, params) {
