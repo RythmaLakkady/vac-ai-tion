@@ -70,7 +70,15 @@ function buildPlannerPrompt(params, feedback) {
     ? `\n\nIMPORTANT: Your previous attempt was REJECTED by the Critic Agent for the following reason:\n"${feedback}"\nPlease fix the issues and try again.\n`
     : "";
 
-  return `Generate a ${params.days}-day travel itinerary for ${params.travelers} traveling to ${params.destination}, with a budget of ${params.budget}.${feedbackSection}
+  const notesSection = params.savedNotes && params.savedNotes.length > 0
+    ? `\n\nCRITICAL REQUIREMENT - USER'S SAVED NOTES:\nThe user specifically requested to visit these places: [${params.savedNotes.join(', ')}]. \nThese places have been pre-filtered and are confirmed to be in ${params.destination}. You ABSOLUTELY MUST include ALL of these places in the itinerary, dedicating activities to them, and set "is_saved_note": true for these specific activities. Failure to include them is unacceptable.\n`
+    : "";
+
+  const foodSection = params.foodPreferences && params.foodPreferences !== 'No Restrictions'
+    ? `\n\nCRITICAL REQUIREMENT - DIETARY PREFERENCES:\nThe user has specified a strict dietary preference: "${params.foodPreferences}". You MUST ensure that the activities include restaurant and dining recommendations (at least 1 per day) that explicitly cater to this diet. State how they accommodate it in the 'place_details' field.\n`
+    : "";
+
+  return `Generate a ${params.days}-day travel itinerary for ${params.travelers} traveling to ${params.destination}, with a budget of ${params.budget} and a travel style of ${params.travelStyle}.${notesSection}${foodSection}${feedbackSection}
 
 IMPORTANT: The first day MUST be designated as the "Arrival Day" (theme should reflect arrival/check-in/light exploration) and the final day MUST be designated as the "Departure Day" (theme should reflect departure/packing/final sightseeing).
 
@@ -102,7 +110,8 @@ You MUST return your response as a valid JSON object matching this exact structu
           "ticket_pricing": "String",
           "time_travel": "String",
           "booking_url": "String (A real URL for booking tickets or the official website)",
-          "geo_coordinates": { "latitude": Number, "longitude": Number }
+          "geo_coordinates": { "latitude": Number, "longitude": Number },
+          "is_saved_note": "Boolean (true if this place was from the user's saved notes, false otherwise)"
         }
       ]
     }
@@ -113,6 +122,10 @@ Provide 3-5 hotel options. For the itinerary, provide exactly ${params.days} day
 }
 
 function buildCriticPrompt(itineraryJson, params) {
+  const foodRule = params.foodPreferences && params.foodPreferences !== 'No Restrictions'
+    ? `\n8. Must include dining options that accommodate a ${params.foodPreferences} diet.`
+    : "";
+
   return `You are a strict travel itinerary critic. Evaluate the following itinerary JSON against these constraints:
 
 USER CONSTRAINTS:
@@ -120,6 +133,8 @@ USER CONSTRAINTS:
 - Duration: ${params.days} days
 - Budget tier: ${params.budget}
 - Travelers: ${params.travelers}
+- Travel Style: ${params.travelStyle}
+- Food Preference: ${params.foodPreferences || 'None'}
 
 ITINERARY TO EVALUATE:
 ${itineraryJson}
@@ -131,7 +146,7 @@ VALIDATION RULES:
 4. If budget is "Low-Cost", no hotel should exceed $100/night
 5. If budget is "Luxury", hotels should be premium (4+ star rating)
 6. Activities should be appropriate for ${params.travelers}
-7. The JSON must be valid and complete
+7. The JSON must be valid and complete${foodRule}
 
 Respond with EXACTLY one of these formats:
 - If the itinerary passes: "PASS"
@@ -154,7 +169,7 @@ async function runAgentOrchestrator(jobId, params, apiKey) {
     await appendLog(
       jobId,
       "vibe-matcher",
-      `📊 Profile: ${params.days} days · ${params.budget} · ${params.travelers}`
+      `📊 Profile: ${params.days} days · ${params.budget} · ${params.travelers} · ${params.travelStyle}`
     );
     await appendLog(jobId, "vibe-matcher", "✅ Vibe analysis complete. Handing off to Planner Agent.");
 
@@ -260,6 +275,8 @@ async function runAgentOrchestrator(jobId, params, apiKey) {
         days: String(params.days),
         budget: params.budget,
         travelers: params.travelers,
+        travelStyle: params.travelStyle || "",
+        foodPreferences: params.foodPreferences || "",
       },
       tripData: finalItinerary,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),

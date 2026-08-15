@@ -5,8 +5,9 @@ import PropTypes from 'prop-types';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { GripVertical, Trash2, Edit2, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { convertPrice } from '../../utils/currencyFormatter';
 
-function Itinerary({ trip }) {
+function Itinerary({ trip, currency, exchangeRates }) {
   const [itinerary, setItinerary] = useState([]);
 
   useEffect(() => {
@@ -144,7 +145,7 @@ function Itinerary({ trip }) {
                           <Droppable droppableId={`day-${dayIndex}`} type="activity">
                             {(provided) => (
                               <div 
-                                className="grid grid-cols-1 gap-4 font-sans min-h-[50px]"
+                                className="relative grid grid-cols-1 gap-6 font-sans min-h-[50px] pl-4 sm:pl-8 before:content-[''] before:absolute before:left-[11px] sm:before:left-[27px] before:top-4 before:bottom-4 before:w-0.5 before:bg-holiday-teal/20"
                                 {...provided.droppableProps}
                                 ref={provided.innerRef}
                               >
@@ -156,19 +157,29 @@ function Itinerary({ trip }) {
                                         {...provided.draggableProps}
                                         className={`group p-6 bg-white rounded-2xl border flex flex-col sm:flex-row gap-6 relative overflow-hidden ${snapshot.isDragging ? 'shadow-2xl border-holiday-teal z-[60]' : 'shadow-sm border-gray-100 hover:border-holiday-teal/50 hover:shadow-md'} ${snapshot.isDragging ? '' : 'transition-colors transition-shadow duration-300'}`}
                                       >
+                                        {/* Timeline Dot */}
+                                        <div className="absolute -left-1.5 sm:-left-[5px] top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-holiday-teal rounded-full shadow-[0_0_0_4px_white] z-10 hidden sm:block"></div>
+
                                         {/* Drag Handle */}
                                         <div 
                                           {...provided.dragHandleProps}
                                           className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center text-gray-300 hover:text-holiday-teal hover:bg-holiday-teal/5 transition-colors cursor-grab active:cursor-grabbing"
                                         >
-                                          <GripVertical className="w-5 h-5" />
+                                          <GripVertical className="w-5 h-5 ml-1 sm:ml-0" />
                                         </div>
 
                                         <div className="pl-6 flex-grow flex flex-col justify-center">
                                           {activity?.place_name && (
-                                            <h5 className="text-xl font-bold font-serif text-holiday-dark mb-1">
-                                              {activity?.place_name}
-                                            </h5>
+                                            <div className="flex items-center gap-3 mb-1">
+                                              <h5 className="text-xl font-bold font-serif text-holiday-dark">
+                                                {activity?.place_name}
+                                              </h5>
+                                              {activity?.is_saved_note && (
+                                                <span className="text-xs font-bold bg-holiday-teal/10 text-holiday-teal px-2 py-1 rounded-md border border-holiday-teal/20 whitespace-nowrap shadow-sm">
+                                                  📌 Saved Note
+                                                </span>
+                                              )}
+                                            </div>
                                           )}
                                           {activity?.place_details && (
                                             <p className="text-holiday-dark/60 text-sm mb-4 leading-relaxed max-w-3xl">{activity?.place_details}</p>
@@ -182,7 +193,7 @@ function Itinerary({ trip }) {
                                             )}
                                             {activity?.ticket_pricing && activity?.ticket_pricing !== "N/A" && (
                                               <span className="flex items-center gap-1.5 bg-holiday-teal/10 text-holiday-teal px-3 py-1 rounded-full border border-holiday-teal/20">
-                                                💳 {activity?.ticket_pricing}
+                                                💳 {convertPrice(activity?.ticket_pricing, currency, exchangeRates)}
                                               </span>
                                             )}
                                             {activity?.time_travel && activity?.time_travel !== "N/A" && (
@@ -242,12 +253,13 @@ function Itinerary({ trip }) {
   );
 }
 
-Itinerary.propTypes = {
   trip: PropTypes.shape({
     tripData: PropTypes.shape({
       itinerary: PropTypes.array,
     }),
   }),
+  currency: PropTypes.string,
+  exchangeRates: PropTypes.object,
 };
 
 export default Itinerary;

@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { ExternalLink, MapPin } from 'lucide-react';
+import { convertPrice } from '../../utils/currencyFormatter';
 
-function Hotels({ trip }) {
+function Hotels({ trip, currency, exchangeRates }) {
   const hotels = trip?.tripData?.hotel_options;
 
   return (
@@ -30,7 +31,7 @@ function Hotels({ trip }) {
                 </p>
                 <div className="flex justify-between items-center mt-2 mb-2">
                   <p className="font-bold text-lg text-holiday-teal line-clamp-1 flex-1">
-                    {hotel?.price || 'Price Unavailable'}
+                    {convertPrice(hotel?.price, currency, exchangeRates) || 'Price Unavailable'}
                   </p>
                   <p className="font-bold bg-holiday-coral/20 text-holiday-coral px-3 py-1 rounded-full text-sm shrink-0 ml-2">
                     ⭐ {hotel?.rating || 'N/A'}
@@ -85,6 +86,8 @@ Hotels.propTypes = {
       ),
     }),
   }),
+  currency: PropTypes.string,
+  exchangeRates: PropTypes.object,
 };
 
 export default Hotels;

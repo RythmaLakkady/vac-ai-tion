@@ -85,7 +85,7 @@ app.post("/compare", async (req, res) => {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            model: "llama3-8b-8192",
+            model: "gpt-oss-20b",
             messages: [{
               role: "system",
               content: `You are a travel pricing expert. Give a brief, 3-sentence insight for traveling to ${destination}. Mention predicting lower price seasons, a quick hidden gem, and any tips for getting cheaper tickets or hotels.`
@@ -119,14 +119,14 @@ app.post("/compare", async (req, res) => {
 
 // ── POST /create-job ─────────────────────────────────────
 app.post("/create-job", async (req, res) => {
-  const { destination, days, budget, travelers, userId, userEmail, groqApiKey } = req.body;
+  const { destination, days, budget, travelers, travelStyle, savedNotes, userId, userEmail, groqApiKey } = req.body;
 
   if (!destination || !days || !budget || !travelers) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
   try {
-    const queryHash = createQueryHash({ destination, days: Number(days), budget, travelers });
+    const queryHash = createQueryHash({ destination, days: Number(days), budget, travelers, travelStyle });
     const cached = await getCachedItinerary(queryHash);
 
     if (cached) {
@@ -137,7 +137,7 @@ app.post("/create-job", async (req, res) => {
         tripDocId: cached.jobId,
         tripData: cached.tripData,
         queryHash,
-        params: { destination, days, budget, travelers, userId, userEmail },
+        params: { destination, days, budget, travelers, travelStyle, savedNotes, userId, userEmail },
         logs: [
           { agent: "system", message: "⚡ Cache hit! Returning previously generated itinerary.", timestamp: Date.now() },
           { agent: "system", message: "🎉 Trip ready! Redirecting you now...", timestamp: Date.now() },
@@ -156,14 +156,14 @@ app.post("/create-job", async (req, res) => {
     await jobRef.set({
       status: "pending",
       queryHash,
-      params: { destination, days: Number(days), budget, travelers, userId: userId || "anonymous", userEmail: userEmail || "anonymous" },
+      params: { destination, days: Number(days), budget, travelers, travelStyle, savedNotes, userId: userId || "anonymous", userEmail: userEmail || "anonymous" },
       logs: [{ agent: "system", message: "🚀 Job created. Initializing agent swarm...", timestamp: Date.now() }],
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     // Fire and forget the orchestrator (Runs in the background on Render/Railway)
     // We do NOT await this, so the frontend gets a quick 202 response.
-    runAgentOrchestrator(jobId, { destination, days: Number(days), budget, travelers, userId, userEmail }, groqApiKey)
+    runAgentOrchestrator(jobId, { destination, days: Number(days), budget, travelers, travelStyle, savedNotes, userId, userEmail }, groqApiKey)
       .then(async () => {
         // Cache if successful
         const updatedSnap = await jobRef.get();

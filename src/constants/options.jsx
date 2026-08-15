@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Users, Heart, Tent, Coins, Banknote, Gem } from 'lucide-react';
+import { User, Users, Heart, Tent, Coins, Banknote, Gem, Palmtree, Mountain, Landmark, PartyPopper } from 'lucide-react';
 
 export const SelectTravelersList = [
   {
@@ -50,6 +50,33 @@ export const SelectBudgetOptions = [
     title: "Luxury",
     desc: "First-class flights, five-star stays, and nothing but the best!",
     icon: <Gem className="w-10 h-10 text-holiday-teal" />,
+  }
+];
+
+export const SelectTravelStyleList = [
+  {
+    id: 1,
+    title: "Relaxing",
+    desc: "Beaches, spas, and taking it slow.",
+    icon: <Palmtree className="w-8 h-8 text-holiday-teal" />,
+  },
+  {
+    id: 2,
+    title: "Adventure",
+    desc: "Hiking, exploring, and adrenaline rushes.",
+    icon: <Mountain className="w-8 h-8 text-holiday-coral" />,
+  },
+  {
+    id: 3,
+    title: "Cultural",
+    desc: "Museums, history, and local experiences.",
+    icon: <Landmark className="w-8 h-8 text-holiday-teal" />,
+  },
+  {
+    id: 4,
+    title: "Party",
+    desc: "Nightlife, clubs, and social events.",
+    icon: <PartyPopper className="w-8 h-8 text-holiday-coral" />,
   }
 ];
 

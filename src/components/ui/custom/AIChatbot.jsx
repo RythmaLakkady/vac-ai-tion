@@ -6,7 +6,7 @@ import { chatSession } from "@/service/AImodel";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 
-function AIChatbot({ trip, setTrip }) {
+function AIChatbot({ trip, setTrip, setCurrency }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { role: 'assistant', content: "Hi! I'm WanderBot ✨. I have full control over your itinerary. Tell me what you'd like to change, and I'll update it live!" }
@@ -32,20 +32,23 @@ function AIChatbot({ trip, setTrip }) {
     setIsTyping(true);
 
     try {
-      // ONLY send the itinerary to save thousands of tokens and avoid the 6000 TPM limit
-      const itineraryOnly = trip?.tripData?.itinerary || {};
-      const tripContext = JSON.stringify({ itinerary: itineraryOnly });
+      const tripContext = JSON.stringify({ 
+        itinerary: trip?.tripData?.itinerary || {},
+        hotels: trip?.tripData?.hotel_options || {},
+        savedNotes: trip?.userSelection?.savedNotes || []
+      });
       
       const prompt = `You are an elite travel AI assistant for 'vac-ai-tion'. The user is viewing their trip itinerary. 
-CURRENT ITINERARY JSON:
+CURRENT ITINERARY JSON (including hotels and user's saved notes):
 ${tripContext}
 
 USER REQUEST: "${userMsg.content}"
 
 INSTRUCTIONS:
 1. If the user asks a general question, just reply with helpful text.
-2. If the user asks to modify the itinerary (e.g., add a day, remove a day, change an activity), generate a NEW JSON object containing ONLY the 'itinerary' key. Do not include flights or hotels.
-3. If you are returning JSON, you MUST wrap it EXACTLY in a markdown JSON block (\`\`\`json { "itinerary": ... } \`\`\`). The JSON schema must perfectly match the CURRENT ITINERARY JSON. Include a conversational message before or after the JSON block.`;
+2. If the user asks to change the currency (e.g., "change to INR", "show prices in Euros"), you MUST return EXACTLY this JSON format and nothing else: \`\`\`json { "action": "SET_CURRENCY", "currency": "XXX" } \`\`\` where XXX is the 3-letter currency code (e.g., USD, EUR, GBP, INR, JPY, AUD, CAD).
+3. If the user asks to modify the itinerary or hotels (e.g., add from their saved notes, add a day, change a hotel), generate a NEW JSON object containing ONLY the keys you are modifying ('itinerary' and/or 'hotel_options'). You have full access to add places from their 'savedNotes' if requested.
+4. If you are returning itinerary/hotel JSON, you MUST wrap it EXACTLY in a markdown JSON block (\`\`\`json { "itinerary": ... } \`\`\`). The JSON schema must perfectly match the CURRENT ITINERARY JSON. Include a conversational message before or after the JSON block.`;
 
       const result = await chatSession.sendMessage(prompt);
       const text = result?.response?.text() || "I'm having trouble processing that right now.";
@@ -73,8 +76,12 @@ INSTRUCTIONS:
         try {
           const newPartialData = JSON.parse(jsonString);
           
-          if (newPartialData && newPartialData.itinerary) {
-            // Merge the new itinerary with the existing data (flights/hotels)
+          if (newPartialData.action === "SET_CURRENCY" && setCurrency) {
+            setCurrency(newPartialData.currency);
+            finalMessage = `I've updated the currency to ${newPartialData.currency} for you!`;
+          }
+          else if (newPartialData.itinerary || newPartialData.hotel_options) {
+            // Merge the new itinerary/hotels with the existing data
             const mergedTripData = {
               ...(trip?.tripData || {}),
               ...newPartialData
@@ -96,7 +103,7 @@ INSTRUCTIONS:
               }));
             }
 
-            if (!finalMessage) finalMessage = "✨ I have successfully updated your itinerary!";
+            if (!finalMessage) finalMessage = "✨ I have successfully updated your trip!";
           }
         } catch (err) {
           console.error("Failed to parse AI JSON update", err);

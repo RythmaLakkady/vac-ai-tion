@@ -10,7 +10,22 @@ import AIChatbot from '../../components/ui/custom/AIChatbot';
 
 function ViewTrip() {
   const { tripId } = useParams();
-  const [trip, setTrip] = useState(null); // ✅ FIX: use object or null
+  const [trip, setTrip] = useState(null); 
+  const [currency, setCurrency] = useState('USD');
+  const [exchangeRates, setExchangeRates] = useState(null);
+
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+        setExchangeRates(data.rates);
+      } catch (err) {
+        console.error("Failed to fetch exchange rates", err);
+      }
+    };
+    fetchRates();
+  }, []);
 
   useEffect(() => {
     const GetTripData = async () => {
@@ -37,21 +52,21 @@ function ViewTrip() {
     <div className='min-h-screen pt-32 pb-16 px-6 sm:px-10 lg:px-20 max-w-7xl mx-auto'>
       <div className='bg-white/80 backdrop-blur-md rounded-[40px] shadow-2xl p-10 md:p-14 border border-white/50'>
         {/* information section */}
-        <InfoSection trip={trip} />
+        <InfoSection trip={trip} currency={currency} setCurrency={setCurrency} />
         
         <div className='my-10 border-t-2 border-holiday-teal/20'></div>
         
         {/* recommended hotels */}
-        <Hotels trip={trip} />
+        <Hotels trip={trip} currency={currency} exchangeRates={exchangeRates} />
         
         <div className='my-10 border-t-2 border-holiday-teal/20'></div>
         
         {/* daily plan */}
-        <Itinerary trip={trip} />
+        <Itinerary trip={trip} currency={currency} exchangeRates={exchangeRates} />
       </div>
 
       {/* Floating AI Chatbot */}
-      <AIChatbot trip={trip} setTrip={setTrip} />
+      <AIChatbot trip={trip} setTrip={setTrip} setCurrency={setCurrency} />
     </div>
   );
 }

@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Calendar, Users, Wallet, ChevronRight, ChevronLeft, Sparkles, PlaneTakeoff, Bot } from "lucide-react";
-import { AI_PROMPT, SelectBudgetOptions, SelectTravelersList } from "@/constants/options";
+import { MapPin, Calendar, Users, Wallet, ChevronRight, ChevronLeft, Sparkles, PlaneTakeoff, Bot, Compass } from "lucide-react";
+import { AI_PROMPT, SelectBudgetOptions, SelectTravelersList, SelectTravelStyleList } from "@/constants/options";
 import { chatSession } from "@/service/AImodel";
 import { auth, db } from "../firebase";
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, onSnapshot, collection, query, where, getDocs } from "firebase/firestore";
 import { toast } from "sonner";
-import Modal from "@/components/ui/custom/Modal";
+import AuthModal from "@/components/ui/custom/AuthModal";
 import AgentTerminal from "@/components/ui/custom/AgentTerminal";
 import AgentOrbs from "@/components/ui/custom/AgentOrbs";
 
@@ -30,6 +30,8 @@ function CreateTrip() {
     budget: "",
     travelers: "",
     people: "",
+    travelStyle: "",
+    foodPreferences: "",
   });
   
   // Search State
@@ -47,6 +49,11 @@ function CreateTrip() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsLoggedIn(!!user);
+      if (!user) {
+        setIsModalOpen(true);
+      } else {
+        setIsModalOpen(false);
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -91,6 +98,8 @@ function CreateTrip() {
     if (step === 2 && (!formData.days || formData.days > 20)) return toast("Please enter valid days (max 20).");
     if (step === 3 && !formData.travelers) return toast("Please select who is traveling.");
     if (step === 4 && !formData.budget) return toast("Please select a budget.");
+    if (step === 5 && !formData.travelStyle) return toast("Please select a travel style.");
+    if (step === 6 && !formData.foodPreferences) return toast("Please select your food preferences.");
     setStep((prev) => prev + 1);
   };
 
@@ -102,6 +111,26 @@ function CreateTrip() {
     setAgentMode(true);
     try {
       const user = auth.currentUser;
+      
+      let userNotes = [];
+      if (user?.uid) {
+        try {
+          const q = query(collection(db, "UserNotes"), where("userId", "==", user.uid));
+          const querySnapshot = await getDocs(q);
+          userNotes = querySnapshot.docs
+            .map(doc => doc.data())
+            .filter(data => {
+              if (!data.destination) return false;
+              const noteCity = data.destination.split(',')[0].trim().toLowerCase();
+              const tripCity = formData.destination.split(',')[0].trim().toLowerCase();
+              return noteCity === tripCity || data.destination.toLowerCase().includes(tripCity);
+            })
+            .map(data => data.place);
+        } catch (err) {
+          console.error("Error fetching notes:", err);
+        }
+      }
+
       const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
       const res = await fetch(`${FUNCTION_URL}/create-job`, {
         method: "POST",
@@ -112,6 +141,7 @@ function CreateTrip() {
           userId: user?.uid || "anonymous",
           userEmail: user?.email || "anonymous",
           groqApiKey,
+          savedNotes: userNotes,
         }),
       });
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
@@ -233,7 +263,53 @@ function CreateTrip() {
         );
       case 5:
         return (
-          <motion.div key="step5" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-10 py-10">
+          <motion.div key="step5" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-6">
+            <div className="flex items-center gap-3 text-holiday-dark mb-6">
+              <div className="p-3 bg-holiday-teal/10 rounded-full"><Compass className="w-6 h-6 text-holiday-teal" /></div>
+              <h2 className="text-4xl font-serif font-bold">What's your travel style?</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {SelectTravelStyleList.map((item, idx) => (
+                <motion.div
+                  key={idx}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setFormData(prev => ({ ...prev, travelStyle: item.title }))}
+                  className={`p-6 cursor-pointer rounded-3xl border-2 transition-all ${formData.travelStyle === item.title ? "border-holiday-teal bg-holiday-teal/5" : "border-gray-200 hover:border-holiday-teal/50"}`}
+                >
+                  <div className="text-4xl mb-4">{item.icon}</div>
+                  <h3 className="font-bold text-xl font-sans text-holiday-dark">{item.title}</h3>
+                  <p className="text-holiday-dark/60 text-sm mt-1 font-sans">{item.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        );
+      case 6:
+        return (
+          <motion.div key="step6" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-6">
+            <div className="flex items-center gap-3 text-holiday-dark mb-6">
+              <div className="p-3 bg-holiday-coral/10 rounded-full"><Compass className="w-6 h-6 text-holiday-coral" /></div>
+              <h2 className="text-4xl font-serif font-bold">Any food preferences?</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-4 font-sans">
+              {['No Restrictions', 'Vegetarian', 'Vegan', 'Halal', 'Gluten-Free', 'Pescatarian'].map((pref, idx) => (
+                <motion.div
+                  key={idx}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setFormData(prev => ({ ...prev, foodPreferences: pref }))}
+                  className={`p-6 cursor-pointer rounded-3xl border-2 transition-all ${formData.foodPreferences === pref ? "border-holiday-coral bg-holiday-coral/5" : "border-gray-200 hover:border-holiday-coral/50"}`}
+                >
+                  <h3 className="font-bold text-xl text-holiday-dark text-center">{pref}</h3>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        );
+      case 7:
+        return (
+          <motion.div key="step7" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-10 py-10">
             <div className="inline-flex justify-center items-center w-24 h-24 bg-gradient-to-tr from-holiday-teal to-holiday-coral rounded-full shadow-2xl mb-4 animate-bounce">
               <Sparkles className="w-10 h-10 text-white" />
             </div>
@@ -274,14 +350,14 @@ function CreateTrip() {
       {/* Progress Bar */}
       <div className="mb-16">
         <div className="flex justify-between items-center mb-4">
-          <span className="text-sm font-bold text-holiday-teal tracking-widest uppercase">Step {step} of 5</span>
-          <span className="text-sm font-medium text-gray-400">{Math.round((step / 5) * 100)}%</span>
+          <span className="text-sm font-bold text-holiday-teal tracking-widest uppercase">Step {step} of 7</span>
+          <span className="text-sm font-medium text-gray-400">{Math.round((step / 7) * 100)}%</span>
         </div>
         <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
           <motion.div 
             className="h-full bg-gradient-to-r from-holiday-teal to-holiday-coral"
             initial={{ width: 0 }}
-            animate={{ width: `${(step / 5) * 100}%` }}
+            animate={{ width: `${(step / 7) * 100}%` }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
           />
         </div>
@@ -302,7 +378,7 @@ function CreateTrip() {
           </button>
         ) : <div />}
 
-        {step < 5 ? (
+        {step < 7 ? (
           <button onClick={handleNext} className="flex items-center gap-2 px-8 py-4 bg-holiday-dark text-white rounded-full font-bold hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
             Continue <ChevronRight className="w-5 h-5" />
           </button>
@@ -318,21 +394,8 @@ function CreateTrip() {
         )}
       </div>
 
-      {/* Sign In Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <h2 className="text-2xl font-serif font-bold text-holiday-dark mb-4 text-center">Save Your Journey</h2>
-        <p className="text-gray-500 mb-8 text-center font-sans">Sign in securely with Google to generate and save your AI-crafted itinerary.</p>
-        <button
-          onClick={() => {
-            setIsModalOpen(false);
-            navigate('/signIn');
-          }}
-          className="w-full py-4 bg-black text-white font-bold rounded-xl flex justify-center items-center gap-2 hover:bg-gray-800 transition-colors font-sans"
-        >
-          <img src="/google-logo.svg" alt="Google" className="w-6 h-6 bg-white rounded-full p-1" />
-          Sign in with Google
-        </button>
-      </Modal>
+      {/* Auth Modal */}
+      <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
     </div>
   );
