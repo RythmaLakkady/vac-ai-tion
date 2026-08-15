@@ -134,11 +134,17 @@ You MUST return your response as a valid JSON object matching this exact structu
       "description": "String (Explain why you suggest this hotel and what vibe it offers)"
     }
   ],
+  "wanderer_notes": {
+    "getting_around": "String (Best way to commute, apps to use like Uber, Grab, local transit, etc.)",
+    "weather_clothing_tips": "String (What to pack and expect)",
+    "cultural_etiquette": "String (Important local customs or tips)"
+  },
   "itinerary": [
     {
       "day": Number,
       "theme": "String",
       "best_time": "String",
+      "daily_brief": "String (A conversational, tour-guide style brief outlining the morning flow, how to avoid traffic, breakfast tips, etc. Make it engaging!)",
       "activities": [
         {
           "place_name": "String",

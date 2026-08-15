@@ -121,6 +121,16 @@ function Itinerary({ trip, currency, exchangeRates }) {
                         </div>
                       </div>
 
+                      {day?.daily_brief && (
+                        <div className="mb-10 px-6 py-5 bg-white/60 rounded-3xl border border-white shadow-sm flex items-start gap-4">
+                          <span className="text-3xl mt-1">🧭</span>
+                          <div>
+                            <h4 className="text-holiday-dark font-bold font-serif text-lg mb-1">Guide's Note</h4>
+                            <p className="text-holiday-dark/70 font-sans text-sm leading-relaxed">{day.daily_brief}</p>
+                          </div>
+                        </div>
+                      )}
+
                       {day?.map && (
                         <div className="mb-12">
                           <div className="rounded-[28px] overflow-hidden shadow-md border-4 border-white bg-gray-50 relative group">

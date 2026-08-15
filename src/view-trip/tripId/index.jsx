@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import InfoSection from '../components/InfoSection';
 import Hotels from '../components/Hotels';
 import Itinerary from '../components/Itinerary';
+import WandererNotes from '../components/WandererNotes';
 import AIChatbot from '../../components/ui/custom/AIChatbot';
 
 function ViewTrip() {
@@ -61,6 +62,9 @@ function ViewTrip() {
         
         <div className='my-10 border-t-2 border-holiday-teal/20'></div>
         
+        {/* wanderer notes (global) */}
+        <WandererNotes trip={trip} />
+
         {/* daily plan */}
         <Itinerary trip={trip} currency={currency} exchangeRates={exchangeRates} />
       </div>
