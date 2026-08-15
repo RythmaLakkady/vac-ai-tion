@@ -73,8 +73,30 @@ async function updateJobStatus(jobId, status, extra = {}) {
     .update({ status, ...extra });
 }
 
+// ── The Manager Strategy Prompt ──────────────────────────
+function buildManagerPrompt(params) {
+  const notesSection = params.savedNotes && params.savedNotes.length > 0
+    ? `\n\nThe user specifically requested to visit these places: [${params.savedNotes.join(', ')}]. You MUST include these in your strategy.\n`
+    : "";
+
+  const foodSection = params.foodPreferences && params.foodPreferences !== 'No Restrictions'
+    ? `\n\nDietary preference: "${params.foodPreferences}". You MUST ensure dining recommendations cater to this diet.\n`
+    : "";
+
+  return `You are the Swarm Manager for a travel planning AI. Your job is to draft a high-level strategy for a ${params.days}-day trip to ${params.destination}.
+User Constraints:
+- Budget: ${params.budget}
+- Travelers: ${params.travelers}
+- Travel Style: ${params.travelStyle}${notesSection}${foodSection}
+
+Instructions:
+Provide a plain-text, day-by-day outline. For each of the ${params.days} days, provide a "Theme" and 2-3 key activities or locations.
+Day 1 MUST be an Arrival Day. The final day MUST be a Departure Day.
+Do NOT output JSON. Just a clear, concise text strategy that a Planner agent can follow.`;
+}
+
 // ── The itinerary JSON schema prompt ─────────────────────
-function buildPlannerPrompt(params, feedback) {
+function buildPlannerPrompt(params, feedback, managerStrategy) {
   const feedbackSection = feedback
     ? `\n\nIMPORTANT: Your previous attempt was REJECTED by the Critic Agent for the following reason:\n"${feedback}"\nPlease fix the issues and try again.\n`
     : "";
@@ -87,7 +109,14 @@ function buildPlannerPrompt(params, feedback) {
     ? `\n\nCRITICAL REQUIREMENT - DIETARY PREFERENCES:\nThe user has specified a strict dietary preference: "${params.foodPreferences}". You MUST ensure that the activities include restaurant and dining recommendations (at least 1 per day) that explicitly cater to this diet. State how they accommodate it in the 'place_details' field.\n`
     : "";
 
-  return `Generate a ${params.days}-day travel itinerary for ${params.travelers} traveling to ${params.destination}, with a budget of ${params.budget} and a travel style of ${params.travelStyle}. You MUST generate EXACTLY ${params.days} days in the itinerary array. No fewer and no more.${notesSection}${foodSection}${feedbackSection}
+  return `You are a strict data-formatter Planner Agent. A Manager Agent has already drafted the strategy for this trip. 
+Here is the Manager's Strategy:
+-------------------
+${managerStrategy}
+-------------------
+
+Your job is to take the Manager's Strategy and format it EXACTLY into the required JSON structure.
+Generate a ${params.days}-day travel itinerary for ${params.travelers} traveling to ${params.destination}, with a budget of ${params.budget} and a travel style of ${params.travelStyle}. You MUST generate EXACTLY ${params.days} days in the itinerary array. No fewer and no more.${notesSection}${foodSection}${feedbackSection}
 
 IMPORTANT: The first day MUST be designated as the "Arrival Day" (theme should reflect arrival/check-in/light exploration) and the final day MUST be designated as the "Departure Day" (theme should reflect departure/packing/final sightseeing).
 
@@ -180,7 +209,24 @@ async function runAgentOrchestrator(jobId, params, apiKey) {
       "vibe-matcher",
       `📊 Profile: ${params.days} days · ${params.budget} · ${params.travelers} · ${params.travelStyle}`
     );
-    await appendLog(jobId, "vibe-matcher", "✅ Vibe analysis complete. Handing off to Planner Agent.");
+    await appendLog(jobId, "vibe-matcher", "✅ Vibe analysis complete. Handing off to Manager Agent.");
+
+    // ── Phase 1.5: Manager ──────────────────────────
+    await appendLog(jobId, "manager", `🧠 Drafting day-by-day strategy for ${params.days} days...`);
+    let managerStrategy;
+    try {
+      managerStrategy = await callGroq(
+        apiKey,
+        "You are the Swarm Manager. You strategize vacations.",
+        buildManagerPrompt(params),
+        4000,
+        false
+      );
+      await appendLog(jobId, "manager", "✅ Strategy drafted. Handing off to Planner Agent.");
+    } catch (err) {
+      await appendLog(jobId, "manager", `❌ Manager API error: ${err.message}`);
+      throw err;
+    }
 
     // ── Phase 2: Planner ↔ Critic loop ─────────────────
     while (attempt < MAX_RETRIES) {
@@ -192,7 +238,7 @@ async function runAgentOrchestrator(jobId, params, apiKey) {
       );
 
       // Call Planner
-      const plannerPrompt = buildPlannerPrompt(params, criticFeedback);
+      const plannerPrompt = buildPlannerPrompt(params, criticFeedback, managerStrategy);
       let rawItinerary;
       try {
         rawItinerary = await callGroq(
