@@ -54,9 +54,9 @@ function InfoSection({trip, currency, setCurrency}) {
 
   return (
     <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-6'>
-      <div className='flex flex-col gap-4 w-full md:w-auto flex-grow'>
-        <h2 className='text-4xl font-bold font-serif text-holiday-dark drop-shadow-sm flex items-center gap-3'>
-          📍 {trip?.userSelection?.destination || 'No Destination'}
+      <div className='flex flex-col gap-4 w-full md:flex-1 min-w-0'>
+        <h2 className='text-4xl font-bold font-serif text-holiday-dark drop-shadow-sm flex items-start gap-3 break-words'>
+          <span className="shrink-0 mt-1">📍</span> <span className="break-words">{trip?.userSelection?.destination || 'No Destination'}</span>
         </h2>
 
         <div className='flex flex-wrap gap-4 mt-2'>
@@ -72,7 +72,7 @@ function InfoSection({trip, currency, setCurrency}) {
         </div>
       </div>
 
-      <div className='flex flex-col gap-4 min-w-[200px]'>
+      <div className='flex flex-col gap-4 min-w-[200px] shrink-0'>
         <div className='flex justify-end gap-3 no-print'>
           <div className="relative">
             <Coins className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-holiday-teal pointer-events-none" />

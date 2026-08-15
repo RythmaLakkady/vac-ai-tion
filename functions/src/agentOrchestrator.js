@@ -8,7 +8,7 @@ const admin = require("firebase-admin");
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 // ── Helper: call Groq API ────────────────────────────────
-async function callGroq(apiKey, systemPrompt, userPrompt, maxTokens = 2500, jsonMode = false) {
+async function callGroq(apiKey, systemPrompt, userPrompt, maxTokens = 8000, jsonMode = false) {
   const body = {
     model: "llama-3.3-70b-versatile",
     max_tokens: maxTokens,
@@ -199,7 +199,7 @@ async function runAgentOrchestrator(jobId, params, apiKey) {
           apiKey,
           "You are a travel planning assistant that generates detailed travel itineraries in JSON format.",
           plannerPrompt,
-          2500,
+          8000,
           true
         );
       } catch (err) {
