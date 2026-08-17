@@ -83,8 +83,8 @@ function AuthModal({ isOpen, onClose }) {
 
             <div className="p-8 pb-6">
               <div className="flex justify-center mb-6">
-                <div className="w-14 h-14 bg-holiday-teal/10 rounded-2xl flex items-center justify-center">
-                  <PlaneTakeoff className="w-7 h-7 text-holiday-teal" />
+                <div className="w-14 h-14 bg-gradient-to-br from-holiday-coral to-holiday-amber rounded-2xl flex items-center justify-center shadow-lg shadow-holiday-coral/30">
+                  <PlaneTakeoff className="w-7 h-7 text-white" />
                 </div>
               </div>
 
@@ -104,7 +104,7 @@ function AuthModal({ isOpen, onClose }) {
               </div>
 
               <div className="text-center mb-6">
-                <h2 className='text-2xl font-bold text-slate-800 mb-1'>
+                <h2 className='text-2xl font-serif font-semibold text-holiday-dark mb-1'>
                   {activeTab === 'login' ? 'Welcome Back' : 'Join the Journey'}
                 </h2>
                 <p className="text-sm text-slate-500">
@@ -124,7 +124,7 @@ function AuthModal({ isOpen, onClose }) {
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
-                      className='w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-holiday-teal/50 focus:border-holiday-teal transition-all'
+                      className='w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-holiday-coral/50 focus:border-holiday-coral transition-all'
                       type="email"
                       placeholder="Enter your email"
                       value={email}
@@ -139,7 +139,7 @@ function AuthModal({ isOpen, onClose }) {
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
-                      className='w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-holiday-teal/50 focus:border-holiday-teal transition-all'
+                      className='w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-holiday-coral/50 focus:border-holiday-coral transition-all'
                       type="password"
                       placeholder={activeTab === 'login' ? "Enter your password" : "Create a password (min 6 chars)"}
                       value={password}
@@ -151,7 +151,7 @@ function AuthModal({ isOpen, onClose }) {
 
                 <button 
                   disabled={loading}
-                  className="w-full py-4 mt-2 bg-holiday-teal text-white rounded-xl hover:bg-holiday-teal/90 shadow-lg shadow-holiday-teal/20 transition-all text-lg font-medium disabled:opacity-70 flex items-center justify-center gap-2" 
+                  className="w-full py-4 mt-2 bg-gradient-to-r from-holiday-coral to-holiday-amber text-white rounded-xl hover:shadow-lg hover:shadow-holiday-coral/30 transition-all text-lg font-semibold disabled:opacity-70 flex items-center justify-center gap-2" 
                   type="submit"
                 >
                   {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
