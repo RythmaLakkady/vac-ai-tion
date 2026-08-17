@@ -9,4 +9,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    allowedHosts: ["sb-3dni6xkqu3d6.vercel.run"]
+  }
 })
