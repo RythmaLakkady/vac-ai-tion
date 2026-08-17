@@ -44,16 +44,16 @@ export default function Cursor() {
   return (
     <>
       <div
-        className="fixed top-0 left-0 w-4 h-4 bg-holiday-teal rounded-full pointer-events-none z-[9999] mix-blend-multiply transition-transform duration-100 ease-out hidden md:block"
+        className="fixed top-0 left-0 w-4 h-4 bg-holiday-coral rounded-full pointer-events-none z-[9999] mix-blend-multiply transition-transform duration-100 ease-out hidden md:block"
         style={{
           transform: `translate3d(${position.x - 8}px, ${position.y - 8}px, 0) scale(${isHovering ? 0 : 1})`,
         }}
       />
       <div
-        className="fixed top-0 left-0 w-12 h-12 border-2 border-holiday-teal rounded-full pointer-events-none z-[9998] transition-all duration-300 ease-out hidden md:block"
+        className="fixed top-0 left-0 w-12 h-12 border-2 border-holiday-coral rounded-full pointer-events-none z-[9998] transition-all duration-300 ease-out hidden md:block"
         style={{
           transform: `translate3d(${trailingPosition.x - 24}px, ${trailingPosition.y - 24}px, 0) scale(${isHovering ? 1.5 : 1})`,
-          backgroundColor: isHovering ? 'rgba(109, 186, 175, 0.1)' : 'transparent',
+          backgroundColor: isHovering ? 'rgba(249, 113, 80, 0.12)' : 'transparent',
         }}
       />
     </>

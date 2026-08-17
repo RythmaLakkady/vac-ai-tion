@@ -8,7 +8,7 @@ module.exports = { // Correct placement of darkMode
       extend: {
         fontFamily: {
           sans: ['Inter', 'sans-serif'],
-          serif: ['Playfair Display', 'serif'],
+          serif: ['Fraunces', 'Playfair Display', 'serif'],
         },
         borderRadius: {
           lg: 'var(--radius)',
@@ -17,10 +17,14 @@ module.exports = { // Correct placement of darkMode
         },
         colors: {
           holiday: {
-            teal: '#6dbaaf',
-            sand: '#edecda',
-            dark: '#2c4b47',
-            coral: '#fd9c7e',
+            // Golden-hour sunset palette
+            teal: '#0f766e',   // deep ocean teal — primary actions & anchor
+            sand: '#f7efe1',   // soft warm sand — page background
+            dark: '#3a241a',   // warm espresso ink — text
+            coral: '#f97150',  // sunset coral — accent
+            amber: '#f5a524',  // golden amber
+            sun: '#ffcf70',    // warm sunlight highlight
+            cream: '#fffaf1',  // warm near-white surface
           },
           background: 'hsl(var(--background))',
           foreground: 'hsl(var(--foreground))',
