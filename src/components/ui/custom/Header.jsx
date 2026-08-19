@@ -68,7 +68,7 @@ function Header() {
               </Link>
               <button 
                 onClick={handleSignOut} 
-                className="text-sm font-medium text-gray-500 hover:text-red-500 transition-colors"
+                className="text-sm font-medium text-holiday-dark/60 hover:text-red-500 transition-colors"
               >
                 Sign Out
               </button>

@@ -53,7 +53,7 @@ export default function Cursor() {
         className="fixed top-0 left-0 w-12 h-12 border-2 border-amber rounded-full pointer-events-none z-[9998] transition-all duration-300 ease-out hidden md:block"
         style={{
           transform: `translate3d(${trailingPosition.x - 24}px, ${trailingPosition.y - 24}px, 0) scale(${isHovering ? 1.5 : 1})`,
-          backgroundColor: isHovering ? 'rgba(109, 186, 175, 0.1)' : 'transparent',
+          backgroundColor: isHovering ? 'rgba(249, 113, 80, 0.12)' : 'transparent',
         }}
       />
     </>

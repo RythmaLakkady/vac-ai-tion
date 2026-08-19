@@ -8,7 +8,7 @@ module.exports = { // Correct placement of darkMode
       extend: {
         fontFamily: {
           sans: ['Inter', 'sans-serif'],
-          serif: ['Playfair Display', 'serif'],
+          serif: ['Fraunces', 'Playfair Display', 'serif'],
         },
         borderRadius: {
           lg: 'var(--radius)',

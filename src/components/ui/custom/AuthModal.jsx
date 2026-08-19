@@ -104,7 +104,7 @@ function AuthModal({ isOpen, onClose }) {
               </div>
 
               <div className="text-center mb-6">
-                <h2 className='text-2xl font-bold text-slate-800 mb-1'>
+                <h2 className='text-2xl font-serif font-semibold text-holiday-dark mb-1'>
                   {activeTab === 'login' ? 'Welcome Back' : 'Join the Journey'}
                 </h2>
                 <p className="text-sm text-slate-500">

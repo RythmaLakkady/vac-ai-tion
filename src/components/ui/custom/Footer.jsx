@@ -52,7 +52,7 @@ function Footer() {
           </div>
           
           <div className="flex items-center gap-4 flex-wrap justify-center">
-            <span className="text-sm text-gray-500 font-sans">Facing an issue or have feedback?</span>
+            <span className="text-sm text-holiday-dark/60 font-sans">Facing an issue or have feedback?</span>
             <button 
               onClick={() => setIsOpen(true)}
               className="flex items-center gap-2 px-6 py-3 bg-sunset text-primary-foreground rounded-full transition-all duration-300 hover:shadow-warm hover:-translate-y-1 font-bold font-sans text-sm shadow-sm"
