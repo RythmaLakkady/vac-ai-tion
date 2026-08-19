@@ -80,6 +80,9 @@ Instead of treating AI as a single prompt, the project explores how multi-stage 
 | 🎛️ **Advanced Customization** | Supports open-ended text inputs for unique travel styles and niche food preferences. |
 | 🛡️ **Robust API Handling** | Implements fixed-backoff retry mechanisms to gracefully handle LLM rate limits and token windows. |
 | 🎨 **Interactive Loading Dashboard** | A stunning glassmorphism generation screen featuring a live AI terminal and rotating travel facts. |
+| 🌐 **3D Interactive Globe** | Features an interactive, draggable golden-hour 3D globe visualization on the landing page. |
+| ⚕️ **Health & Safety Intelligence** | AI-generated health protocols, emergency contacts, and local safety guidelines for the destination. |
+| 📝 **Wanderer Notes** | Hyper-personalized travel tips, cultural nuances, and packing recommendations tailored to the specific trip vibe. |
 
 
 ---
