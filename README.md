@@ -169,7 +169,9 @@ The orchestration pipeline requests an itinerary from Groq's Llama 3.3 70B model
 The model is instructed to generate structured JSON containing:
 
 - Hotel recommendations
-- Daily itinerary
+- Daily itinerary (including final day departure)
+- Health & Safety protocols
+- Wanderer Notes (packing, culture, local tips)
 - Estimated costs
 - Geographic coordinates
 - Booking links
@@ -182,9 +184,10 @@ Instead of accepting the first generated itinerary, a second LLM prompt evaluate
 
 Examples include:
 
-- Requested number of days
+- Requested number of days (hard limit of 15 days)
 - Budget limits
-- JSON structure
+- JSON structure validity
+- Explicit airport departure routing on the final day
 - Overall itinerary consistency
 
 If validation fails, the planner receives feedback and generates a revised itinerary.
@@ -251,6 +254,7 @@ vac-ai-tion
 | **AI Models** | Groq (Llama 3.3 70B) |
 | **Location Services** | LocationIQ API |
 | **Hosting** | Vercel |
+| **3D Rendering** | Cobe (Globe) |
 | **Drag & Drop** | @hello-pangea/dnd |
 
 ---
@@ -417,9 +421,9 @@ Create a `.env` file in the project root.
 
 ```env
 VITE_GROQ_API_KEY=your_groq_api_key
-
-VITE_LOCATIONIQ_API_KEY=your_locationiq_api_key
-
+VITE_OPENAI_API_KEY=your_openai_api_key_for_chat
+VITE__LOCATION_IQ_API_KEY=your_locationiq_api_key
+VITE_FIREBASE_API_KEY=your_firebase_api_key
 VITE_PRICE_FUNCTION_URL=your_cloud_function_url
 ```
 
