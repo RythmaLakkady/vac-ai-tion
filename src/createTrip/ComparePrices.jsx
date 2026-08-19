@@ -16,7 +16,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 const FUNCTION_URL = import.meta.env.VITE_PRICE_FUNCTION_URL || 
-  (isLocal ? "http://127.0.0.1:5001/wandergen---ai-travel-planner/us-central1/priceAggregator" 
+  (isLocal ? "http://127.0.0.1:8080" 
            : "https://us-central1-wandergen---ai-travel-planner.cloudfunctions.net/priceAggregator");
 
 const BUDGET_OPTIONS = ["Low-Cost", "Affordable Comfort", "Luxury"];
@@ -36,7 +36,7 @@ export default function ComparePrices() {
     if (value.length > 2) {
       try {
         const res = await fetch(
-          `https://api.locationiq.com/v1/autocomplete.php?key=pk.eb1ca2dd56903301b770e16676fe0560&q=${value}&limit=5&format=json`
+          `https://api.locationiq.com/v1/autocomplete.php?key=${import.meta.env.VITE__LOCATION_IQ_API_KEY}&q=${value}&limit=5&format=json`
         );
         const data = await res.json();
         setSearchResults(data);
@@ -120,7 +120,7 @@ export default function ComparePrices() {
       {
         label: "Price (USD)",
         data: results.map((r) => r.price),
-        backgroundColor: ["#7AB9B3", "#FD9C7E", "#6a9f9c", "#f4845f"],
+        backgroundColor: ["#ea580c", "#f59e0b", "#f97316", "#fbbf24"],
         borderRadius: 8,
       },
     ],
@@ -150,27 +150,27 @@ export default function ComparePrices() {
   return (
     <div className="sm:px-20 md:px-32 lg:px-56 xl:px-10 px-10 pt-32 pb-16 min-h-screen max-w-7xl mx-auto">
       {/* ── Header ─────────────────────────────── */}
-      <div className="text-center glass p-8 rounded-[30px] shadow-lg border-white/50">
-        <h2 className="font-serif font-bold text-4xl text-holiday-dark flex items-center justify-center gap-3 drop-shadow-sm">
-          Compare Prices <Wallet className="w-8 h-8 text-holiday-coral" />
+      <div className="text-center glass p-8 rounded-[30px] shadow-lg border-border/50">
+        <h2 className="font-serif font-bold text-4xl text-ink flex items-center justify-center gap-3 drop-shadow-sm">
+          Compare Prices <Wallet className="w-8 h-8 text-coral" />
         </h2>
-        <p className="mt-3 font-serif text-holiday-dark opacity-80 text-[18px]">
+        <p className="mt-3 font-serif text-ink opacity-80 text-[18px]">
           See prices from multiple vendors, ranked for <em>you</em>.
         </p>
       </div>
 
       {/* ── Search Form ────────────────────────── */}
-      <div className="mt-12 flex flex-col md:flex-row gap-6 justify-center items-end flex-wrap glass p-10 rounded-3xl shadow-xl border-white/50">
+      <div className="mt-12 flex flex-col md:flex-row gap-6 justify-center items-end flex-wrap glass p-10 rounded-3xl shadow-xl border-border/50">
         <div className="relative">
-          <label className="block text-sm font-semibold text-holiday-dark mb-2 font-serif uppercase tracking-wider">Destination</label>
+          <label className="block text-sm font-semibold text-ink mb-2 font-serif uppercase tracking-wider">Destination</label>
           <input
-            className="px-4 py-3 border-2 border-gray-200 bg-white rounded-xl w-64 focus:outline-none focus:border-holiday-teal font-serif shadow-sm transition-colors text-holiday-dark"
+            className="px-4 py-3 border-2 border-gray-200 bg-card rounded-xl w-64 focus:outline-none focus:border-amber font-serif shadow-sm transition-colors text-ink"
             placeholder="e.g. Tokyo"
             value={destination}
             onChange={handleSearch}
           />
           {searchResults.length > 0 && (
-            <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-48 overflow-y-auto shadow-2xl">
+            <ul className="absolute z-10 w-full bg-card border border-gray-200 rounded-xl mt-1 max-h-48 overflow-y-auto shadow-2xl">
               {searchResults.map((place, index) => (
                 <li
                   key={`${place.place_id}-${index}`}
@@ -179,7 +179,7 @@ export default function ComparePrices() {
                     setDestination(place.display_name);
                     setSearchResults([]);
                   }}
-                  className="p-3 cursor-pointer hover:bg-holiday-sand text-sm font-serif text-left truncate transition-colors border-b border-gray-50 last:border-0"
+                  className="p-3 cursor-pointer hover:bg-sand text-sm font-serif text-left truncate transition-colors border-b border-gray-50 last:border-0"
                 >
                   {place.display_name}
                 </li>
@@ -188,19 +188,19 @@ export default function ComparePrices() {
           )}
         </div>
         <div>
-          <label className="block text-sm font-semibold text-holiday-dark mb-2 font-serif uppercase tracking-wider">Start Date</label>
+          <label className="block text-sm font-semibold text-ink mb-2 font-serif uppercase tracking-wider">Start Date</label>
           <input
             type="date"
-            className="px-4 py-3 border-2 border-gray-200 bg-white rounded-xl focus:outline-none focus:border-holiday-teal font-serif shadow-sm transition-colors text-holiday-dark"
+            className="px-4 py-3 border-2 border-gray-200 bg-card rounded-xl focus:outline-none focus:border-amber font-serif shadow-sm transition-colors text-ink"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-holiday-dark mb-2 font-serif uppercase tracking-wider">End Date</label>
+          <label className="block text-sm font-semibold text-ink mb-2 font-serif uppercase tracking-wider">End Date</label>
           <input
             type="date"
-            className="px-4 py-3 border-2 border-gray-200 bg-white rounded-xl focus:outline-none focus:border-holiday-teal font-serif shadow-sm transition-colors text-holiday-dark"
+            className="px-4 py-3 border-2 border-gray-200 bg-card rounded-xl focus:outline-none focus:border-amber font-serif shadow-sm transition-colors text-ink"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
@@ -208,8 +208,8 @@ export default function ComparePrices() {
         <button
           onClick={handleCompare}
           disabled={loading}
-          className="px-10 py-3 bg-holiday-teal text-white font-bold rounded-xl
-                     hover:bg-[#5aa196] shadow-md hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+          className="px-10 py-3 bg-amber text-primary-foreground font-bold rounded-xl
+                     hover:bg-coral shadow-md hover:shadow-xl transition-all duration-300 disabled:opacity-50"
         >
           {loading ? "Searching…" : "Compare"}
         </button>
@@ -222,11 +222,11 @@ export default function ComparePrices() {
 
       {/* ── LLM Travel Insights ──────────────────── */}
       {insights && (
-        <div className="mt-12 glass p-8 rounded-3xl shadow-lg border-white/50 max-w-4xl mx-auto">
-          <h3 className="font-serif text-2xl font-bold text-holiday-dark mb-4 flex items-center gap-2 drop-shadow-sm">
+        <div className="mt-12 glass p-8 rounded-3xl shadow-lg border-border/50 max-w-4xl mx-auto">
+          <h3 className="font-serif text-2xl font-bold text-ink mb-4 flex items-center gap-2 drop-shadow-sm">
             ✨ AI Expert Insights
           </h3>
-          <p className="font-serif text-holiday-dark opacity-90 leading-relaxed text-base md:text-lg">
+          <p className="font-serif text-ink opacity-90 leading-relaxed text-base md:text-lg">
             {insights}
           </p>
         </div>
@@ -241,8 +241,8 @@ export default function ComparePrices() {
               onClick={() => setActiveCategory(cat)}
               className={`px-8 py-3 rounded-full font-serif font-bold transition-all duration-300 shadow-md ${
                 activeCategory === cat
-                  ? "bg-holiday-coral text-white scale-105"
-                  : "glass text-holiday-dark hover:border-holiday-coral hover:text-holiday-coral"
+                  ? "bg-coral text-primary-foreground scale-105"
+                  : "glass text-ink hover:border-coral hover:text-coral"
               }`}
             >
               {cat === "All" ? "🌍 All" : cat === "Flight" ? "✈️ Flights" : cat === "Hotel" ? "🏨 Hotels" : "🎟️ Tickets"}
@@ -254,21 +254,21 @@ export default function ComparePrices() {
       {/* ── Preference Toggles (re-rank instantly) */}
       {rawResults.length > 0 && (
         <div className="mt-8 flex flex-col md:flex-row gap-6 justify-center items-center
-                        glass rounded-2xl p-6 shadow-md max-w-4xl mx-auto border-white/50">
-          <span className="font-serif font-bold text-holiday-dark">
+                        glass rounded-2xl p-6 shadow-md max-w-4xl mx-auto border-border/50">
+          <span className="font-serif font-bold text-ink">
             Personalise results:
           </span>
 
           {/* Budget tier */}
-          <div className="flex gap-2 bg-white/40 p-1 rounded-full border border-white/50">
+          <div className="flex gap-2 bg-card/40 p-1 rounded-full border border-border/50">
             {BUDGET_OPTIONS.map((opt) => (
               <button
                 key={opt}
                 onClick={() => setBudget(opt)}
                 className={`px-4 py-2 rounded-full text-sm font-serif font-semibold transition-colors
                   ${budget === opt
-                    ? "bg-holiday-teal text-white shadow-md"
-                    : "text-holiday-dark opacity-70 hover:opacity-100"
+                    ? "bg-amber text-primary-foreground shadow-md"
+                    : "text-ink opacity-70 hover:opacity-100"
                   }`}
               >
                 {opt}
@@ -277,23 +277,23 @@ export default function ComparePrices() {
           </div>
 
           {/* Refundable toggle */}
-          <label className="flex items-center gap-2 cursor-pointer font-serif font-semibold text-holiday-dark text-sm">
+          <label className="flex items-center gap-2 cursor-pointer font-serif font-semibold text-ink text-sm">
             <input
               type="checkbox"
               checked={prefersRefundable}
               onChange={(e) => setPrefersRefundable(e.target.checked)}
-              className="accent-holiday-teal w-4 h-4"
+              className="accent-amber w-4 h-4"
             />
             Prefer refundable
           </label>
 
           {/* Eco toggle */}
-          <label className="flex items-center gap-2 cursor-pointer font-serif font-semibold text-holiday-dark text-sm">
+          <label className="flex items-center gap-2 cursor-pointer font-serif font-semibold text-ink text-sm">
             <input
               type="checkbox"
               checked={ecoConscious}
               onChange={(e) => setEcoConscious(e.target.checked)}
-              className="accent-holiday-teal w-4 h-4"
+              className="accent-amber w-4 h-4"
             />
             🌿 Eco-friendly
           </label>
@@ -302,8 +302,8 @@ export default function ComparePrices() {
 
       {/* ── Best Match Banner ──────────────────── */}
       {bestVendor && (
-        <div className="mt-8 mx-auto max-w-2xl bg-gradient-to-r from-holiday-teal to-[#5ca8a1]
-                        text-white rounded-3xl p-6 shadow-2xl text-center border-2 border-white/20">
+        <div className="mt-8 mx-auto max-w-2xl bg-gradient-to-r from-amber to-coral
+                        text-primary-foreground rounded-3xl p-6 shadow-2xl text-center border-2 border-border/20">
           <p className="text-sm font-serif font-bold uppercase tracking-wider opacity-90">🏆 Best match for you</p>
           <p className="text-3xl font-serif font-bold mt-2 drop-shadow-sm">
             {bestVendor.vendor} — ${bestVendor.price} USD
@@ -318,9 +318,9 @@ export default function ComparePrices() {
 
       {/* ── Results Table ──────────────────────── */}
       {results.length > 0 && (
-        <div className="mt-12 overflow-x-auto glass p-6 rounded-3xl shadow-xl border-white/50">
+        <div className="mt-12 overflow-x-auto glass p-6 rounded-3xl shadow-xl border-border/50">
           <table className="w-full mx-auto border-collapse">
-            <thead className="text-holiday-dark font-serif text-lg border-b-2 border-white/50">
+            <thead className="text-ink font-serif text-lg border-b-2 border-border/50">
               <tr>
                 <th className="px-6 py-4 text-left font-bold">Rank</th>
                 <th className="px-6 py-4 text-left font-bold">Type</th>
@@ -337,34 +337,34 @@ export default function ComparePrices() {
               {results.map((r, i) => (
                 <tr
                   key={i}
-                  className={`border-b border-white/30 transition-colors hover:bg-white/40 ${
-                    i === 0 ? "bg-white/60 font-semibold" : ""
+                  className={`border-b border-border/30 transition-colors hover:bg-card/40 ${
+                    i === 0 ? "bg-card/60 font-semibold" : ""
                   }`}
                 >
-                  <td className="px-6 py-4 font-bold font-serif text-holiday-dark">
+                  <td className="px-6 py-4 font-bold font-serif text-ink">
                     {i === 0 ? "🏆" : `#${i + 1}`}
                   </td>
-                  <td className="px-6 py-4 font-semibold font-serif text-holiday-dark/70">
+                  <td className="px-6 py-4 font-semibold font-serif text-ink/70">
                     {r.type === "Hotel" ? "🏨 Hotel" : r.type === "Ticket" ? "🎟️ Ticket" : "✈️ Flight"}
                   </td>
-                  <td className="px-6 py-4 font-bold font-serif text-holiday-dark">{r.vendor}</td>
-                  <td className="px-6 py-4 font-serif text-holiday-teal font-bold">${r.price}</td>
+                  <td className="px-6 py-4 font-bold font-serif text-ink">{r.vendor}</td>
+                  <td className="px-6 py-4 font-serif text-amber font-bold">${r.price}</td>
                   <td className="px-6 py-4 font-serif">
-                    <span className="bg-holiday-teal text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-sm">
+                    <span className="bg-amber text-primary-foreground text-xs px-3 py-1.5 rounded-full font-bold shadow-sm">
                       {r.score}
                     </span>
                   </td>
-                  <td className="px-6 py-4 font-serif text-holiday-dark/80">⭐ {r.rating}</td>
+                  <td className="px-6 py-4 font-serif text-ink/80">⭐ {r.rating}</td>
                   <td className="px-6 py-4 font-serif">
                     {r.refundable ? "✅" : "❌"}
                   </td>
-                  <td className="px-6 py-4 font-serif text-holiday-dark/80">{r.co2Kg} kg</td>
+                  <td className="px-6 py-4 font-serif text-ink/80">{r.co2Kg} kg</td>
                   <td className="px-6 py-4">
                     <a
                       href={r.link}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-white bg-holiday-coral px-4 py-2 rounded-full font-bold text-sm shadow-md hover:bg-[#e68a66] hover:shadow-lg transition-all"
+                      className="text-primary-foreground bg-coral px-4 py-2 rounded-full font-bold text-sm shadow-md hover:bg-[#e68a66] hover:shadow-lg transition-all"
                     >
                       Book →
                     </a>
@@ -378,8 +378,8 @@ export default function ComparePrices() {
 
       {/* ── Price Chart ────────────────────────── */}
       {results.length > 0 && (
-        <div className="mt-16 max-w-2xl mx-auto glass p-8 rounded-3xl shadow-xl border-white/50">
-          <h3 className="font-serif text-2xl font-bold mb-6 text-center text-holiday-dark drop-shadow-sm">
+        <div className="mt-16 max-w-2xl mx-auto glass p-8 rounded-3xl shadow-xl border-border/50">
+          <h3 className="font-serif text-2xl font-bold mb-6 text-center text-ink drop-shadow-sm">
             Price Comparison Chart
           </h3>
           <Bar data={chartData} options={chartOptions} />

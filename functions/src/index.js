@@ -85,7 +85,7 @@ app.post("/compare", async (req, res) => {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            model: "gpt-oss-20b",
+            model: "openai/gpt-oss-20b",
             messages: [{
               role: "system",
               content: `You are a travel pricing expert. Give a brief, 3-sentence insight for traveling to ${destination}. Mention predicting lower price seasons, a quick hidden gem, and any tips for getting cheaper tickets or hotels.`

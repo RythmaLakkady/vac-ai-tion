@@ -8,22 +8,24 @@ const admin = require("firebase-admin");
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 // ── Helper: call Groq API ────────────────────────────────
-async function callGroq(apiKey, systemPrompt, userPrompt, maxTokens = 8000, jsonMode = false) {
-  const body = {
-    model: "llama-3.3-70b-versatile",
-    max_tokens: maxTokens,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-  };
-
-  if (jsonMode) {
-    body.response_format = { type: "json_object" };
-  }
-
-  let maxCallRetries = 3;
+async function callGroq(apiKey, systemPrompt, userPrompt, maxTokens = 6000, jsonMode = false) {
+  let currentMaxTokens = maxTokens;
+  let maxCallRetries = 6;
+  
   for (let i = 0; i < maxCallRetries; i++) {
+    const body = {
+      model: "openai/gpt-oss-120b",
+      max_tokens: currentMaxTokens,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    };
+
+    if (jsonMode) {
+      body.response_format = { type: "json_object" };
+    }
+
     const res = await fetch(GROQ_API_URL, {
       method: "POST",
       headers: {
@@ -34,19 +36,41 @@ async function callGroq(apiKey, systemPrompt, userPrompt, maxTokens = 8000, json
     });
 
     if (!res.ok) {
+      const errText = await res.text();
+      console.warn(`Groq API attempt ${i+1} failed with ${res.status}: ${errText}`);
+
       if (res.status === 429) {
-        // Wait 12 seconds to clear the rate limit before retrying
-        await new Promise(resolve => setTimeout(resolve, 12000));
+        // Rate limit hit (RPM or TPM). Wait 10 seconds before retrying.
+        await new Promise(resolve => setTimeout(resolve, 10000));
         continue;
       }
-      const errText = await res.text();
+      
+      // Auto-adjust max_tokens if we hit the 8000 TPM limit or payload too large
+      if (res.status === 413 || errText.includes("rate_limit_exceeded")) {
+        const match = errText.match(/Requested (\d+)/);
+        if (match && match[1]) {
+          const requested = parseInt(match[1]);
+          const overshoot = requested - 8000;
+          if (overshoot > 0 && currentMaxTokens > overshoot + 500) {
+             currentMaxTokens = currentMaxTokens - overshoot - 500; // Add 500 buffer
+          } else {
+             currentMaxTokens = Math.max(1000, currentMaxTokens - 1500);
+          }
+        } else {
+          currentMaxTokens = Math.max(1000, currentMaxTokens - 1500);
+        }
+        // Wait 10 seconds to allow TPM bucket to drain
+        await new Promise(resolve => setTimeout(resolve, 10000));
+        continue;
+      }
+      
       throw new Error(`Groq API error ${res.status}: ${errText}`);
     }
 
     const data = await res.json();
     return data.choices[0].message.content;
   }
-  throw new Error("Groq API error: Max rate limit retries reached (429).");
+  throw new Error("Groq API error: Max rate limit retries reached.");
 }
 
 // ── Helper: append log to Firestore job doc ──────────────
@@ -83,8 +107,9 @@ function buildManagerPrompt(params) {
     ? `\n\nDietary preference: "${params.foodPreferences}". You MUST ensure dining recommendations cater to this diet.\n`
     : "";
 
-  return `You are the Swarm Manager for a travel planning AI. Your job is to draft a high-level strategy for a ${params.days}-day trip to ${params.destination}.
+  return `You are the Swarm Manager for a travel planning AI. Your job is to draft a high-level strategy for a ${params.days}-day trip from ${params.startLocation || 'their origin'} to ${params.destination}.
 User Constraints:
+- Origin: ${params.startLocation || 'Unknown'}
 - Budget: ${params.budget}
 - Travelers: ${params.travelers}
 - Travel Style: ${params.travelStyle}${notesSection}${foodSection}
@@ -92,6 +117,9 @@ User Constraints:
 Instructions:
 Provide a plain-text, day-by-day outline. For each of the ${params.days} days, provide a "Theme" and 2-3 key activities or locations.
 Day 1 MUST be an Arrival Day. The final day MUST be a Departure Day.
+CRITICAL - HIDDEN GEMS: You MUST include at least one "hidden gem" or off-the-beaten-path spot loved by locals in every single day.
+CRITICAL - SMART LOGISTICS: You MUST geographically group each day's activities together to minimize transit time.
+CRITICAL - SERVICES: Do NOT recommend hiring private chauffeurs or private transfer services. Recommend local transit, booking apps (like Uber/Grab), and hotels.
 Do NOT output JSON. Just a clear, concise text strategy that a Planner agent can follow.`;
 }
 
@@ -109,6 +137,14 @@ function buildPlannerPrompt(params, feedback, managerStrategy) {
     ? `\n\nCRITICAL REQUIREMENT - DIETARY PREFERENCES:\nThe user has specified a strict dietary preference: "${params.foodPreferences}". You MUST ensure that the activities include restaurant and dining recommendations (at least 1 per day) that explicitly cater to this diet. State how they accommodate it in the 'place_details' field.\n`
     : "";
 
+  const healthSection = params.healthInfo
+    ? `\n\nCRITICAL REQUIREMENT - HEALTH & ACCESSIBILITY:\nThe user has specified the following health/allergy/accessibility needs: "${params.healthInfo}". You MUST prioritize accommodations and activities that fit these needs. For any hotel or activity that specifically accommodates these needs, you MUST provide a short explanation in the 'customization_banner' field (e.g., 'Gluten-Free Menu Available', 'Wheelchair Accessible'). If no special accommodation is needed or available, leave it empty.\n`
+    : "";
+
+  const seasonSection = params.season && params.season !== 'Not specified'
+    ? `\n\nCRITICAL REQUIREMENT - TRAVEL SEASON:\nThe user prefers to travel during: "${params.season}". You MUST tailor the itinerary, weather tips, and 'season_recommendations' specifically around this time frame. Ensure activities make sense for this season.\n`
+    : "";
+
   return `You are a strict data-formatter Planner Agent. A Manager Agent has already drafted the strategy for this trip. 
 Here is the Manager's Strategy:
 -------------------
@@ -116,28 +152,58 @@ ${managerStrategy}
 -------------------
 
 Your job is to take the Manager's Strategy and format it EXACTLY into the required JSON structure.
-Generate a ${params.days}-day travel itinerary for ${params.travelers} traveling to ${params.destination}, with a budget of ${params.budget} and a travel style of ${params.travelStyle}. You MUST generate EXACTLY ${params.days} days in the itinerary array. No fewer and no more.${notesSection}${foodSection}${feedbackSection}
+Generate a ${params.days}-day travel itinerary for ${params.travelers} traveling from ${params.startLocation || 'their origin'} to ${params.destination}, with a budget of ${params.budget} and a travel style of ${params.travelStyle}. You MUST generate EXACTLY ${params.days} days in the itinerary array. No fewer and no more.${notesSection}${foodSection}${healthSection}${seasonSection}${feedbackSection}
 
-IMPORTANT: The first day MUST be designated as the "Arrival Day" (theme should reflect arrival/check-in/light exploration) and the final day MUST be designated as the "Departure Day" (theme should reflect departure/packing/final sightseeing).
+IMPORTANT RULES:
+1. The first day MUST be designated as the "Arrival Day" (theme should reflect arrival/check-in/light exploration) and the final day MUST be designated as the "Departure Day" (theme should reflect departure/packing/final sightseeing).
+2. HIDDEN GEMS: You MUST include at least one "hidden gem" or off-the-beaten-path spot loved by locals in every single day.
+3. SMART LOGISTICS: You MUST geographically group each day's activities together to minimize transit time. Optimize the route!
+4. TRANSPORT & SERVICES: Do NOT recommend hiring private chauffeurs, drivers, or luxury transfer services. We do not provide those. Instead, explicitly recommend booking apps (like Uber, Grab, booking.com) and local transit apps in the 'wanderer_notes' and activity descriptions.
+5. FLIGHTS: You MUST generate flight options departing ONLY from ${params.startLocation || 'their origin'}. Do NOT assume the user is flying from anywhere else.
+6. DEPARTURE: The very LAST activity on the final day MUST explicitly be "Head to the Airport" or "Departure", including advice on when to leave for the airport.
 
 You MUST return your response as a valid JSON object matching this exact structure:
 {
+  "flight_options": [
+    {
+      "airline": "String",
+      "estimated_price": "String",
+      "duration": "String",
+      "booking_url": "String (Real URL to book flights like Skyscanner or Google Flights)",
+      "description": "String (Explain why this flight option departing from ${params.startLocation || 'their origin'} is good)"
+    }
+  ],
   "hotel_options": [
     {
       "hotel_name": "String",
       "address": "String",
       "price": "String (e.g., $150/night - include details on what this price covers)",
       "rating": "String or Number",
-      "image_url": "String (Valid Image URL)",
       "geo_coordinates": { "latitude": Number, "longitude": Number },
       "booking_url": "String (A real URL to book this hotel or their official website)",
-      "description": "String (Explain why you suggest this hotel and what vibe it offers)"
+      "description": "String (Explain why you suggest this hotel and what vibe it offers)",
+      "customization_banner": "String (Explain how it accommodates the user's health needs, if applicable)"
     }
   ],
   "wanderer_notes": {
     "getting_around": "String (Best way to commute, apps to use like Uber, Grab, local transit, etc.)",
     "weather_clothing_tips": "String (What to pack and expect)",
-    "cultural_etiquette": "String (Important local customs or tips)"
+    "cultural_etiquette": "String (Important local customs or tips)",
+    "tourist_tips": ["String (Practical tips from other tourists)"],
+    "recommended_apps": [
+      {
+        "name": "String",
+        "purpose": "String"
+      }
+    ],
+    "native_food_options": [
+      {
+        "name": "String",
+        "description": "String",
+        "where_to_find": "String"
+      }
+    ],
+    "season_recommendations": "String (Best/cheapest months to visit, weather notes, and crowd levels. Tailor this to their preferred season if they specified one)"
   },
   "itinerary": [
     {
@@ -149,13 +215,16 @@ You MUST return your response as a valid JSON object matching this exact structu
         {
           "place_name": "String",
           "place_details": "String (A short description of what it is, why it's famous, and why they should do it)",
-          "image_url": "String (Valid Image URL)",
+          "importance": "String (A brief description of its historical, cultural, or local significance)",
           "rating": "String or Number",
           "ticket_pricing": "String",
           "time_travel": "String",
           "booking_url": "String (A real URL for booking tickets or the official website)",
+          "read_more_url": "String (A real URL to a Wikipedia or official tourism page to read more)",
           "geo_coordinates": { "latitude": Number, "longitude": Number },
-          "is_saved_note": "Boolean (true if this place was from the user's saved notes, false otherwise)"
+          "is_saved_note": "Boolean (true if this place was from the user's saved notes, false otherwise)",
+          "is_hidden_gem": "Boolean (true if this place is a hidden gem/local favorite, false otherwise)",
+          "customization_banner": "String (Explain how it accommodates the user's health needs, if applicable)"
         }
       ]
     }
@@ -173,6 +242,7 @@ function buildCriticPrompt(itineraryJson, params) {
   return `You are a strict travel itinerary critic. Evaluate the following itinerary JSON against these constraints:
 
 USER CONSTRAINTS:
+- Origin: ${params.startLocation || 'Unknown'}
 - Destination: ${params.destination}
 - Duration: ${params.days} days
 - Budget tier: ${params.budget}
@@ -251,7 +321,7 @@ async function runAgentOrchestrator(jobId, params, apiKey) {
           apiKey,
           "You are a travel planning assistant that generates detailed travel itineraries in JSON format.",
           plannerPrompt,
-          8000,
+          6000,
           true
         );
       } catch (err) {

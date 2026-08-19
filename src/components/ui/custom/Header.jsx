@@ -30,7 +30,7 @@ function Header() {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="fixed top-0 left-0 w-full z-50 bg-white/70 backdrop-blur-2xl border-b border-gray-200/50 shadow-sm"
+      className="fixed top-0 left-0 w-full z-50 glass-card border-b border-white/30"
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
         <Link to={'/'}>
@@ -44,13 +44,13 @@ function Header() {
               alt="vac-ai-tion Logo" 
               className="h-9 w-9 object-contain group-hover:-rotate-6 transition-transform duration-300" 
             />
-            <span className="font-bold text-2xl tracking-tighter text-holiday-dark hidden sm:block mt-0.5">vac-ai-tion</span>
+            <span className="font-serif font-bold text-3xl tracking-tight text-ink hidden sm:block mt-0.5">vac-ai-tion</span>
           </motion.div>
         </Link>
 
         <div className='flex flex-row gap-8 items-center'>
           <Link to={'/compare-prices'}>
-            <span className="text-sm font-medium text-gray-600 hover:text-black transition-colors cursor-pointer">
+            <span className="text-sm font-bold text-muted-foreground hover:text-ink transition-colors cursor-pointer">
               Compare Prices
             </span>
           </Link>
@@ -61,7 +61,7 @@ function Header() {
                 <motion.div 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="h-10 w-10 rounded-full bg-black text-white flex items-center justify-center shadow-md cursor-pointer" 
+                  className="h-10 w-10 rounded-full bg-black text-primary-foreground flex items-center justify-center shadow-md cursor-pointer" 
                 >
                   <span className="font-bold">{user?.email?.charAt(0).toUpperCase() || 'U'}</span>
                 </motion.div>
@@ -75,7 +75,7 @@ function Header() {
             </div>
           ) : (
             <Link to={'/signIn'}>
-              <button className="text-sm px-5 py-2 bg-black text-white hover:bg-gray-800 rounded-full shadow-sm transition-all font-medium">
+              <button className="text-sm px-6 py-2.5 bg-sunset text-primary-foreground hover:-translate-y-0.5 rounded-full shadow-warm transition-all font-bold">
                 Sign In
               </button>
             </Link>

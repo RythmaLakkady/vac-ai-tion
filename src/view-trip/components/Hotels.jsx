@@ -8,32 +8,40 @@ function Hotels({ trip, currency, exchangeRates }) {
 
   return (
     <div>
-      <h2 className="font-serif font-bold text-3xl text-holiday-dark mb-6">Hotel Recommendations</h2>
+      <h2 className="font-serif font-bold text-3xl text-ink mb-6">Hotel Recommendations</h2>
 
       {/* If no hotels are available */}
       {!hotels || hotels.length === 0 ? (
-        <p className="text-holiday-dark opacity-60 mt-4 font-serif text-lg">No hotel recommendations available.</p>
+        <p className="text-ink opacity-60 mt-4 font-serif text-lg">No hotel recommendations available.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {hotels.map((hotel, index) => (
             <div
               key={index}
-              className="flex flex-col h-full bg-white/60 backdrop-blur-sm rounded-3xl overflow-hidden shadow-lg border-2 border-transparent hover:border-holiday-teal transition-all duration-300"
+              className="flex flex-col h-full bg-card/60 backdrop-blur-sm rounded-3xl overflow-hidden shadow-lg border-2 border-transparent hover:border-amber transition-all duration-300"
             >
               {/* Hotel Information Section */}
-              <div className="p-6 flex flex-col justify-between flex-grow gap-2 font-sans text-holiday-dark">
+              <div className="p-6 flex flex-col justify-between flex-grow gap-2 font-sans text-ink">
+                {hotel?.customization_banner && (
+                  <div className="mb-1">
+                    <span className="inline-flex max-w-full items-start gap-1 text-xs font-bold bg-green-50 text-green-700 px-2.5 py-1.5 rounded-md border border-green-200 shadow-sm">
+                      <span className="shrink-0">✨</span>
+                      <span className="break-words line-clamp-2">{hotel.customization_banner}</span>
+                    </span>
+                  </div>
+                )}
                 <h3 className="font-bold text-xl line-clamp-1 drop-shadow-sm font-serif">
                   {hotel?.hotel_name || 'Hotel Name Unavailable'}
                 </h3>
-                <p className="text-sm text-holiday-dark/70 font-medium line-clamp-2 mt-1 flex items-start gap-1">
+                <p className="text-sm text-ink/70 font-medium line-clamp-2 mt-1 flex items-start gap-1">
                   <MapPin className="w-4 h-4 mt-0.5 shrink-0" /> 
                   <span>{hotel?.address || 'Address Unavailable'}</span>
                 </p>
                 <div className="flex justify-between items-center mt-2 mb-2">
-                  <p className="font-bold text-lg text-holiday-teal line-clamp-1 flex-1">
+                  <p className="font-bold text-lg text-amber line-clamp-1 flex-1">
                     {convertPrice(hotel?.price, currency, exchangeRates) || 'Price Unavailable'}
                   </p>
-                  <p className="font-bold bg-holiday-coral/20 text-holiday-coral px-3 py-1 rounded-full text-sm shrink-0 ml-2">
+                  <p className="font-bold bg-coral/20 text-coral px-3 py-1 rounded-full text-sm shrink-0 ml-2">
                     ⭐ {hotel?.rating || 'N/A'}
                   </p>
                 </div>
@@ -48,7 +56,7 @@ function Hotels({ trip, currency, exchangeRates }) {
                   <Link
                     to={hotel?.booking_url || `https://www.google.com/search?q=${encodeURIComponent((hotel?.hotel_name || '') + ' ' + (hotel?.address || '') + ' official website booking')}`}
                     target="_blank"
-                    className="w-full py-2.5 bg-holiday-teal text-white font-bold rounded-xl hover:bg-holiday-teal/90 transition-colors flex items-center justify-center gap-2 text-sm"
+                    className="w-full py-2.5 bg-amber text-primary-foreground font-bold rounded-xl hover:bg-amber/90 transition-colors flex items-center justify-center gap-2 text-sm"
                   >
                     <ExternalLink className="w-4 h-4" /> {hotel?.booking_url ? 'Book Now' : 'Search Booking'}
                   </Link>
@@ -57,7 +65,7 @@ function Hotels({ trip, currency, exchangeRates }) {
                       hotel?.hotel_name || ''
                     )} ${encodeURIComponent(hotel?.address || '')}`}
                     target="_blank"
-                    className="w-full py-2.5 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm bg-holiday-dark/5 text-holiday-dark hover:bg-holiday-dark/10"
+                    className="w-full py-2.5 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm bg-ink/5 text-ink hover:bg-ink/10"
                   >
                     <MapPin className="w-4 h-4" /> View on Map
                   </Link>

@@ -74,6 +74,12 @@ Instead of treating AI as a single prompt, the project explores how multi-stage 
 | 🧳 **Interactive Itinerary Editing** | Drag-and-drop itinerary management for generated activities. |
 | 🔐 **Authentication** | Firebase Email/Password and Google OAuth authentication. |
 | ☁️ **Cloud-Native Architecture** | Built using Firebase Cloud Functions, Firestore, and Vercel. |
+| ✈️ **Flight Origin Enforcement** | Automatically generates optimized flight options tailored to the user's starting location. |
+| 🌦️ **Season & Weather Intelligence** | Provides AI-driven season recommendations and weather insights for the chosen travel dates. |
+| 💱 **Dynamic Currency Conversion** | Instantly converts all flight, hotel, and activity prices to the user's preferred currency. |
+| 🎛️ **Advanced Customization** | Supports open-ended text inputs for unique travel styles and niche food preferences. |
+| 🛡️ **Robust API Handling** | Implements fixed-backoff retry mechanisms to gracefully handle LLM rate limits and token windows. |
+| 🎨 **Interactive Loading Dashboard** | A stunning glassmorphism generation screen featuring a live AI terminal and rotating travel facts. |
 
 
 ---

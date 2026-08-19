@@ -16,12 +16,12 @@ module.exports = { // Correct placement of darkMode
           sm: 'calc(var(--radius) - 4px)'
         },
         colors: {
-          holiday: {
-            teal: '#6dbaaf',
-            sand: '#edecda',
-            dark: '#2c4b47',
-            coral: '#fd9c7e',
-          },
+          coral: 'oklch(var(--coral) / <alpha-value>)',
+          amber: 'oklch(var(--amber) / <alpha-value>)',
+          lagoon: 'oklch(var(--lagoon) / <alpha-value>)',
+          sand: 'oklch(var(--sand) / <alpha-value>)',
+          cream: 'oklch(var(--cream) / <alpha-value>)',
+          ink: 'oklch(var(--ink) / <alpha-value>)',
           background: 'hsl(var(--background))',
           foreground: 'hsl(var(--foreground))',
           card: {

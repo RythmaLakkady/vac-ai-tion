@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import InfoSection from '../components/InfoSection';
+import Flights from '../components/Flights';
 import Hotels from '../components/Hotels';
 import Itinerary from '../components/Itinerary';
 import WandererNotes from '../components/WandererNotes';
@@ -51,16 +52,19 @@ function ViewTrip() {
 
   return (
     <div className='min-h-screen pt-32 pb-16 px-6 sm:px-10 lg:px-20 max-w-7xl mx-auto'>
-      <div className='bg-white/80 backdrop-blur-md rounded-[40px] shadow-2xl p-10 md:p-14 border border-white/50'>
+      <div className='bg-card/80 backdrop-blur-md rounded-[40px] shadow-2xl p-10 md:p-14 border border-border/50'>
         {/* information section */}
         <InfoSection trip={trip} currency={currency} setCurrency={setCurrency} />
         
-        <div className='my-10 border-t-2 border-holiday-teal/20'></div>
+        <div className='my-10 border-t-2 border-amber/20'></div>
+        
+        {/* flight options */}
+        <Flights trip={trip} currency={currency} exchangeRates={exchangeRates} />
         
         {/* recommended hotels */}
         <Hotels trip={trip} currency={currency} exchangeRates={exchangeRates} />
         
-        <div className='my-10 border-t-2 border-holiday-teal/20'></div>
+        <div className='my-10 border-t-2 border-amber/20'></div>
         
         {/* wanderer notes (global) */}
         <WandererNotes trip={trip} />

@@ -41,16 +41,16 @@ export default function AgentTerminal({ logs = [], status = "pending" }) {
   const isRunning = status === "pending" || status === "processing";
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full h-full flex flex-col">
       {/* Terminal header */}
-      <div className="flex items-center gap-2 bg-gray-900 rounded-t-xl px-4 py-2.5 border border-gray-700 border-b-0">
-        <div className="flex gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-red-500" />
-          <span className="w-3 h-3 rounded-full bg-yellow-500" />
-          <span className="w-3 h-3 rounded-full bg-green-500" />
+      <div className="flex items-center gap-2 bg-gray-900/50 backdrop-blur-md px-6 py-4 border-b border-gray-800">
+        <div className="flex gap-2">
+          <span className="w-3.5 h-3.5 rounded-full bg-red-500/80 shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
+          <span className="w-3.5 h-3.5 rounded-full bg-yellow-500/80 shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
+          <span className="w-3.5 h-3.5 rounded-full bg-green-500/80 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
         </div>
-        <span className="ml-3 text-gray-400 text-xs font-mono tracking-wider">
-          AGENT SWARM — {status.toUpperCase()}
+        <span className="ml-4 text-gray-400 text-sm font-mono tracking-widest font-semibold opacity-70">
+          TERMINAL — {status.toUpperCase()}
         </span>
         {isRunning && (
           <span className="ml-auto flex items-center gap-1.5">
@@ -63,8 +63,7 @@ export default function AgentTerminal({ logs = [], status = "pending" }) {
       {/* Terminal body */}
       <div
         ref={scrollRef}
-        className="bg-gray-950 border border-gray-700 border-t-0 rounded-b-xl p-4 
-                   max-h-80 overflow-y-auto font-mono text-sm space-y-2
+        className="flex-1 p-6 overflow-y-auto font-mono text-sm space-y-4
                    scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent"
         style={{
           backgroundImage:

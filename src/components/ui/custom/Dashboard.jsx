@@ -1,12 +1,122 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../button';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { PlaneTakeoff, Compass, MapPin } from 'lucide-react';
+import { PlaneTakeoff, Star, Sun, Sparkles, Compass, Quote, Sliders, MapPinned, Route } from 'lucide-react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { auth } from '@/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import AuthModal from '@/components/ui/custom/AuthModal';
+import InteractiveGlobe from './InteractiveGlobe';
+import { HoverLetters, RotatingWord } from './InteractiveHeadline';
 import '/src/index.css';
+
+const features = [
+  {
+    title: "Hyper-Personalized",
+    description: "Your budget, your pace, your vibe. We don't do cookie-cutter itineraries.",
+    icon: <Sliders className="size-6 text-orange-500" />
+  },
+  {
+    title: "Hidden Gems",
+    description: "Our AI cross-references millions of data points to find spots locals actually love.",
+    icon: <MapPinned className="size-6 text-orange-500" />
+  },
+  {
+    title: "Smart Logistics",
+    description: "We optimize the routes so you spend more time exploring and less time in transit.",
+    icon: <Route className="size-6 text-orange-500" />
+  }
+];
+
+function FeatureCard({ feature, i }) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 20 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.7, delay: i * 0.15, ease: "easeOut" }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      className="group relative rounded-[2rem] p-8 text-left border border-white/60 bg-card/80 backdrop-blur-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-colors duration-300 hover:border-amber/40 hover:bg-card/90 cursor-default"
+    >
+      <div 
+        className="mb-8 inline-flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber/20 to-orange-500/20 text-orange-600 shadow-inner border border-orange-500/10 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-2"
+        style={{ transform: "translateZ(40px)" }}
+      >
+        {feature.icon}
+      </div>
+      <h3 
+        className="mb-4 text-2xl font-bold text-ink tracking-tight"
+        style={{ transform: "translateZ(30px)" }}
+      >
+        {feature.title}
+      </h3>
+      <p 
+        className="text-muted-foreground leading-relaxed text-[1.05rem]"
+        style={{ transform: "translateZ(20px)" }}
+      >
+        {feature.description}
+      </p>
+      
+      {/* Dynamic Glow */}
+      <motion.div 
+        className="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{
+          background: useTransform(
+            () => `radial-gradient(800px circle at ${(x.get() + 0.5) * 100}% ${(y.get() + 0.5) * 100}%, rgba(251,146,60,0.06), transparent 40%)`
+          )
+        }}
+      />
+      <div className="absolute inset-0 -z-20 rounded-[2rem] bg-gradient-to-br from-white/40 to-transparent opacity-50" />
+    </motion.div>
+  );
+}
+
+function FeaturesSection() {
+  return (
+    <section className="mx-auto max-w-7xl px-6 py-20 md:py-32 relative">
+      <div className="mb-20 text-center">
+        <h2 className="font-serif text-4xl md:text-5xl font-bold text-ink tracking-tight">Why use an AI Architect?</h2>
+        <p className="mt-5 text-xl text-muted-foreground font-medium max-w-2xl mx-auto">We handle the heavy lifting, you handle the packing.</p>
+      </div>
+      <div className="grid gap-8 md:grid-cols-3" style={{ perspective: "1000px" }}>
+        {features.map((feature, i) => (
+          <FeatureCard key={i} feature={feature} i={i} />
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function Dashboard() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -35,134 +145,71 @@ function Dashboard() {
     }
   };
 
-  const fadeUp = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
-  };
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.2 }
-    }
-  };
-
   return (
-    <div className="flex flex-col items-center text-center font-serif overflow-hidden">
-      {/* Hero Section */}
-      <motion.div 
-        initial="hidden"
-        animate="visible"
-        variants={staggerContainer}
-        className="relative w-full min-h-[90vh] flex flex-col items-center justify-center px-8 pt-32 pb-16"
-      >
-        {/* Animated Background blobs */}
-        <motion.div 
-          animate={{ rotate: 360 }} 
-          transition={{ duration: 150, repeat: Infinity, ease: "linear" }}
-          className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-holiday-teal/20 rounded-full blur-[100px] -z-10"
-        />
-        <motion.div 
-          animate={{ rotate: -360 }} 
-          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-holiday-coral/10 rounded-full blur-[120px] -z-10"
-        />
+    <div className="flex flex-col items-center text-center font-sans overflow-hidden">
+      <main className="w-full">
+        {/* HERO */}
+        <section className="mx-auto grid max-w-7xl items-center gap-14 px-6 pb-16 pt-16 lg:grid-cols-2 lg:pt-24 text-left">
+          <div>
+            <p className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-card/70 px-4 py-1.5 text-sm font-semibold text-primary backdrop-blur">
+              <Sun className="size-4 animate-pulse" /> Your personal trip architect
+            </p>
 
+            <h1 className="mt-6 font-serif text-5xl font-semibold leading-[1.03] tracking-tight md:text-6xl lg:text-7xl">
+              <HoverLetters text="Relax, tell us your" />{" "}
+              <span className="animate-shimmer-text">preferences</span>
+              <br />
+              <HoverLetters text="and let us do the work." />
+            </h1>
 
+            <p className="mt-6 max-w-xl text-lg text-muted-foreground md:text-xl">
+              Skip the 47 open tabs. Our AI agents craft{" "}
+              <RotatingWord
+                className="font-bold text-amber"
+                words={["tailored", "wander-ready", "budget-honest", "gloriously slow"]}
+              />{" "}
+              itineraries tuned to your budget, your pace, and your kind of adventure.
+            </p>
 
-        <motion.h1 variants={fadeUp} className="font-semibold text-[60px] md:text-[80px] leading-[1.1] drop-shadow-sm max-w-5xl">
-          <span className="text-holiday-dark">Design your dream </span><br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-holiday-teal to-holiday-coral">vacation in seconds.</span>
-        </motion.h1>
-        
-        <motion.p variants={fadeUp} className="text-xl md:text-2xl text-holiday-dark opacity-80 mt-6 max-w-3xl mx-auto leading-relaxed">
-          Skip the endless research. Our intelligent AI agents craft perfectly tailored, cinematic itineraries that match your unique travel style.
-        </motion.p>
-        
-        <motion.div variants={fadeUp} className="mt-10 flex flex-col sm:flex-row gap-4 justify-center font-sans">
-          <a href="/createTrip" onClick={handleStartExploring}>
-            <Button className="group relative text-lg px-10 py-7 w-full sm:w-auto bg-holiday-teal text-white hover:bg-[#5aa196] shadow-xl hover:shadow-2xl transition-all duration-300 rounded-full border-none overflow-hidden">
-              <span className="relative z-10 flex items-center gap-2 font-bold">
-                Start Exploring <PlaneTakeoff className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-              </span>
-            </Button>
-          </a>
-          <Link to="/compare-prices">
-            <Button className="text-lg px-10 py-7 w-full sm:w-auto bg-white/60 text-holiday-dark hover:bg-white backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 rounded-full border border-white/50 font-bold">
-              Compare Prices
-            </Button>
-          </Link>
-        </motion.div>
-      </motion.div>
-
-      {/* Feature Showcase */}
-      <div className="w-full max-w-7xl mx-auto mt-10 px-8 space-y-40 pb-32">
-        {/* Section 1 */}
-        <motion.div 
-          initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
-          className="flex flex-col lg:flex-row items-center lg:items-center gap-16"
-        >
-          <motion.div variants={fadeUp} className="relative lg:w-1/2">
-            <div className="absolute inset-0 bg-gradient-to-tr from-holiday-teal/20 to-transparent rounded-3xl transform -rotate-3 scale-105 -z-10 blur-xl"></div>
-            <img src="/paris.jpg" alt="Paris" className="w-full h-[500px] object-cover rounded-[40px] shadow-2xl border-4 border-white/60" />
-            <div className="absolute -bottom-10 -right-10 glass p-6 rounded-3xl shadow-xl hidden md:block animate-bounce-slow">
-              <p className="font-bold text-holiday-dark flex items-center gap-2 font-sans"><MapPin className="text-holiday-coral"/> Montmartre, Paris</p>
-              <p className="text-sm opacity-80 mt-1 font-sans">Added to your itinerary</p>
+            <div className="mt-9 flex flex-wrap gap-4">
+              <a
+                href="/createTrip"
+                onClick={handleStartExploring}
+                className="bg-sunset group inline-flex items-center gap-2 rounded-full px-9 py-4 text-lg font-bold text-primary-foreground shadow-warm transition-transform hover:-translate-y-1"
+              >
+                Start exploring
+                <PlaneTakeoff className="size-5 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
+              </a>
             </div>
-          </motion.div>
-          <motion.div variants={fadeUp} className="lg:w-1/2 text-left">
-            <h2 className="text-5xl font-semibold text-holiday-dark leading-tight">Magical itineraries, crafted just for you.</h2>
-            <p className="text-xl text-holiday-dark opacity-80 mt-6 leading-relaxed">
-              vac-ai-tion’s Agent Swarm analyzes your unique interests, travel dates, and exact budget to architect a journey that feels handcrafted. From historic landmarks to hidden local cafes, we build it all.
-            </p>
-          </motion.div>
-        </motion.div>
+          </div>
 
-        {/* Section 2 */}
-        <motion.div 
-          initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
-          className="flex flex-col lg:flex-row-reverse items-center lg:items-center gap-16"
-        >
-          <motion.div variants={fadeUp} className="relative lg:w-1/2">
-            <div className="absolute inset-0 bg-gradient-to-tl from-holiday-coral/20 to-transparent rounded-3xl transform rotate-3 scale-105 -z-10 blur-xl"></div>
-            <img src="/maldives.jpg" alt="Maldives" className="w-full h-[500px] object-cover rounded-[40px] shadow-2xl border-4 border-white/60" />
-          </motion.div>
-          <motion.div variants={fadeUp} className="lg:w-1/2 text-left">
-            <h2 className="text-5xl font-semibold text-holiday-dark leading-tight">Hidden gems over tourist traps.</h2>
-            <p className="text-xl text-holiday-dark opacity-80 mt-6 leading-relaxed">
-              Step completely off the beaten path. Our advanced AI constantly discovers local hotspots, lesser-known coastal towns, and immersive cultural experiences you won't find in standard guidebooks.
-            </p>
-          </motion.div>
-        </motion.div>
-      </div>
+          <div className="animate-float">
+            <InteractiveGlobe />
+          </div>
+        </section>
 
-      {/* Final Call to Action */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="w-full px-8 pb-32"
-      >
-        <div className="text-center bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-lg p-16 md:p-24 rounded-[60px] max-w-6xl mx-auto shadow-2xl border border-white/50 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-holiday-coral/10 rounded-full blur-3xl -z-10"></div>
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-holiday-teal/10 rounded-full blur-3xl -z-10"></div>
-          
-          <Compass className="w-16 h-16 mx-auto text-holiday-teal mb-6 animate-pulse" />
-          <h2 className="text-5xl md:text-6xl font-semibold text-holiday-dark drop-shadow-sm mb-6">
-            Ready for your next chapter?
-          </h2>
-          <p className="text-xl text-holiday-dark opacity-80 max-w-2xl mx-auto mb-10 font-sans">
-            Join thousands of travelers planning their dream vacations with vac-ai-tion's next-generation AI.
-          </p>
-          <a href="/createTrip" onClick={handleStartExploring}>
-            <Button className="text-xl px-14 py-8 bg-holiday-dark text-white hover:bg-black shadow-2xl hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:-translate-y-1 transition-all duration-300 rounded-full border-none font-sans font-bold">
-              Start Planning Free
-            </Button>
-          </a>
-        </div>
-      </motion.div>
+        <FeaturesSection />
+
+        {/* CTA */}
+        <section className="mx-auto max-w-5xl px-6 pt-24 pb-32">
+          <div className="bg-dawn relative overflow-hidden rounded-4xl px-8 py-16 text-center shadow-warm">
+            <Sparkles className="mx-auto size-8 text-primary-foreground" />
+            <h2 className="mt-4 font-serif text-4xl font-semibold text-primary-foreground md:text-5xl">
+              Your next adventure is waiting.
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-primary-foreground/90">
+              Tell us what you're looking for, and we'll craft the perfect itinerary.
+            </p>
+            <a
+              href="/createTrip"
+              onClick={handleStartExploring}
+              className="mt-8 inline-flex rounded-full bg-card px-9 py-4 text-lg font-bold text-foreground transition-transform hover:-translate-y-1"
+            >
+              Plan my escape
+            </a>
+          </div>
+        </section>
+      </main>
       
       <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>

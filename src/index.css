@@ -27,9 +27,15 @@ a:hover {
 
 body {
   margin: 0;
-  background-color: #FAFAFA; /* Cleaner, highly premium off-white (Airbnb-style) */
-  color: #111827; /* Rich dark gray for maximum legibility */
+  background-color: oklch(var(--sand));
+  background-image:
+    radial-gradient(1200px 620px at 12% -12%, color-mix(in oklab, oklch(var(--amber)) 55%, transparent), transparent 62%),
+    radial-gradient(1000px 700px at 102% -4%, color-mix(in oklab, oklch(var(--coral)) 32%, transparent), transparent 58%),
+    radial-gradient(900px 900px at 92% 104%, color-mix(in oklab, oklch(var(--lagoon)) 22%, transparent), transparent 62%);
+  background-attachment: fixed;
+  color: oklch(var(--ink));
   font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .glass {
@@ -83,6 +89,18 @@ h1 {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+
+    --sand: 0.955 0.03 84;
+    --cream: 0.985 0.016 85;
+    --ink: 0.31 0.05 45;
+    --coral: 0.68 0.18 34;
+    --amber: 0.82 0.15 74;
+    --lagoon: 0.62 0.11 190;
+
+    --gradient-sunset: linear-gradient(110deg, #ea580c, oklch(var(--amber)));
+    --gradient-dawn: linear-gradient(135deg, oklch(var(--amber)), #ea580c 55%, #b45309);
+    --shadow-warm: 0 24px 60px -24px color-mix(in oklab, #ea580c 55%, transparent);
+    --shadow-soft: 0 12px 32px -18px color-mix(in oklab, oklch(var(--ink)) 45%, transparent);
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -137,6 +155,61 @@ h1 {
     transform: scale(1.08);
     opacity: 0.85;
   }
+}
+
+@layer utilities {
+  .text-sunset {
+    background-image: var(--gradient-sunset);
+    background-clip: text;
+    color: transparent;
+  }
+  
+  .glass-card {
+    background: color-mix(in oklab, oklch(var(--cream)) 72%, transparent);
+    backdrop-filter: blur(22px);
+    border: 1px solid color-mix(in oklab, white 70%, transparent);
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .shadow-warm {
+    box-shadow: var(--shadow-warm);
+  }
+  
+  .bg-sunset {
+    background-image: var(--gradient-sunset);
+  }
+  
+  .bg-dawn {
+    background-image: var(--gradient-dawn);
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-shimmer-text {
+    background-image: linear-gradient(
+      100deg,
+      #ea580c 0%,
+      oklch(var(--amber)) 35%,
+      #ea580c 55%,
+      #b45309 90%
+    );
+    background-size: 220% 100%;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 6s linear infinite;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 220% 50%; }
 }
 
 @media print {

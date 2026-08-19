@@ -1,7 +1,7 @@
 export const convertPrice = (priceString, targetCurrency, rates) => {
   if (!priceString || !rates || priceString.toLowerCase() === 'free' || priceString.toLowerCase() === 'n/a') return priceString;
   
-  const match = priceString.match(/([\d,]+(\.\d+)?)/);
+  const match = priceString.match(/(\d[\d,]*(\.\d+)?)/);
   if (!match) return priceString;
 
   let val = parseFloat(match[0].replace(/,/g, ''));

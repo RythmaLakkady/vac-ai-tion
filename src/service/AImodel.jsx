@@ -12,10 +12,9 @@ const systemPrompt = `You are a strict, highly accurate data generator. You MUST
 export const chatSession = {
   async sendMessage(prompt) {
     const response = await client.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      max_tokens: 6000,
+      model: 'openai/gpt-oss-20b',
+      max_tokens: 3500,
       temperature: 0.2,
-      response_format: { type: "json_object" },
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt }

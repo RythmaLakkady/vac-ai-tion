@@ -163,7 +163,7 @@ export default function AgentOrbs({ logs = [], status = "pending" }) {
             {logCount > 0 && (
               <span
                 className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-bold
-                           flex items-center justify-center text-white"
+                           flex items-center justify-center text-primary-foreground"
                 style={{ backgroundColor: agent.color }}
               >
                 {logCount}

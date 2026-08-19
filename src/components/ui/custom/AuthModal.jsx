@@ -72,7 +72,7 @@ function AuthModal({ isOpen, onClose }) {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-md bg-white/90 backdrop-blur-2xl border border-white/50 rounded-3xl shadow-2xl overflow-hidden z-10"
+            className="relative w-full max-w-md bg-card/90 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-2xl overflow-hidden z-10"
           >
             <button 
               onClick={onClose}
@@ -83,21 +83,21 @@ function AuthModal({ isOpen, onClose }) {
 
             <div className="p-8 pb-6">
               <div className="flex justify-center mb-6">
-                <div className="w-14 h-14 bg-holiday-teal/10 rounded-2xl flex items-center justify-center">
-                  <PlaneTakeoff className="w-7 h-7 text-holiday-teal" />
+                <div className="w-14 h-14 bg-amber/10 rounded-2xl flex items-center justify-center">
+                  <PlaneTakeoff className="w-7 h-7 text-amber" />
                 </div>
               </div>
 
               <div className="flex bg-gray-100/80 p-1 rounded-xl mb-6">
                 <button
                   onClick={() => { setActiveTab('login'); setError(''); }}
-                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'login' ? 'bg-white text-holiday-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'login' ? 'bg-card text-ink shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   Log In
                 </button>
                 <button
                   onClick={() => { setActiveTab('signup'); setError(''); }}
-                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'signup' ? 'bg-white text-holiday-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'signup' ? 'bg-card text-ink shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   Sign Up
                 </button>
@@ -124,7 +124,7 @@ function AuthModal({ isOpen, onClose }) {
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
-                      className='w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-holiday-teal/50 focus:border-holiday-teal transition-all'
+                      className='w-full pl-10 pr-4 py-3 bg-card border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber/50 focus:border-amber transition-all'
                       type="email"
                       placeholder="Enter your email"
                       value={email}
@@ -139,7 +139,7 @@ function AuthModal({ isOpen, onClose }) {
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
-                      className='w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-holiday-teal/50 focus:border-holiday-teal transition-all'
+                      className='w-full pl-10 pr-4 py-3 bg-card border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber/50 focus:border-amber transition-all'
                       type="password"
                       placeholder={activeTab === 'login' ? "Enter your password" : "Create a password (min 6 chars)"}
                       value={password}
@@ -151,10 +151,10 @@ function AuthModal({ isOpen, onClose }) {
 
                 <button 
                   disabled={loading}
-                  className="w-full py-4 mt-2 bg-holiday-teal text-white rounded-xl hover:bg-holiday-teal/90 shadow-lg shadow-holiday-teal/20 transition-all text-lg font-medium disabled:opacity-70 flex items-center justify-center gap-2" 
+                  className="w-full py-4 mt-2 bg-amber text-primary-foreground rounded-xl hover:bg-amber/90 shadow-lg shadow-amber/20 transition-all text-lg font-medium disabled:opacity-70 flex items-center justify-center gap-2" 
                   type="submit"
                 >
-                  {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                  {loading && <div className="w-4 h-4 border-2 border-border/30 border-t-white rounded-full animate-spin" />}
                   {activeTab === 'login' ? 'Sign In' : 'Create Account'}
                 </button>
               </form>

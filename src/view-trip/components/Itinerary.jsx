@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { GrMapLocation } from 'react-icons/gr';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { GripVertical, Trash2, Edit2, ExternalLink } from 'lucide-react';
+import { GripVertical, Trash2, Edit2, ExternalLink, BookOpen, Map } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { convertPrice } from '../../utils/currencyFormatter';
 
@@ -80,7 +79,7 @@ function Itinerary({ trip, currency, exchangeRates }) {
 
   return (
     <div className="mt-12">
-      <h2 className="text-4xl font-bold font-serif text-holiday-dark mb-10 tracking-tight">
+      <h2 className="text-4xl font-bold font-serif text-ink mb-10 tracking-tight">
         Your Itinerary
       </h2>
 
@@ -94,26 +93,26 @@ function Itinerary({ trip, currency, exchangeRates }) {
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      className={`bg-white/80 backdrop-blur-3xl p-6 sm:p-10 rounded-[40px] border border-white/50 relative overflow-hidden ${snapshot.isDragging ? 'shadow-[0_30px_60px_-15px_rgba(90,161,150,0.4)] border-holiday-teal z-50' : 'shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500'}`}
+                      className={`bg-card/80 backdrop-blur-3xl p-6 sm:p-10 rounded-[40px] border border-border/50 relative overflow-hidden ${snapshot.isDragging ? 'shadow-[0_30px_60px_-15px_rgba(90,161,150,0.4)] border-amber z-50' : 'shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500'}`}
                     >
                       {/* Subtle background decoration */}
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-holiday-teal/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-amber/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
                       <div className="flex flex-col md:flex-row md:items-center gap-4 mb-10 relative z-10">
-                        <div {...provided.dragHandleProps} className="text-gray-300 hover:text-holiday-teal cursor-grab active:cursor-grabbing p-2 -ml-4" title="Drag to reorder day">
+                        <div {...provided.dragHandleProps} className="text-gray-300 hover:text-amber cursor-grab active:cursor-grabbing p-2 -ml-4" title="Drag to reorder day">
                           <GripVertical className="w-7 h-7" />
                         </div>
-                        <span className="bg-gradient-to-br from-holiday-coral to-pink-500 text-white px-6 py-2 rounded-full font-bold shadow-[0_4px_14px_0_rgba(242,135,116,0.39)] text-lg font-sans whitespace-nowrap">
+                        <span className="bg-gradient-to-br from-coral to-pink-500 text-primary-foreground px-6 py-2 rounded-full font-bold shadow-[0_4px_14px_0_rgba(242,135,116,0.39)] text-lg font-sans whitespace-nowrap">
                           Day {dayIndex + 1}
                         </span> 
-                        <h3 className="text-3xl font-bold font-serif text-holiday-dark ml-2">{day?.theme || "Exploration Day"}</h3>
+                        <h3 className="text-3xl font-bold font-serif text-ink ml-2">{day?.theme || "Exploration Day"}</h3>
                         <div className="flex flex-wrap items-center gap-3 md:ml-auto">
-                          <span className="text-sm text-holiday-dark/80 font-semibold font-sans flex items-center gap-2 bg-holiday-teal/15 px-4 py-2.5 rounded-full backdrop-blur-sm border border-holiday-teal/20 shadow-sm">
+                          <span className="text-sm text-ink/80 font-semibold font-sans flex items-center gap-2 bg-amber/15 px-4 py-2.5 rounded-full backdrop-blur-sm border border-amber/20 shadow-sm">
                             🕒 {day?.best_time && day.best_time !== "N/A" ? day.best_time : "Anytime"}
                           </span>
                           <button 
                             onClick={() => handleDeleteDay(dayIndex)} 
-                            className="p-2.5 bg-red-50/80 text-red-400 hover:bg-red-500 hover:text-white hover:shadow-lg hover:shadow-red-500/30 rounded-full transition-all flex items-center justify-center border border-red-100 hover:border-red-500" 
+                            className="p-2.5 bg-red-50/80 text-red-400 hover:bg-red-500 hover:text-primary-foreground hover:shadow-lg hover:shadow-red-500/30 rounded-full transition-all flex items-center justify-center border border-red-100 hover:border-red-500" 
                             title="Delete Entire Day"
                           >
                             <Trash2 className="w-5 h-5" />
@@ -122,18 +121,18 @@ function Itinerary({ trip, currency, exchangeRates }) {
                       </div>
 
                       {day?.daily_brief && (
-                        <div className="mb-10 px-6 py-5 bg-white/60 rounded-3xl border border-white shadow-sm flex items-start gap-4">
+                        <div className="mb-10 px-6 py-5 bg-card/60 rounded-3xl border border-border shadow-sm flex items-start gap-4">
                           <span className="text-3xl mt-1">🧭</span>
                           <div>
-                            <h4 className="text-holiday-dark font-bold font-serif text-lg mb-1">Guide's Note</h4>
-                            <p className="text-holiday-dark/70 font-sans text-sm leading-relaxed">{day.daily_brief}</p>
+                            <h4 className="text-ink font-bold font-serif text-lg mb-1">Guide's Note</h4>
+                            <p className="text-ink/70 font-sans text-sm leading-relaxed">{day.daily_brief}</p>
                           </div>
                         </div>
                       )}
 
                       {day?.map && (
                         <div className="mb-12">
-                          <div className="rounded-[28px] overflow-hidden shadow-md border-4 border-white bg-gray-50 relative group">
+                          <div className="rounded-[28px] overflow-hidden shadow-md border-4 border-border bg-gray-50 relative group">
                             <iframe
                               src={day?.map}
                               width="100%"
@@ -149,29 +148,19 @@ function Itinerary({ trip, currency, exchangeRates }) {
 
                       {Array.isArray(day?.activities) && (
                         <div className="relative z-10">
-                          <h4 className="text-xl font-bold font-serif text-holiday-dark mb-8 flex items-center gap-3">
+                          <h4 className="text-xl font-bold font-serif text-ink mb-8 flex items-center gap-3">
                             Activities
-                            <span className="text-xs font-semibold text-holiday-dark/50 bg-gray-100/80 backdrop-blur-md px-3 py-1.5 rounded-full font-sans tracking-wide uppercase">Drag to reorder</span>
+                            <span className="text-xs font-semibold text-ink/50 bg-gray-100/80 backdrop-blur-md px-3 py-1.5 rounded-full font-sans tracking-wide uppercase">Drag to reorder</span>
                           </h4>
                           
                           <Droppable droppableId={`day-${dayIndex}`} type="activity">
                             {(provided) => (
                               <div 
-                                className="relative grid grid-cols-1 gap-6 font-sans min-h-[50px] pl-4 sm:pl-10 before:content-[''] before:absolute before:left-[15px] sm:before:left-[35px] before:top-6 before:bottom-6 before:w-0.5 before:bg-gradient-to-b before:from-holiday-teal/10 before:via-holiday-teal/30 before:to-holiday-teal/10"
+                                className="relative grid grid-cols-1 gap-6 font-sans min-h-[50px] pl-4 sm:pl-10 before:content-[''] before:absolute before:left-[15px] sm:before:left-[35px] before:top-6 before:bottom-6 before:w-0.5 before:bg-gradient-to-b before:from-amber/10 before:via-amber/30 before:to-amber/10"
                                 {...provided.droppableProps}
                                 ref={provided.innerRef}
                               >
                                 {day?.activities.map((activity, idx) => {
-                                  const gradientColors = [
-                                    'from-pink-200 to-purple-400',
-                                    'from-yellow-200 to-holiday-teal',
-                                    'from-green-300 to-blue-400',
-                                    'from-holiday-coral to-holiday-teal',
-                                    'from-indigo-300 to-pink-300'
-                                  ];
-                                  const grad = gradientColors[(dayIndex + idx) % gradientColors.length];
-                                  const hasImage = activity?.image_url && activity.image_url.startsWith('http');
-                                  
                                   const placeName = activity?.place_name || "Activity";
                                   const details = activity?.place_details || "Get ready for a great experience at this location.";
                                   const rating = (activity?.rating && activity.rating !== "N/A" && activity.rating !== "null") ? activity.rating : "Unrated";
@@ -188,65 +177,81 @@ function Itinerary({ trip, currency, exchangeRates }) {
                                         <div
                                           ref={provided.innerRef}
                                           {...provided.draggableProps}
-                                          className={`group bg-white rounded-3xl border border-gray-100 flex flex-col sm:flex-row gap-0 sm:gap-6 relative overflow-hidden ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-holiday-teal z-[60]' : 'shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1'} ${snapshot.isDragging ? '' : 'transition-all duration-300'}`}
+                                          className={`group bg-card rounded-3xl border border-gray-100 flex flex-col sm:flex-row gap-0 sm:gap-6 relative overflow-hidden ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-amber z-[60]' : 'shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1'} ${snapshot.isDragging ? '' : 'transition-all duration-300'}`}
                                         >
                                           {/* Enhanced Timeline Dot */}
-                                          <div className="absolute -left-1.5 sm:-left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 bg-gradient-to-tr from-holiday-teal to-blue-400 rounded-full shadow-[0_0_0_6px_white] z-10 hidden sm:block"></div>
+                                          <div className="absolute -left-1.5 sm:-left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 bg-gradient-to-tr from-amber to-blue-400 rounded-full shadow-[0_0_0_6px_white] z-10 hidden sm:block"></div>
 
                                           {/* Drag Handle */}
                                           <div 
                                             {...provided.dragHandleProps}
-                                            className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center text-gray-300 hover:text-holiday-teal hover:bg-holiday-teal/10 transition-colors cursor-grab active:cursor-grabbing z-20"
+                                            className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center text-gray-300 hover:text-amber hover:bg-amber/10 transition-colors cursor-grab active:cursor-grabbing z-20"
                                           >
                                             <GripVertical className="w-5 h-5 ml-1 sm:ml-0" />
                                           </div>
 
-                                          {/* Image Block */}
-                                          <div className="w-full sm:w-48 h-48 sm:h-auto shrink-0 relative ml-8 sm:ml-6 mt-6 sm:mt-6 sm:mb-6 sm:mr-0 mr-6 rounded-2xl overflow-hidden shadow-inner border border-gray-100/50">
-                                            {hasImage ? (
-                                              <img src={activity.image_url} alt={placeName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                                            ) : (
-                                              <div className={`w-full h-full bg-gradient-to-br ${grad} flex items-center justify-center group-hover:scale-105 transition-transform duration-700 opacity-90`}>
-                                                <span className="text-4xl filter drop-shadow-md opacity-80 mix-blend-overlay">✨</span>
-                                              </div>
-                                            )}
-                                          </div>
-
                                           {/* Content Block */}
-                                          <div className="p-6 sm:p-8 sm:pl-2 flex-grow flex flex-col justify-center ml-8 sm:ml-0 relative z-10">
+                                          <div className="p-6 sm:p-8 flex-grow flex flex-col justify-center ml-8 sm:ml-0 relative z-10 w-full pr-16">
                                             <div className="flex flex-wrap items-center gap-3 mb-2">
-                                              <h5 className="text-2xl font-bold font-serif text-holiday-dark leading-tight">
+                                              <h5 className="text-2xl font-bold font-serif text-ink leading-tight">
                                                 {placeName}
                                               </h5>
+                                              {activity?.customization_banner && (
+                                                <span className="text-xs font-bold bg-green-50 text-green-700 px-2.5 py-1 rounded-md border border-green-200 shadow-sm flex items-center gap-1">
+                                                  ✨ {activity.customization_banner}
+                                                </span>
+                                              )}
                                               {activity?.is_saved_note && (
-                                                <span className="text-xs font-bold bg-gradient-to-r from-holiday-teal/20 to-holiday-teal/10 text-holiday-teal px-2.5 py-1 rounded-md border border-holiday-teal/20 shadow-sm flex items-center gap-1">
+                                                <span className="text-xs font-bold bg-amber/10 text-amber px-2.5 py-1 rounded-md border border-amber/20 shadow-sm flex items-center gap-1">
                                                   📌 Saved Note
+                                                </span>
+                                              )}
+                                              {activity?.is_hidden_gem && (
+                                                <span className="text-xs font-bold bg-purple-50 text-purple-700 px-2.5 py-1 rounded-md border border-purple-200 shadow-sm flex items-center gap-1">
+                                                  💎 Hidden Gem
                                                 </span>
                                               )}
                                             </div>
                                             
-                                            <p className="text-holiday-dark/65 text-sm sm:text-base mb-6 leading-relaxed max-w-2xl">{details}</p>
+                                            <p className="text-ink/80 font-medium text-sm sm:text-base mb-1 leading-relaxed max-w-3xl">{details}</p>
+                                            {activity?.importance && (
+                                              <p className="text-ink/60 text-sm mb-6 leading-relaxed max-w-3xl border-l-2 border-amber/30 pl-3 italic">
+                                                {activity.importance}
+                                              </p>
+                                            )}
+                                            {!activity?.importance && <div className="mb-6"></div>}
                                             
-                                            <div className="flex flex-wrap items-center gap-3 mt-auto text-sm font-semibold text-holiday-dark/80">
+                                            <div className="flex flex-wrap items-center gap-3 mt-auto text-sm font-semibold text-ink/80">
                                               <span className="flex items-center gap-1.5 bg-yellow-50/80 backdrop-blur-sm text-yellow-700 px-3 py-1.5 rounded-xl border border-yellow-200/60 shadow-sm transition-transform hover:scale-105 cursor-default">
                                                 ⭐ {rating}
                                               </span>
-                                              <span className="flex items-center gap-1.5 bg-holiday-teal/10 backdrop-blur-sm text-holiday-teal px-3 py-1.5 rounded-xl border border-holiday-teal/20 shadow-sm transition-transform hover:scale-105 cursor-default">
+                                              <span className="flex items-center gap-1.5 bg-amber/10 backdrop-blur-sm text-amber px-3 py-1.5 rounded-xl border border-amber/20 shadow-sm transition-transform hover:scale-105 cursor-default">
                                                 💳 {pricing}
                                               </span>
-                                              <span className="flex items-center gap-1.5 bg-holiday-coral/10 backdrop-blur-sm text-holiday-coral px-3 py-1.5 rounded-xl border border-holiday-coral/20 shadow-sm transition-transform hover:scale-105 cursor-default">
+                                              <span className="flex items-center gap-1.5 bg-orange-50 backdrop-blur-sm text-orange-600 px-3 py-1.5 rounded-xl border border-orange-200/60 shadow-sm transition-transform hover:scale-105 cursor-default">
                                                 ⏱️ {timeTravel}
                                               </span>
                                             </div>
                                           </div>
 
                                           {/* Hover Actions */}
-                                          <div className="absolute right-4 top-4 sm:top-1/2 sm:-translate-y-1/2 flex sm:flex-col items-center justify-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-300 transform sm:translate-x-2 sm:group-hover:translate-x-0">
+                                          <div className="absolute right-4 top-4 sm:top-1/2 sm:-translate-y-1/2 flex sm:flex-col items-center justify-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-300 transform sm:translate-x-2 sm:group-hover:translate-x-0 z-20">
+                                            {activity?.read_more_url && (
+                                              <Link
+                                                to={activity.read_more_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="w-11 h-11 shrink-0 bg-blue-500/90 backdrop-blur-md text-white shadow-lg shadow-blue-500/30 hover:bg-blue-600 hover:scale-110 rounded-full transition-all flex items-center justify-center"
+                                                title="Read More (Wikipedia / Info)"
+                                              >
+                                                <BookOpen className="w-5 h-5" />
+                                              </Link>
+                                            )}
                                             <Link
                                               to={activity?.booking_url || `https://www.google.com/search?q=${encodeURIComponent(placeName + ' official website tickets booking')}`}
                                               target="_blank"
                                               rel="noopener noreferrer"
-                                              className="p-3.5 bg-holiday-coral/90 backdrop-blur-md text-white shadow-lg shadow-holiday-coral/30 hover:bg-holiday-coral hover:scale-110 rounded-full transition-all flex items-center justify-center"
+                                              className="w-11 h-11 shrink-0 bg-orange-500/90 backdrop-blur-md text-white shadow-lg shadow-orange-500/30 hover:bg-orange-600 hover:scale-110 rounded-full transition-all flex items-center justify-center"
                                               title={activity?.booking_url ? "Book / Website" : "Search Booking"}
                                             >
                                               <ExternalLink className="w-5 h-5" />
@@ -256,13 +261,13 @@ function Itinerary({ trip, currency, exchangeRates }) {
                                                 to={`https://www.google.com/maps/search/?api=1&query=${activity.geo_coordinates.latitude},${activity.geo_coordinates.longitude}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="p-3.5 bg-holiday-teal/90 backdrop-blur-md text-white shadow-lg shadow-holiday-teal/30 hover:bg-holiday-teal hover:scale-110 rounded-full transition-all flex items-center justify-center"
+                                                className="w-11 h-11 shrink-0 bg-emerald-500/90 backdrop-blur-md text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 hover:scale-110 rounded-full transition-all flex items-center justify-center"
                                                 title="View on Map"
                                               >
-                                                <GrMapLocation className="text-xl" />
+                                                <Map className="w-5 h-5" />
                                               </Link>
                                             )}
-                                            <button onClick={() => handleDelete(dayIndex, idx)} className="p-3.5 bg-red-500/90 backdrop-blur-md text-white shadow-lg shadow-red-500/30 hover:bg-red-600 hover:scale-110 rounded-full transition-all flex items-center justify-center" title="Delete Activity">
+                                            <button onClick={() => handleDelete(dayIndex, idx)} className="w-11 h-11 shrink-0 bg-red-500/90 backdrop-blur-md text-white shadow-lg shadow-red-500/30 hover:bg-red-600 hover:scale-110 rounded-full transition-all flex items-center justify-center" title="Delete Activity">
                                               <Trash2 className="w-5 h-5" />
                                             </button>
                                           </div>

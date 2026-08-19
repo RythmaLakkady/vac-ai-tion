@@ -13,13 +13,13 @@ function Modal({ isOpen, onClose, onLogin }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-holiday-teal/20 backdrop-blur-sm"
+            className="absolute inset-0 bg-amber/20 backdrop-blur-sm"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/50 w-[90%] max-w-md"
+            className="relative bg-card/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-border/50 w-[90%] max-w-md"
           >
             <button
               onClick={onClose}
@@ -28,8 +28,8 @@ function Modal({ isOpen, onClose, onLogin }) {
               <X className="w-5 h-5" />
             </button>
             
-            <div className="w-12 h-12 bg-holiday-teal/10 rounded-2xl flex items-center justify-center mb-6 mx-auto">
-              <LogIn className="w-6 h-6 text-holiday-teal" />
+            <div className="w-12 h-12 bg-amber/10 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+              <LogIn className="w-6 h-6 text-amber" />
             </div>
 
             <h2 className="text-2xl font-bold text-center text-slate-800 mb-2">Welcome Back!</h2>
@@ -39,7 +39,7 @@ function Modal({ isOpen, onClose, onLogin }) {
               <Link to={'/login'} className="w-full">
                 <button
                   onClick={onLogin}
-                  className="w-full bg-holiday-teal text-white py-3 px-6 rounded-xl font-medium hover:bg-holiday-teal/90 transition-all hover:shadow-lg hover:shadow-holiday-teal/20"
+                  className="w-full bg-amber text-primary-foreground py-3 px-6 rounded-xl font-medium hover:bg-amber/90 transition-all hover:shadow-lg hover:shadow-amber/20"
                 >
                   Sign In
                 </button>

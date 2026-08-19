@@ -41,13 +41,13 @@ function Footer() {
 
   return (
     <>
-      <footer className="w-full py-8 mt-20 border-t border-holiday-teal/20 bg-white/50 backdrop-blur-md">
+      <footer className="w-full py-10 mt-20 border-t border-border bg-card shadow-[0_-8px_30px_rgb(0,0,0,0.02)]">
         <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-holiday-dark font-sans">
+          <div className="flex items-center gap-2 text-ink font-sans">
             <span className="font-semibold">VAC-AI-TION</span>
             <span className="text-gray-400">|</span>
             <span>Built with</span>
-            <Heart className="w-4 h-4 text-holiday-coral fill-current animate-pulse" />
+            <Heart className="w-4 h-4 text-amber fill-current animate-pulse" />
             <span>by Rythma</span>
           </div>
           
@@ -55,7 +55,7 @@ function Footer() {
             <span className="text-sm text-gray-500 font-sans">Facing an issue or have feedback?</span>
             <button 
               onClick={() => setIsOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-holiday-teal to-holiday-coral text-white rounded-full transition-all duration-300 hover:shadow-lg hover:scale-105 font-semibold font-sans text-sm shadow-md"
+              className="flex items-center gap-2 px-6 py-3 bg-sunset text-primary-foreground rounded-full transition-all duration-300 hover:shadow-warm hover:-translate-y-1 font-bold font-sans text-sm shadow-sm"
             >
               <Mail className="w-4 h-4" />
               Write to me
@@ -76,7 +76,7 @@ function Footer() {
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-md relative border border-gray-100"
+              className="bg-card rounded-3xl shadow-2xl p-6 w-full max-w-md relative border border-gray-100"
             >
               <button 
                 onClick={() => setIsOpen(false)}
@@ -85,7 +85,7 @@ function Footer() {
                 <X className="w-5 h-5" />
               </button>
               
-              <h3 className="text-2xl font-semibold text-holiday-dark mb-1 font-sans">Send Feedback</h3>
+              <h3 className="text-2xl font-semibold text-ink mb-1 font-sans">Send Feedback</h3>
               <p className="text-gray-500 text-sm mb-6 font-sans">Tell me what's on your mind or report a bug.</p>
 
               {status === 'success' ? (
@@ -106,7 +106,7 @@ function Footer() {
                       type="text" 
                       name="name"
                       required
-                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-holiday-teal focus:ring-2 focus:ring-holiday-teal/20 outline-none transition-all"
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-amber focus:ring-2 focus:ring-amber/20 outline-none transition-all"
                       placeholder="Your name"
                     />
                   </div>
@@ -116,7 +116,7 @@ function Footer() {
                       type="email" 
                       name="email"
                       required
-                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-holiday-teal focus:ring-2 focus:ring-holiday-teal/20 outline-none transition-all"
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-amber focus:ring-2 focus:ring-amber/20 outline-none transition-all"
                       placeholder="your@email.com"
                     />
                   </div>
@@ -126,7 +126,7 @@ function Footer() {
                       name="message"
                       required
                       rows={4}
-                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-holiday-teal focus:ring-2 focus:ring-holiday-teal/20 outline-none transition-all resize-none"
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-amber focus:ring-2 focus:ring-amber/20 outline-none transition-all resize-none"
                       placeholder="What can I help you with?"
                     />
                   </div>
@@ -141,7 +141,7 @@ function Footer() {
                   <button 
                     type="submit" 
                     disabled={status === 'loading'}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-holiday-dark text-white rounded-xl font-semibold hover:bg-black transition-colors disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-ink text-primary-foreground rounded-xl font-semibold hover:bg-black transition-colors disabled:opacity-70 disabled:cursor-not-allowed mt-2"
                   >
                     {status === 'loading' ? (
                       <span className="animate-pulse">Sending...</span>

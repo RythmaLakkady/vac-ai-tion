@@ -45,10 +45,10 @@ ${tripContext}
 USER REQUEST: "${userMsg.content}"
 
 INSTRUCTIONS:
-1. If the user asks a general question, just reply with helpful text.
-2. If the user asks to change the currency (e.g., "change to INR", "show prices in Euros"), you MUST return EXACTLY this JSON format and nothing else: \`\`\`json { "action": "SET_CURRENCY", "currency": "XXX" } \`\`\` where XXX is the 3-letter currency code (e.g., USD, EUR, GBP, INR, JPY, AUD, CAD).
-3. If the user asks to modify the itinerary or hotels (e.g., add from their saved notes, add a day, change a hotel), generate a NEW JSON object containing ONLY the keys you are modifying ('itinerary' and/or 'hotel_options'). You have full access to add places from their 'savedNotes' if requested.
-4. If you are returning itinerary/hotel JSON, you MUST wrap it EXACTLY in a markdown JSON block (\`\`\`json { "itinerary": ... } \`\`\`). The JSON schema must perfectly match the CURRENT ITINERARY JSON. Include a conversational message before or after the JSON block.`;
+1. If the user asks a general question or requests a summary, reply with helpful text. You MUST use rich markdown formatting (bullet points, bold text, spacing) to make your response highly readable. Do not output massive walls of text.
+2. If the user asks to change the currency, return EXACTLY: \`\`\`json { "action": "SET_CURRENCY", "currency": "XXX" } \`\`\`
+3. If the user asks to modify activities for specific days, DO NOT return the entire itinerary. Return EXACTLY this format: \`\`\`json { "action": "UPDATE_DAY", "dayUpdates": [ { "day": 1, "theme": "New Theme", "activities": [ { /* full activity schema matching existing */ } ] } ] } \`\`\` (Only include the days being modified). You have access to their 'savedNotes' to add places.
+4. If the user asks to modify hotels, return EXACTLY this format: \`\`\`json { "action": "UPDATE_HOTEL", "hotels": [ { /* full hotel schema */ } ] } \`\`\`. Include a conversational message outside the JSON block.`;
 
       const result = await chatSession.sendMessage(prompt);
       const text = result?.response?.text() || "I'm having trouble processing that right now.";
@@ -80,29 +80,45 @@ INSTRUCTIONS:
             setCurrency(newPartialData.currency);
             finalMessage = `I've updated the currency to ${newPartialData.currency} for you!`;
           }
-          else if (newPartialData.itinerary || newPartialData.hotel_options) {
-            // Merge the new itinerary/hotels with the existing data
-            const mergedTripData = {
-              ...(trip?.tripData || {}),
-              ...newPartialData
-            };
+          else if (newPartialData.action === "UPDATE_DAY") {
+            const currentItinerary = [...(trip?.tripData?.itinerary || [])];
+            newPartialData.dayUpdates.forEach(update => {
+              const dayIndex = currentItinerary.findIndex(d => d.day === update.day);
+              if (dayIndex !== -1) {
+                currentItinerary[dayIndex] = { ...currentItinerary[dayIndex], ...update };
+              } else {
+                currentItinerary.push(update);
+              }
+            });
+            const mergedTripData = { ...trip?.tripData, itinerary: currentItinerary };
             
-            // Update Firestore only if we have a valid trip ID
             if (trip?.id) {
-              const tripRef = doc(db, "UserTrips", trip.id);
-              await updateDoc(tripRef, {
-                tripData: mergedTripData
-              });
+              await updateDoc(doc(db, "UserTrips", trip.id), { tripData: mergedTripData });
             }
-
-            // Update Local State
             if (setTrip) {
-              setTrip(prev => ({
-                ...prev,
-                tripData: mergedTripData
-              }));
+              setTrip(prev => ({ ...prev, tripData: mergedTripData }));
             }
-
+            if (!finalMessage) finalMessage = "✨ I've updated those days in your itinerary!";
+          }
+          else if (newPartialData.action === "UPDATE_HOTEL") {
+            const mergedTripData = { ...trip?.tripData, hotel_options: newPartialData.hotels };
+            if (trip?.id) {
+              await updateDoc(doc(db, "UserTrips", trip.id), { tripData: mergedTripData });
+            }
+            if (setTrip) {
+              setTrip(prev => ({ ...prev, tripData: mergedTripData }));
+            }
+            if (!finalMessage) finalMessage = "✨ I've updated your hotel options!";
+          }
+          else if (newPartialData.itinerary || newPartialData.hotel_options) {
+            // Fallback for legacy format
+            const mergedTripData = { ...(trip?.tripData || {}), ...newPartialData };
+            if (trip?.id) {
+              await updateDoc(doc(db, "UserTrips", trip.id), { tripData: mergedTripData });
+            }
+            if (setTrip) {
+              setTrip(prev => ({ ...prev, tripData: mergedTripData }));
+            }
             if (!finalMessage) finalMessage = "✨ I have successfully updated your trip!";
           }
         } catch (err) {
@@ -118,7 +134,8 @@ INSTRUCTIONS:
       setMessages(prev => [...prev, { role: 'assistant', content: finalMessage }]);
     } catch (error) {
       console.error("Chat error:", error);
-      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I lost connection to WanderBot. Please try again." }]);
+      const errorMsg = error.response?.data?.error?.message || error.message || "Unknown error";
+      setMessages(prev => [...prev, { role: 'assistant', content: `Sorry, I lost connection to WanderBot. Error details: ${errorMsg}` }]);
     } finally {
       setIsTyping(false);
     }
@@ -137,7 +154,7 @@ INSTRUCTIONS:
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-10 right-10 w-20 h-20 bg-gradient-to-r from-holiday-teal to-holiday-coral text-white rounded-full shadow-2xl flex items-center justify-center z-[9999] hover:shadow-[0_0_40px_rgba(122,185,179,0.5)] transition-all"
+            className="fixed bottom-10 right-10 w-20 h-20 bg-gradient-to-r from-amber to-coral text-primary-foreground rounded-full shadow-2xl flex items-center justify-center z-[9999] hover:shadow-[0_0_40px_rgba(122,185,179,0.5)] transition-all"
           >
             <Sparkles className="w-10 h-10 animate-pulse" />
           </motion.button>
@@ -153,18 +170,18 @@ INSTRUCTIONS:
             className="fixed bottom-8 right-8 w-[400px] h-[600px] bg-[#fdfdfd]/95 backdrop-blur-2xl border border-gray-200 shadow-2xl rounded-3xl flex flex-col z-[9999] overflow-hidden font-sans"
           >
             {/* Header */}
-            <div className="bg-holiday-dark text-white px-6 py-5 flex justify-between items-center shrink-0">
+            <div className="bg-ink text-primary-foreground px-6 py-5 flex justify-between items-center shrink-0">
               <div className="flex items-center gap-3">
                 <div>
-                  <h3 className="font-serif font-bold text-white text-lg flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-holiday-coral" /> WanderBot ✨
+                  <h3 className="font-serif font-bold text-primary-foreground text-lg flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-coral" /> WanderBot ✨
                   </h3>
-                  <p className="text-holiday-sand text-xs tracking-wider uppercase">Live Itinerary Editor</p>
+                  <p className="text-sand text-xs tracking-wider uppercase">Live Itinerary Editor</p>
                 </div>
               </div>
               <button 
                 onClick={() => setIsOpen(false)} 
-                className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                className="p-1 hover:bg-card/10 rounded-full transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -181,13 +198,13 @@ INSTRUCTIONS:
                 >
                   <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
                     msg.role === 'user' 
-                      ? 'bg-holiday-dark text-white rounded-br-sm' 
-                      : 'bg-white text-gray-800 rounded-bl-sm border border-gray-100 shadow-md'
+                      ? 'bg-ink text-primary-foreground rounded-br-sm' 
+                      : 'bg-card text-gray-800 rounded-bl-sm border border-gray-100 shadow-md'
                   }`}>
                     {msg.role === 'assistant' && (
                         <div className="flex items-center gap-2 mb-2">
-                          <Sparkles className="w-4 h-4 text-holiday-coral" />
-                          <span className="text-xs font-bold text-holiday-dark tracking-widest uppercase">
+                          <Sparkles className="w-4 h-4 text-coral" />
+                          <span className="text-xs font-bold text-ink tracking-widest uppercase">
                             WanderBot ✨
                           </span>
                         </div>
@@ -198,8 +215,8 @@ INSTRUCTIONS:
               ))}
               {isTyping && (
                 <div className="flex justify-start">
-                  <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 text-holiday-teal animate-spin" />
+                  <div className="bg-card border border-gray-100 shadow-sm rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 text-amber animate-spin" />
                     <span className="text-gray-500 font-medium text-xs">Re-calculating...</span>
                   </div>
                 </div>
@@ -208,7 +225,7 @@ INSTRUCTIONS:
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-white border-t border-gray-100 shrink-0">
+            <div className="p-4 bg-card border-t border-gray-100 shrink-0">
               <div className="relative flex items-center">
                 <input
                   type="text"
@@ -216,12 +233,12 @@ INSTRUCTIONS:
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                   placeholder="e.g. 'Change Day 2 to focus on food'"
-                  className="w-full bg-gray-50 border-2 border-gray-100 hover:border-holiday-teal/30 focus:border-holiday-teal rounded-full pl-5 pr-12 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-holiday-teal/10 transition-all placeholder:text-gray-400"
+                  className="w-full bg-gray-50 border-2 border-gray-100 hover:border-amber/30 focus:border-amber rounded-full pl-5 pr-12 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-amber/10 transition-all placeholder:text-gray-400"
                 />
                 <button 
                   onClick={handleSend}
                   disabled={!input.trim() || isTyping}
-                  className="absolute right-2 p-2 bg-gradient-to-r from-holiday-teal to-holiday-coral text-white rounded-full shadow-md disabled:opacity-50 hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                  className="absolute right-2 p-2 bg-gradient-to-r from-amber to-coral text-primary-foreground rounded-full shadow-md disabled:opacity-50 hover:shadow-lg hover:-translate-y-0.5 transition-all"
                 >
                   <Send className="w-4 h-4" />
                 </button>
