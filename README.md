@@ -91,7 +91,7 @@ flowchart LR
 
 A["User Input"] --> B["React Frontend"]
 
-B --> C["Firebase Cloud Function"]
+B --> C["Firebase Cloud Function (Orchestrator)"]
 
 C --> D{"Cache Found"}
 
@@ -101,21 +101,25 @@ D -- No --> F["Create Background Job"]
 
 F --> G["agentJobs Collection"]
 
-G --> H["Planning Phase"]
+G --> H["1. Vibe Matcher Agent"]
 
-H --> I["Validation Phase"]
+H --> I["2. Manager Agent"]
 
-I --> J{"Validation Passed"}
+I --> J["3. Planner Agent"]
 
-J -- No --> H
+J --> K["4. Critic Agent (Validation)"]
 
-J -- Yes --> K["Store Itinerary"]
+K --> L{"Critic Passed?"}
 
-K --> L["UserTrips Collection"]
+L -- No --> J
 
-L --> M["Realtime Firestore Listener"]
+L -- Yes --> M["Store Itinerary"]
 
-M --> N["Generated Trip"]
+M --> N["UserTrips Collection"]
+
+N --> O["Realtime Firestore Listener"]
+
+O --> P["Generated Trip"]
 ```
 ---
 
@@ -126,9 +130,12 @@ M --> N["Generated Trip"]
 The user provides:
 
 - Destination
-- Number of travel days
+- Number of travel days (max 15)
 - Budget
 - Number of travelers
+- Season / Specific Travel Dates
+- Travel Style (Cultural, Adventure, Party, Relaxing, or Custom)
+- Food Preferences (Local Cuisine, Vegan, Fast Food, or Custom)
 
 The frontend submits these details to a Firebase Cloud Function instead of directly calling the LLM.
 
@@ -445,6 +452,9 @@ firebase deploy --only functions
    - Budget
    - Number of Days
    - Number of Travelers
+   - Season or Dates
+   - Travel Style
+   - Food Preferences
 
 3. Submit the request.
 
@@ -467,7 +477,7 @@ Planned enhancements include:
 ### AI
 
 - [ ] Multi-model support (OpenAI, Anthropic, Gemini)
-- [ ] Weather-aware itinerary generation
+- [x] Weather-aware itinerary generation
 - [ ] Local event recommendations
 - [ ] Restaurant recommendations
 - [ ] Personalized activity ranking
