@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore"; 
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyA_JVwnQHMHNODjbDEyvnu1GdeW7s9rVMA",
   authDomain: "wandergen---ai-travel-planner.firebaseapp.com",
   projectId: "wandergen---ai-travel-planner",
   storageBucket: "wandergen---ai-travel-planner.appspot.com",
