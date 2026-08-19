@@ -486,7 +486,7 @@ Planned enhancements include:
 - [ ] Multi-model support (OpenAI, Anthropic, Gemini)
 - [x] Weather-aware itinerary generation
 - [ ] Local event recommendations
-- [ ] Restaurant recommendations
+- [x] Restaurant recommendations (via Food Preferences)
 - [ ] Personalized activity ranking
 
 ---
@@ -503,10 +503,10 @@ Planned enhancements include:
 
 ### Engineering
 
-- [ ] Background queue system
-- [ ] Function-level monitoring
+- [x] Background queue system (via agentJobs collection)
+- [x] Function-level monitoring (Real-time Firestore logs)
 - [ ] Docker support
-- [ ] CI/CD pipeline
+- [x] CI/CD pipeline (Vercel automatic deployments)
 - [ ] End-to-end testing
 
 ---
