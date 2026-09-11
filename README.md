@@ -498,6 +498,7 @@ Planned enhancements include:
 - [ ] Calendar integration
 - [ ] Export to PDF
 - [ ] Multi-language support
+- [ ] Social Media Sharing Integration
 
 ---
 
