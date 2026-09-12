@@ -485,7 +485,7 @@ Planned enhancements include:
 
 - [ ] Multi-model support (OpenAI, Anthropic, Gemini)
 - [x] Weather-aware itinerary generation
-- [ ] Local event recommendations
+- [x] Local event recommendations
 - [x] Restaurant recommendations (via Food Preferences)
 - [ ] Personalized activity ranking
 

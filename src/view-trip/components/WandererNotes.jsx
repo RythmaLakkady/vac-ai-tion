@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Lightbulb, Navigation, CloudSun, BookHeart, Utensils, Smartphone, MessageCircle, CalendarClock } from 'lucide-react';
+import { Lightbulb, Navigation, CloudSun, BookHeart, Utensils, Smartphone, MessageCircle, CalendarClock, Ticket } from 'lucide-react';
 
 function WandererNotes({ trip }) {
   const notes = trip?.tripData?.wanderer_notes;
@@ -72,6 +72,30 @@ function WandererNotes({ trip }) {
                 <h4 className="font-bold text-indigo-900 mb-1">{food.name}</h4>
                 <p className="text-indigo-950/70 text-sm mb-2">{food.description}</p>
                 <p className="text-indigo-600/80 text-xs font-semibold">📍 {food.where_to_find}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {notes.local_events && notes.local_events.length > 0 && (
+        <div className="mt-8 bg-card/60 p-6 rounded-3xl border border-border shadow-sm">
+          <div className="flex items-center gap-3 mb-4 text-indigo-900 font-bold text-lg">
+            <Ticket className="text-indigo-500 w-5 h-5" /> Local Events & Festivals
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {notes.local_events.map((event, idx) => (
+              <div key={idx} className="bg-white/50 p-4 rounded-2xl border border-indigo-50 flex flex-col h-full">
+                <h4 className="font-bold text-indigo-900 mb-1">{event.event_name}</h4>
+                <p className="text-indigo-950/70 text-sm mb-3 flex-grow">{event.description}</p>
+                <div className="mt-auto space-y-2">
+                  <p className="text-indigo-600/80 text-xs font-semibold">📅 {event.time_period}</p>
+                  {event.booking_url && event.booking_url !== "" && (
+                    <a href={event.booking_url} target="_blank" rel="noopener noreferrer" className="inline-block text-xs text-indigo-500 hover:text-indigo-700 font-medium underline underline-offset-2">
+                      More Info / Tickets
+                    </a>
+                  )}
+                </div>
               </div>
             ))}
           </div>

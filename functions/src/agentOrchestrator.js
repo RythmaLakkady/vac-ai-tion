@@ -203,6 +203,14 @@ You MUST return your response as a valid JSON object matching this exact structu
         "where_to_find": "String"
       }
     ],
+    "local_events": [
+      {
+        "event_name": "String",
+        "description": "String (Explain what the event/festival is and why they should attend)",
+        "time_period": "String (When it usually happens, or specific dates if applicable)",
+        "booking_url": "String (Optional real URL to check tickets or dates)"
+      }
+    ],
     "season_recommendations": "String (Best/cheapest months to visit, weather notes, and crowd levels. Tailor this to their preferred season if they specified one)"
   },
   "itinerary": [
