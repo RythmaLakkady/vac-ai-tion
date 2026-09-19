@@ -8,13 +8,13 @@ function Hotels({ trip, currency, exchangeRates }) {
 
   return (
     <div>
-      <h2 className="font-serif font-bold text-3xl text-ink mb-6">Hotel Recommendations</h2>
+      <h2 className="font-serif font-bold text-2xl text-ink mb-6">Hotel Recommendations</h2>
 
       {/* If no hotels are available */}
       {!hotels || hotels.length === 0 ? (
         <p className="text-ink opacity-60 mt-4 font-serif text-lg">No hotel recommendations available.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 gap-6">
           {hotels.map((hotel, index) => (
             <div
               key={index}

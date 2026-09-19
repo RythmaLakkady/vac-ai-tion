@@ -36,19 +36,19 @@ export const SelectBudgetOptions = [
   {
     id: 1,
     title: "Low-Cost",
-    desc: "Maximize the fun, minimize the cost—adventure on a budget!",
+    desc: "Maximize the fun, minimize the cost—adventure on a budget! (≈$0-$100/day)",
     icon: <Coins className="w-10 h-10 text-amber" />,
   },
   {
     id: 2,
     title: "Affordable Comfort",
-    desc: "A perfect balance of affordability and comfort—travel smart, stay cozy!",
+    desc: "A perfect balance of affordability and comfort—travel smart, stay cozy! (≈$100-$300/day)",
     icon: <Banknote className="w-10 h-10 text-coral" />,
   },
   {
     id: 3,
     title: "Luxury",
-    desc: "First-class flights, five-star stays, and nothing but the best!",
+    desc: "First-class flights, five-star stays, and nothing but the best! (≈$300+/day)",
     icon: <Gem className="w-10 h-10 text-amber" />,
   }
 ];

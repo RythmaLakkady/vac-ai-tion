@@ -11,11 +11,11 @@ function Flights({ trip, currency, exchangeRates }) {
   }
 
   return (
-    <div className="mt-12">
-      <h2 className="font-serif font-bold text-3xl text-ink mb-6 flex items-center gap-3">
-        <Plane className="w-8 h-8 text-amber" /> Flight Options
+    <div>
+      <h2 className="font-serif font-bold text-2xl text-ink mb-6 flex items-center gap-3">
+        <Plane className="w-6 h-6 text-amber" /> Flight Options
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {flights.map((flight, idx) => (
           <div key={idx} className="bg-card/60 backdrop-blur-sm rounded-3xl p-6 shadow-sm border-2 border-transparent hover:border-amber transition-all duration-300 flex flex-col h-full">
             <h3 className="font-bold text-xl text-ink font-serif mb-2">{flight.airline}</h3>

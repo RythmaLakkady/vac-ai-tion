@@ -2,12 +2,17 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { GripVertical, Trash2, Edit2, ExternalLink, BookOpen, Map } from 'lucide-react';
+import { GripVertical, Trash2, Edit2, ExternalLink, BookOpen, Map, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { convertPrice } from '../../utils/currencyFormatter';
 
 function Itinerary({ trip, currency, exchangeRates }) {
   const [itinerary, setItinerary] = useState([]);
+  const [collapsedDays, setCollapsedDays] = useState({});
+
+  const toggleDay = (index) => {
+    setCollapsedDays(prev => ({ ...prev, [index]: !prev[index] }));
+  };
 
   useEffect(() => {
     if (trip?.tripData?.itinerary && Array.isArray(trip.tripData.itinerary)) {
@@ -78,8 +83,8 @@ function Itinerary({ trip, currency, exchangeRates }) {
   };
 
   return (
-    <div className="mt-12">
-      <h2 className="text-4xl font-bold font-serif text-ink mb-10 tracking-tight">
+    <div>
+      <h2 className="text-3xl font-bold font-serif text-ink mb-10 tracking-tight">
         Your Itinerary
       </h2>
 
@@ -111,6 +116,13 @@ function Itinerary({ trip, currency, exchangeRates }) {
                             🕒 {day?.best_time && day.best_time !== "N/A" ? day.best_time : "Anytime"}
                           </span>
                           <button 
+                            onClick={() => toggleDay(dayIndex)} 
+                            className="p-2.5 bg-gray-50/80 text-gray-500 hover:bg-gray-200 hover:text-ink rounded-full transition-all flex items-center justify-center border border-gray-200" 
+                            title={collapsedDays[dayIndex] ? "Expand Day" : "Collapse Day"}
+                          >
+                            {collapsedDays[dayIndex] ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
+                          </button>
+                          <button 
                             onClick={() => handleDeleteDay(dayIndex)} 
                             className="p-2.5 bg-red-50/80 text-red-400 hover:bg-red-500 hover:text-primary-foreground hover:shadow-lg hover:shadow-red-500/30 rounded-full transition-all flex items-center justify-center border border-red-100 hover:border-red-500" 
                             title="Delete Entire Day"
@@ -120,7 +132,9 @@ function Itinerary({ trip, currency, exchangeRates }) {
                         </div>
                       </div>
 
-                      {day?.daily_brief && (
+                      {!collapsedDays[dayIndex] && (
+                        <>
+                          {day?.daily_brief && (
                         <div className="mb-10 px-6 py-5 bg-card/60 rounded-3xl border border-border shadow-sm flex items-start gap-4">
                           <span className="text-3xl mt-1">🧭</span>
                           <div>
@@ -282,6 +296,8 @@ function Itinerary({ trip, currency, exchangeRates }) {
                           </Droppable>
                         </div>
                       )}
+                      </>
+                    )}
                     </div>
                   )}
                 </Draggable>

@@ -145,6 +145,14 @@ function buildPlannerPrompt(params, feedback, managerStrategy) {
     ? `\n\nCRITICAL REQUIREMENT - TRAVEL SEASON:\nThe user prefers to travel during: "${params.season}". You MUST tailor the itinerary, weather tips, and 'season_recommendations' specifically around this time frame. Ensure activities make sense for this season.\n`
     : "";
 
+  const flightInstructions = params.prebookedFlights 
+    ? `5. FLIGHTS: The user has already booked their flights: "${params.prebookedFlights}". Do NOT generate new flight options. Instead, return an empty array for flight_options. Ensure the itinerary starts and ends according to these flight times.`
+    : `5. FLIGHTS: You MUST generate 3-5 diverse flight options (different airlines/times) departing ONLY from ${params.startLocation || 'their origin'} going to ${params.destination}. Under no circumstances should you generate flights departing from a different city (e.g., do not default to Delhi unless they start in Delhi).`;
+
+  const hotelInstructions = params.prebookedHotels
+    ? `HOTELS: The user has already booked their hotel: "${params.prebookedHotels}". Do NOT generate new hotel recommendations. Instead, return an empty array for hotel_options. Use this hotel as their base for the trip.`
+    : `Provide 3-5 hotel options.`;
+
   return `You are a strict data-formatter Planner Agent. A Manager Agent has already drafted the strategy for this trip. 
 Here is the Manager's Strategy:
 -------------------
@@ -159,7 +167,7 @@ IMPORTANT RULES:
 2. HIDDEN GEMS: You MUST include at least one "hidden gem" or off-the-beaten-path spot loved by locals in every single day.
 3. SMART LOGISTICS: You MUST geographically group each day's activities together to minimize transit time. Optimize the route!
 4. TRANSPORT & SERVICES: Do NOT recommend hiring private chauffeurs, drivers, or luxury transfer services. We do not provide those. Instead, explicitly recommend booking apps (like Uber, Grab, booking.com) and local transit apps in the 'wanderer_notes' and activity descriptions.
-5. FLIGHTS: You MUST generate flight options departing ONLY from ${params.startLocation || 'their origin'}. Do NOT assume the user is flying from anywhere else.
+${flightInstructions}
 6. DEPARTURE: The very LAST activity on the final day MUST explicitly be "Head to the Airport" or "Departure", including advice on when to leave for the airport.
 
 You MUST return your response as a valid JSON object matching this exact structure:
@@ -239,7 +247,7 @@ You MUST return your response as a valid JSON object matching this exact structu
   ]
 }
 
-Provide 3-5 hotel options. For the itinerary, you ABSOLUTELY MUST provide an array containing EXACTLY ${params.days} day objects. DO NOT provide 3 days if asked for 10. Generate exactly ${params.days}. Provide 2-3 activities per day. Write engaging descriptions, but keep them under 3 sentences to keep the JSON manageable. Ensure all image URLs and booking URLs are real and working. Return ONLY the raw JSON object, without any markdown formatting, backticks, or introductory text.`;
+${hotelInstructions} For the itinerary, you ABSOLUTELY MUST provide an array containing EXACTLY ${params.days} day objects. DO NOT provide 3 days if asked for 10. Generate exactly ${params.days}. Provide 2-3 activities per day. Write engaging descriptions, but keep them under 3 sentences to keep the JSON manageable. Ensure all image URLs and booking URLs are real and working. Return ONLY the raw JSON object, without any markdown formatting, backticks, or introductory text.`;
 }
 
 function buildCriticPrompt(itineraryJson, params) {
@@ -264,11 +272,12 @@ ${itineraryJson}
 VALIDATION RULES:
 1. The itinerary must have exactly ${params.days} days
 2. Each day must have 2-3 activities
-3. There must be 3-5 hotel options
+3. ${params.prebookedHotels ? 'There must be 0 hotel options.' : 'There must be 3-5 hotel options'}
 4. If budget is "Low-Cost", no hotel should exceed $100/night
 5. If budget is "Luxury", hotels should be premium (4+ star rating)
 6. Activities should be appropriate for ${params.travelers}
 7. The JSON must be valid and complete${foodRule}
+8. ${params.prebookedFlights ? 'There must be 0 flight options.' : `All flight options MUST depart from ${params.startLocation || 'their origin'} to ${params.destination}. Reject if they depart from a default city like Delhi.`}
 
 Respond with EXACTLY one of these formats:
 - If the itinerary passes: "PASS"

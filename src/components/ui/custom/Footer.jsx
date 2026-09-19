@@ -51,7 +51,7 @@ function Footer() {
             <span>by Rythma</span>
           </div>
           
-          <div className="flex items-center gap-4 flex-wrap justify-center">
+          <div className="flex items-center gap-4 flex-wrap justify-center md:pr-24">
             <span className="text-sm text-holiday-dark/60 font-sans">Facing an issue or have feedback?</span>
             <button 
               onClick={() => setIsOpen(true)}

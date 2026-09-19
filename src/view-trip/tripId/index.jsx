@@ -51,26 +51,47 @@ function ViewTrip() {
   if (!trip) return <p className='text-center text-gray-500 mt-20'>Loading trip details...</p>;
 
   return (
-    <div className='min-h-screen pt-32 pb-16 px-6 sm:px-10 lg:px-20 max-w-7xl mx-auto'>
-      <div className='bg-card/80 backdrop-blur-md rounded-[40px] shadow-2xl p-10 md:p-14 border border-border/50'>
-        {/* information section */}
-        <InfoSection trip={trip} currency={currency} setCurrency={setCurrency} />
-        
-        <div className='my-10 border-t-2 border-amber/20'></div>
-        
-        {/* flight options */}
-        <Flights trip={trip} currency={currency} exchangeRates={exchangeRates} />
-        
-        {/* recommended hotels */}
-        <Hotels trip={trip} currency={currency} exchangeRates={exchangeRates} />
-        
-        <div className='my-10 border-t-2 border-amber/20'></div>
-        
-        {/* wanderer notes (global) */}
-        <WandererNotes trip={trip} />
+    <div className='min-h-screen bg-gray-50/50 font-sans'>
+      {/* Hero Header Area */}
+      <div className='bg-card/90 backdrop-blur-xl border-b border-border/50 shadow-sm pt-32 pb-10 px-6 sm:px-10 lg:px-20'>
+        <div className='max-w-7xl mx-auto'>
+          <InfoSection trip={trip} currency={currency} setCurrency={setCurrency} />
+        </div>
+      </div>
 
-        {/* daily plan */}
-        <Itinerary trip={trip} currency={currency} exchangeRates={exchangeRates} />
+      {/* Main Dashboard Layout */}
+      <div className='max-w-7xl mx-auto px-6 sm:px-10 lg:px-20 py-12'>
+        <div className='grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14'>
+          
+          {/* Left/Main Column: Itinerary */}
+          <div className='lg:col-span-7 xl:col-span-8'>
+            <div className='bg-card/60 backdrop-blur-md rounded-[40px] shadow-xl p-8 sm:p-10 border border-border/50'>
+              <Itinerary trip={trip} currency={currency} exchangeRates={exchangeRates} />
+            </div>
+          </div>
+          
+          {/* Right Column: Widgets (Flights, Hotels, Notes) */}
+          <div className='lg:col-span-5 xl:col-span-4 flex flex-col gap-10'>
+            {trip?.tripData?.flight_options?.length > 0 && (
+              <div className='bg-card/60 backdrop-blur-md rounded-3xl shadow-xl p-8 border border-border/50'>
+                <Flights trip={trip} currency={currency} exchangeRates={exchangeRates} />
+              </div>
+            )}
+            
+            {trip?.tripData?.hotel_options?.length > 0 && (
+              <div className='bg-card/60 backdrop-blur-md rounded-3xl shadow-xl p-8 border border-border/50'>
+                <Hotels trip={trip} currency={currency} exchangeRates={exchangeRates} />
+              </div>
+            )}
+            
+            {trip?.tripData?.wanderer_notes && (
+              <div className='bg-card/60 backdrop-blur-md rounded-3xl shadow-xl p-8 border border-border/50'>
+                <WandererNotes trip={trip} />
+              </div>
+            )}
+          </div>
+          
+        </div>
       </div>
 
       {/* Floating AI Chatbot */}

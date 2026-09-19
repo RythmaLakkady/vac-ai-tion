@@ -36,8 +36,9 @@ function CreateTrip() {
     travelStyle: [],
     foodPreferences: [],
     season: "",
-    customTravelStyleText: "",
     customFoodPreferenceText: "",
+    prebookedFlights: "",
+    prebookedHotels: "",
   });
   
   // Search State
@@ -179,6 +180,8 @@ function CreateTrip() {
           travelStyle: Array.isArray(formData.travelStyle) ? formData.travelStyle.map(s => s === 'Other' ? formData.customTravelStyleText : s).filter(Boolean).join(", ") : formData.travelStyle,
           foodPreferences: Array.isArray(formData.foodPreferences) ? formData.foodPreferences.map(s => s === 'Other' ? formData.customFoodPreferenceText : s).filter(Boolean).join(", ") : formData.foodPreferences,
           season: formData.season || "Not specified",
+          prebookedFlights: formData.prebookedFlights && formData.prebookedFlights !== "I have booked my flights." ? formData.prebookedFlights : null,
+          prebookedHotels: formData.prebookedHotels && formData.prebookedHotels !== "I have booked my hotel." ? formData.prebookedHotels : null,
           days: Number(formData.days),
           userId: user?.uid || "anonymous",
           userEmail: user?.email || "anonymous",
@@ -340,8 +343,13 @@ function CreateTrip() {
                 <label className="text-sm font-bold text-ink uppercase tracking-wider">Exactly how many people?</label>
                 <input 
                   type="number" 
+                  min="1"
                   value={formData.people === "5-10 people" || formData.people === "3-5 people" ? "" : formData.people} 
-                  onChange={(e) => setFormData(prev => ({ ...prev, people: e.target.value }))}
+                  onChange={(e) => {
+                    let val = e.target.value.replace(/[^0-9]/g, '');
+                    if (val !== "" && parseInt(val) < 1) val = "1";
+                    setFormData(prev => ({ ...prev, people: val }));
+                  }}
                   className="w-full mt-4 text-3xl font-sans font-light bg-transparent border-b-2 border-gray-300 pb-3 focus:outline-none focus:border-amber transition-colors"
                   placeholder="e.g. 6"
                   autoFocus
@@ -533,6 +541,60 @@ function CreateTrip() {
         );
       case 7:
         return (
+          <motion.div key="step7" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-6">
+            <div className="flex flex-col gap-2 mb-6">
+              <div className="flex items-center gap-3 text-ink">
+                <div className="p-3 bg-indigo-500/10 rounded-full"><PlaneTakeoff className="w-6 h-6 text-indigo-500" /></div>
+                <h2 className="text-4xl font-serif font-bold">Have you booked anything yet?</h2>
+              </div>
+              <p className="text-gray-500 font-sans text-lg mt-2">If you already have your flights or hotel, paste the details below so we don't generate new ones.</p>
+            </div>
+            
+            <div className="space-y-6 pt-4">
+              <div className="bg-white/50 border border-gray-200 rounded-3xl p-6 transition-all hover:border-indigo-500/30">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-xl text-ink flex items-center gap-2"><PlaneTakeoff className="w-5 h-5 text-indigo-500" /> My Flights</h3>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={formData.prebookedFlights !== ""} onChange={(e) => setFormData(prev => ({ ...prev, prebookedFlights: e.target.checked ? "I have booked my flights." : "" }))} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+                  </label>
+                </div>
+                {formData.prebookedFlights !== "" && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
+                    <textarea 
+                      value={formData.prebookedFlights === "I have booked my flights." ? "" : formData.prebookedFlights}
+                      onChange={(e) => setFormData(prev => ({ ...prev, prebookedFlights: e.target.value }))}
+                      placeholder="Paste your flight numbers, departure times, and terminal details here..."
+                      className="w-full bg-transparent border-2 border-indigo-100 rounded-2xl p-4 min-h-[100px] focus:outline-none focus:border-indigo-500 font-sans text-sm resize-none transition-colors"
+                    />
+                  </motion.div>
+                )}
+              </div>
+
+              <div className="bg-white/50 border border-gray-200 rounded-3xl p-6 transition-all hover:border-indigo-500/30">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-xl text-ink flex items-center gap-2"><Compass className="w-5 h-5 text-indigo-500" /> My Hotel</h3>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={formData.prebookedHotels !== ""} onChange={(e) => setFormData(prev => ({ ...prev, prebookedHotels: e.target.checked ? "I have booked my hotel." : "" }))} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+                  </label>
+                </div>
+                {formData.prebookedHotels !== "" && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
+                    <textarea 
+                      value={formData.prebookedHotels === "I have booked my hotel." ? "" : formData.prebookedHotels}
+                      onChange={(e) => setFormData(prev => ({ ...prev, prebookedHotels: e.target.value }))}
+                      placeholder="Paste your hotel name, address, and check-in times here..."
+                      className="w-full bg-transparent border-2 border-indigo-100 rounded-2xl p-4 min-h-[100px] focus:outline-none focus:border-indigo-500 font-sans text-sm resize-none transition-colors"
+                    />
+                  </motion.div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        );
+      case 8:
+        return (
           <motion.div key="step7" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-10 py-10">
             <div className="inline-flex justify-center items-center w-24 h-24 bg-gradient-to-tr from-amber to-coral rounded-full shadow-2xl mb-4 animate-bounce">
               <Sparkles className="w-10 h-10 text-primary-foreground" />
@@ -586,14 +648,14 @@ function CreateTrip() {
       {/* Progress Bar */}
       <div className="mb-16">
         <div className="flex justify-between items-center mb-4">
-          <span className="text-sm font-bold text-amber tracking-widest uppercase">Step {step} of 7</span>
-          <span className="text-sm font-medium text-gray-400">{Math.round((step / 7) * 100)}%</span>
+          <span className="text-sm font-bold text-amber tracking-widest uppercase">Step {step} of 8</span>
+          <span className="text-sm font-medium text-gray-400">{Math.round((step / 8) * 100)}%</span>
         </div>
         <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
           <motion.div 
             className="h-full bg-gradient-to-r from-amber to-coral"
             initial={{ width: 0 }}
-            animate={{ width: `${(step / 7) * 100}%` }}
+            animate={{ width: `${(step / 8) * 100}%` }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
           />
         </div>
@@ -614,7 +676,7 @@ function CreateTrip() {
           </button>
         ) : <div />}
 
-        {step < 7 ? (
+        {step < 8 ? (
           <button onClick={handleNext} className="flex items-center gap-2 px-8 py-4 bg-ink text-primary-foreground rounded-full font-bold hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
             Continue <ChevronRight className="w-5 h-5" />
           </button>

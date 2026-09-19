@@ -12,19 +12,19 @@ function WandererNotes({ trip }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="mb-16 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 backdrop-blur-3xl p-8 sm:p-10 rounded-[40px] border border-indigo-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+      className="flex flex-col gap-2"
     >
       <div className="flex items-center gap-4 mb-8">
         <div className="p-3 bg-indigo-100 rounded-2xl text-indigo-600">
           <Lightbulb className="w-8 h-8" />
         </div>
         <div>
-          <h2 className="text-3xl font-bold font-serif text-indigo-950">Wanderer Notes</h2>
+          <h2 className="text-2xl font-bold font-serif text-indigo-950">Wanderer Notes</h2>
           <p className="text-indigo-900/60 font-sans">Essential tips for a seamless experience</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 font-sans">
+      <div className="grid grid-cols-1 gap-6 font-sans">
         {notes.season_recommendations && (
           <div className="bg-card/60 p-6 rounded-3xl border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all">
             <div className="flex items-center gap-3 mb-3 text-indigo-900 font-bold text-lg">
@@ -66,7 +66,7 @@ function WandererNotes({ trip }) {
           <div className="flex items-center gap-3 mb-4 text-indigo-900 font-bold text-lg">
             <Utensils className="text-indigo-500 w-5 h-5" /> Must-Try Local Foods
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {notes.native_food_options.map((food, idx) => (
               <div key={idx} className="bg-white/50 p-4 rounded-2xl border border-indigo-50">
                 <h4 className="font-bold text-indigo-900 mb-1">{food.name}</h4>
@@ -83,7 +83,7 @@ function WandererNotes({ trip }) {
           <div className="flex items-center gap-3 mb-4 text-indigo-900 font-bold text-lg">
             <Ticket className="text-indigo-500 w-5 h-5" /> Local Events & Festivals
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {notes.local_events.map((event, idx) => (
               <div key={idx} className="bg-white/50 p-4 rounded-2xl border border-indigo-50 flex flex-col h-full">
                 <h4 className="font-bold text-indigo-900 mb-1">{event.event_name}</h4>
@@ -107,7 +107,7 @@ function WandererNotes({ trip }) {
           <div className="flex items-center gap-3 mb-4 text-indigo-900 font-bold text-lg">
             <Smartphone className="text-indigo-500 w-5 h-5" /> Recommended Apps
           </div>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col gap-4">
             {notes.recommended_apps.map((app, idx) => (
               <div key={idx} className="flex items-start gap-2 bg-white/50 p-3 rounded-xl border border-indigo-50 min-w-[200px] flex-1">
                 <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600 shrink-0">
