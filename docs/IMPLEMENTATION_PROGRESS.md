@@ -19,7 +19,7 @@
 - [x] Testing: Setup Vitest & Playwright
 
 ## Phase 4 — UX Redesign (P2)
-- [x] UX: Visual Trip Roadmap
+- [x] UX: Visual Trip Roadmap (Journey Foundation)
 - [ ] UX: Map Integration
 - [ ] UX: Editable Itinerary (Drag & Drop)
 

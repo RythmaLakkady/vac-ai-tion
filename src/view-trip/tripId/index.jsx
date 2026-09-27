@@ -12,8 +12,7 @@ import { analytics } from '@/service/analyticsService';
 
 import TripHeader from '../components/TripHeader';
 import TripNavigation from '../components/TripNavigation';
-import TripRoadmap from '../components/TripRoadmap';
-import TripTimeline from '../components/TripTimeline';
+import Journey from '../components/Journey';
 
 function ViewTrip() {
   const { tripId } = useParams();
@@ -21,7 +20,7 @@ function ViewTrip() {
   const [itinerary, setItinerary] = useState([]);
   const [currency, setCurrency] = useState('USD');
   const [exchangeRates, setExchangeRates] = useState(null);
-  const [activeView, setActiveView] = useState('ROADMAP');
+  const [activeView, setActiveView] = useState('JOURNEY');
 
   useEffect(() => {
     const fetchRates = async () => {
@@ -83,16 +82,8 @@ function ViewTrip() {
           
           {/* Left/Main Column: Active View */}
           <div className='xl:col-span-8'>
-            {activeView === 'ROADMAP' && (
-              <TripRoadmap itinerary={itinerary} currency={currency} exchangeRates={exchangeRates} />
-            )}
-            {activeView === 'TIMELINE' && (
-              <TripTimeline itinerary={itinerary} currency={currency} exchangeRates={exchangeRates} />
-            )}
-            {activeView === 'DAYS' && (
-              <div className='bg-card/60 backdrop-blur-md rounded-[40px] shadow-xl p-8 sm:p-10 border border-border/50'>
-                <Itinerary trip={trip} currency={currency} exchangeRates={exchangeRates} itinerary={itinerary} setItinerary={setItinerary} />
-              </div>
+            {activeView === 'JOURNEY' && (
+              <Journey trip={trip} itinerary={itinerary} />
             )}
             {activeView === 'MAP' && (
               <div className="p-10 text-center text-gray-500 bg-card rounded-3xl border border-border">Map integration coming soon...</div>
