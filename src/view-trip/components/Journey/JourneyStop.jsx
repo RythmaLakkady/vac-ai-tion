@@ -5,7 +5,7 @@ import { Draggable } from '@hello-pangea/dnd';
 import { journeyIntelligence } from '@/service/journeyIntelligence';
 
 export default function JourneyStop({ 
-  activity, dayIndex, activityIndex, id, isSelected, 
+  trip, activity, dayIndex, activityIndex, id, isSelected, 
   onDelete, onEdit, onInsert, onReplace, onSelect,
   previousActivity, nextActivity 
 }) {
@@ -21,6 +21,7 @@ export default function JourneyStop({
   
   // Replacement specific state
   const [compareStop, setCompareStop] = useState(null);
+  const [insertPreviewStop, setInsertPreviewStop] = useState(null);
 
   // Edit state
   const [editName, setEditName] = useState(activity?.place_name || "");
@@ -30,7 +31,25 @@ export default function JourneyStop({
   const placeName = activity?.place_name || "Unknown Stop";
   const category = activity?.category || "Activity";
   const time = activity?.time_travel || "";
-  const cost = activity?.ticket_pricing && activity.ticket_pricing !== "N/A" ? activity.ticket_pricing : null;
+  
+  // Cost Model & Price Provenance preparation
+  const getCostDetails = (act) => {
+    if (!act?.ticket_pricing || act.ticket_pricing === "N/A" || act.ticket_pricing.toLowerCase() === "unknown") {
+      return { amount: null, state: 'unknown', display: 'Cost unknown', provenance: 'unknown' };
+    }
+    if (act.ticket_pricing.toLowerCase() === "free") {
+      return { amount: 0, state: 'known', display: 'Free', provenance: 'actual provider price' };
+    }
+    // If it has costState from LLM alternative
+    if (act.costState === 'estimated') {
+      return { amount: act.ticket_pricing, state: 'estimated', display: act.ticket_pricing, provenance: 'estimated price' };
+    }
+    // Legacy generic string parsing
+    return { amount: act.ticket_pricing, state: 'estimated', display: act.ticket_pricing, provenance: 'reference estimate' };
+  };
+
+  const costDetails = getCostDetails(activity);
+  const cost = costDetails.amount !== null ? costDetails.display : null;
   const why = activity?.importance || null;
   const lat = activity?.geo_coordinates?.lat || activity?.geo_coordinates?.latitude;
   const lng = activity?.geo_coordinates?.lng || activity?.geo_coordinates?.longitude;
@@ -44,6 +63,7 @@ export default function JourneyStop({
     if (!newExpanded) {
        setActiveTab(null);
        setCompareStop(null);
+       setInsertPreviewStop(null);
     }
     if (newExpanded) {
       analytics.trackEvent('stop_opened', { placeName, category, dayIndex });
@@ -89,7 +109,11 @@ export default function JourneyStop({
        const places = await journeyIntelligence.getAlternatives({
          currentStop: activity,
          location: placeName,
-         reason: reason
+         reason: reason,
+         previousStop: previousActivity,
+         nextStop: nextActivity,
+         budget: trip?.tripData?.budget,
+         preferences: trip?.tripData?.traveler
        });
        if (places.length === 0) {
          setError("No suitable alternatives found.");
@@ -103,12 +127,7 @@ export default function JourneyStop({
     }
   };
 
-  const handleInsertResult = (e, res) => {
-    e.stopPropagation();
-    analytics.trackEvent('nearby_place_added', { placeName: res.place_name });
-    onInsert?.(res);
-    setActiveTab(null);
-  };
+
   
   const handleCompare = (e, res) => {
     e.stopPropagation();
@@ -223,8 +242,10 @@ export default function JourneyStop({
                       
                       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-ink/60 font-medium">
                         {cost && (
-                          <div className="flex items-center gap-1.5">
-                            <Wallet className="w-4 h-4" /> {cost}
+                          <div className="flex items-center gap-1.5" title={`Source: ${costDetails.provenance}`}>
+                            <Wallet className="w-4 h-4" /> 
+                            <span>{cost}</span>
+                            {costDetails.state === 'estimated' && <span className="text-[10px] uppercase text-ink/40 ml-1 bg-gray-100 px-1.5 rounded">Est</span>}
                           </div>
                         )}
                         {activity?.place_details && (
@@ -234,6 +255,12 @@ export default function JourneyStop({
 
                       {/* Action Bar */}
                       <div className="flex flex-wrap items-center gap-2 mt-6 pt-4 border-t border-border/30">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); toast('Destination guide context layer coming soon!'); analytics.trackEvent('destination_guide_preview_clicked'); }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors font-medium text-xs"
+                        >
+                          <MapPin className="w-3.5 h-3.5" /> Explore {activity?.location || 'Area'}
+                        </button>
                         <button 
                           onClick={(e) => exploreNearby(e, 'Cafés')}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber/10 text-amber hover:bg-amber hover:text-white transition-colors font-medium text-xs"
@@ -266,42 +293,79 @@ export default function JourneyStop({
                   {activeTab === 'nearby' && (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                       <div className="flex items-center justify-between mb-4">
-                        <h5 className="font-bold text-ink">Explore Nearby</h5>
-                        <button onClick={() => setActiveTab(null)} className="text-gray-400 hover:text-ink p-1"><X className="w-4 h-4" /></button>
+                        <h5 className="font-bold text-ink">{insertPreviewStop ? 'Preview Insertion' : 'Explore Nearby'}</h5>
+                        <button onClick={() => { setActiveTab(null); setInsertPreviewStop(null); }} className="text-gray-400 hover:text-ink p-1"><X className="w-4 h-4" /></button>
                       </div>
                       
-                      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-4">
-                        {['Cafés', 'Food', 'Parks', 'Attractions'].map(cat => (
-                          <button 
-                            key={cat}
-                            onClick={(e) => exploreNearby(e, cat)}
-                            className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${searchCategory === cat ? 'bg-ink text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                          >
-                            {cat}
-                          </button>
-                        ))}
-                      </div>
-
-                      {loading ? (
-                        <div className="py-8 text-center text-gray-400 animate-pulse text-sm">Searching trusted sources...</div>
-                      ) : error ? (
-                        <div className="py-8 text-center text-red-400 text-sm">{error}</div>
-                      ) : (
-                        <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-                          {results.map((res, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-border/60 hover:border-amber bg-white transition-all">
-                              <div>
-                                <h6 className="font-bold text-ink text-sm">{res.place_name}</h6>
-                                <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><Navigation className="w-3 h-3"/> {res.distance}</p>
-                              </div>
+                      {!insertPreviewStop ? (
+                        <>
+                          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-4">
+                            {['Cafés', 'Food', 'Parks', 'Attractions'].map(cat => (
                               <button 
-                                onClick={(e) => handleInsertResult(e, res)}
-                                className="px-3 py-1.5 text-xs font-bold text-amber bg-amber/10 rounded-lg hover:bg-amber hover:text-white transition-colors whitespace-nowrap"
+                                key={cat}
+                                onClick={(e) => exploreNearby(e, cat)}
+                                className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${searchCategory === cat ? 'bg-ink text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                               >
-                                Add to journey
+                                {cat}
                               </button>
+                            ))}
+                          </div>
+
+                          {loading ? (
+                            <div className="py-8 text-center text-gray-400 animate-pulse text-sm">Searching trusted sources...</div>
+                          ) : error ? (
+                            <div className="py-8 text-center text-red-400 text-sm">{error}</div>
+                          ) : (
+                            <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                              {results.map((res, i) => (
+                                <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-border/60 hover:border-amber bg-white transition-all">
+                                  <div>
+                                    <h6 className="font-bold text-ink text-sm">{res.place_name}</h6>
+                                    <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><Navigation className="w-3 h-3"/> {res.distance}</p>
+                                  </div>
+                                  <button 
+                                    onClick={(e) => handleSelectNearby(e, res)}
+                                    className="px-3 py-1.5 text-xs font-bold text-amber bg-amber/10 rounded-lg hover:bg-amber hover:text-white transition-colors whitespace-nowrap"
+                                  >
+                                    Add to journey
+                                  </button>
+                                </div>
+                              ))}
                             </div>
-                          ))}
+                          )}
+                        </>
+                      ) : (
+                        <div className="animate-in fade-in zoom-in-95 duration-200">
+                          <p className="text-sm text-gray-600 mb-4 text-center">Add <strong>{insertPreviewStop.place_name}</strong> to your journey?</p>
+                          <div className="flex flex-col gap-2 mb-6 max-w-sm mx-auto items-center">
+                            <span className="text-xs text-gray-500 font-bold uppercase tracking-widest text-center">Between:</span>
+                            <div className="bg-gray-50 border border-border rounded-lg p-3 w-full text-center">
+                              <span className="font-semibold text-sm">{placeName}</span>
+                            </div>
+                            <div className="text-gray-300">↓</div>
+                            <div className="bg-gray-50 border border-border rounded-lg p-3 w-full text-center">
+                              <span className="font-semibold text-sm">{nextActivity?.place_name || 'End of Day'}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100 text-xs text-blue-800 mb-6 text-center">
+                            <strong>Impact:</strong> Adding this stop {insertPreviewStop.time_travel ? `is estimated to take ${insertPreviewStop.time_travel}` : 'has unknown timing impact'}. Your next activity remains compatible.
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setInsertPreviewStop(null); }}
+                              className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button 
+                              onClick={handleConfirmInsert}
+                              className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-white bg-ink hover:bg-ink/90 transition-colors"
+                            >
+                              Add here
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -368,7 +432,11 @@ export default function JourneyStop({
                               <h6 className="font-bold text-ink text-sm mb-2 truncate">{placeName}</h6>
                               <div className="space-y-1.5 text-xs text-gray-500">
                                 <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5"/> {time || 'Unknown time'}</div>
-                                <div className="flex items-center gap-1.5"><Wallet className="w-3.5 h-3.5"/> {cost || 'Unknown cost'}</div>
+                                <div className="flex items-center gap-1.5" title={`Source: ${costDetails.provenance}`}>
+                                  <Wallet className="w-3.5 h-3.5"/> 
+                                  <span>{cost || 'Unknown cost'}</span>
+                                  {costDetails.state === 'estimated' && <span className="text-[9px] uppercase text-gray-400 ml-1">Est</span>}
+                                </div>
                               </div>
                             </div>
                             
@@ -378,9 +446,10 @@ export default function JourneyStop({
                               <h6 className="font-bold text-ink text-sm mb-2 truncate">{compareStop.place_name}</h6>
                               <div className="space-y-1.5 text-xs text-ink/70">
                                 <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5"/> {compareStop.time_travel}</div>
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex items-center gap-1.5" title={`Source: ${compareStop.costState || 'estimated'}`}>
                                   <Wallet className="w-3.5 h-3.5"/> 
-                                  {compareStop.ticket_pricing !== 'unknown' ? compareStop.ticket_pricing : 'Cost unknown'}
+                                  <span>{compareStop.ticket_pricing !== 'unknown' ? compareStop.ticket_pricing : 'Cost unknown'}</span>
+                                  {compareStop.costState === 'estimated' && <span className="text-[9px] uppercase text-amber/60 ml-1">Est</span>}
                                 </div>
                               </div>
                             </div>

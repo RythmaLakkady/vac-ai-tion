@@ -20,10 +20,17 @@ function estimateWalkingTime(meters) {
   return `${mins} min walk`;
 }
 
+const nearbyCache = new Map();
+
 export const journeyIntelligence = {
   // Trustworthy Nearby Search using OpenStreetMap (Overpass API)
   async getNearbyPlaces(lat, lng, category) {
     if (!lat || !lng) throw new Error("Location unavailable");
+    
+    const cacheKey = `${lat},${lng},${category}`;
+    if (nearbyCache.has(cacheKey)) {
+      return nearbyCache.get(cacheKey);
+    }
     
     const tagMap = {
       'Food': 'amenity=restaurant',
@@ -68,9 +75,9 @@ export const journeyIntelligence = {
       })
       .filter(Boolean)
       .sort((a, b) => a.distanceMeters - b.distanceMeters)
-      .slice(0, 5);
-      
-      return results;
+      const finalResults = results.slice(0, 5);
+      nearbyCache.set(cacheKey, finalResults);
+      return finalResults;
     } catch (e) {
       console.error("Nearby search failed:", e);
       throw new Error("Nearby places are temporarily unavailable.");
@@ -83,15 +90,20 @@ export const journeyIntelligence = {
       Act as a strict travel expert API. Find 2 REAL alternative places to replace this stop:
       Current Stop: ${context.currentStop.place_name}
       Current Location: ${context.location}
+      Previous Stop: ${context.previousStop?.place_name || 'Start of day'}
+      Next Stop: ${context.nextStop?.place_name || 'End of day'}
+      Trip Budget: ${context.budget || 'Unknown'}
+      Trip Preferences: ${context.preferences || 'Unknown'}
       Reason for changing: User wants something ${context.reason}
       
-      The alternatives MUST be real, famous, or verifiable places in or near ${context.location}. DO NOT hallucinate.
+      The alternatives MUST be real, famous, or verifiable places in or near ${context.location}. 
+      They must fit within the context of the previous and next stops, and respect the budget and preferences. DO NOT hallucinate.
       
       Return ONLY a valid JSON array of objects with exactly this structure:
       [
         {
           "place_name": "Name of the alternative",
-          "place_details": "Why this matches the reason",
+          "place_details": "Why this matches the reason and fits the journey",
           "category": "Activity or Museum, etc.",
           "time_travel": "Estimated duration (e.g. 2 hrs)",
           "ticket_pricing": "Estimated cost (e.g. $15, or Free)",

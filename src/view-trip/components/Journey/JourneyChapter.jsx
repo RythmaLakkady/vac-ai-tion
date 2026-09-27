@@ -4,7 +4,7 @@ import { Plus } from 'lucide-react';
 import JourneyStop from './JourneyStop';
 import JourneyTransition from './JourneyTransition';
 
-export default function JourneyChapter({ day, dayIndex, onDeleteStop, onAddStop, onEditStop, onInsertStop, onReplaceStop, onSelectStop, selectedStopId }) {
+export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAddStop, onEditStop, onInsertStop, onReplaceStop, onSelectStop, selectedStopId }) {
   if (!day || !day.activities || day.activities.length === 0) return null;
 
   return (
@@ -34,6 +34,7 @@ export default function JourneyChapter({ day, dayIndex, onDeleteStop, onAddStop,
               return (
                 <React.Fragment key={`day-${dayIndex}-stop-${idx}`}>
                   <JourneyStop 
+                    trip={trip}
                     activity={activity} 
                     dayIndex={dayIndex} 
                     activityIndex={idx}

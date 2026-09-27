@@ -162,6 +162,7 @@ export default function Journey({ trip, tripId, itinerary, setItinerary }) {
               {itinerary.map((day, idx) => (
                 <JourneyChapter 
                   key={`day-${idx}`} 
+                  trip={trip}
                   day={day} 
                   dayIndex={idx} 
                   onDeleteStop={handleDeleteStop}
