@@ -20,7 +20,7 @@
 
 ## Phase 4 — UX Redesign (P2)
 - [x] UX: Visual Trip Roadmap (Journey Foundation)
-- [ ] UX: Map Integration
+- [x] UX: Map Integration
 - [x] UX: Editable Itinerary (Drag & Drop)
 
 ## Phase 5 — Travel Intelligence (P2 & P3)

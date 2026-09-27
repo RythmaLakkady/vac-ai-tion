@@ -4,7 +4,7 @@ import { Plus } from 'lucide-react';
 import JourneyStop from './JourneyStop';
 import JourneyTransition from './JourneyTransition';
 
-export default function JourneyChapter({ day, dayIndex, onDeleteStop, onAddStop, onEditStop }) {
+export default function JourneyChapter({ day, dayIndex, onDeleteStop, onAddStop, onEditStop, onSelectStop, selectedStopId }) {
   if (!day || !day.activities || day.activities.length === 0) return null;
 
   return (
@@ -36,9 +36,12 @@ export default function JourneyChapter({ day, dayIndex, onDeleteStop, onAddStop,
                   <JourneyStop 
                     activity={activity} 
                     dayIndex={dayIndex} 
-                    activityIndex={idx} 
+                    activityIndex={idx}
+                    id={`day-${dayIndex}-stop-${idx}`}
+                    isSelected={selectedStopId === `day-${dayIndex}-stop-${idx}`}
                     onDelete={() => onDeleteStop(dayIndex, idx)}
                     onEdit={(newData) => onEditStop(dayIndex, idx, newData)}
+                    onSelect={() => onSelectStop(`day-${dayIndex}-stop-${idx}`, dayIndex)}
                   />
                   {!isLast && (
                     <JourneyTransition fromStop={activity} toStop={nextActivity} />

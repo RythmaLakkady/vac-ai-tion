@@ -3,7 +3,7 @@ import { Wallet, MoreVertical, MapPin, Edit2, Replace, Trash2, GripVertical } fr
 import { analytics } from '@/service/analyticsService';
 import { Draggable } from '@hello-pangea/dnd';
 
-export default function JourneyStop({ activity, dayIndex, activityIndex, onDelete, onEdit }) {
+export default function JourneyStop({ activity, dayIndex, activityIndex, id, isSelected, onDelete, onEdit, onSelect }) {
   const [expanded, setExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   
@@ -40,13 +40,14 @@ export default function JourneyStop({ activity, dayIndex, activityIndex, onDelet
     <Draggable draggableId={`day-${dayIndex}-stop-${activityIndex}`} index={activityIndex}>
       {(provided, snapshot) => (
         <div 
+          id={id}
           className={`relative flex items-start gap-4 sm:gap-6 group outline-none ${snapshot.isDragging ? 'opacity-80' : ''}`}
           ref={provided.innerRef}
           {...provided.draggableProps}
         >
           {/* Node / Marker */}
           <div className="flex flex-col items-center mt-6">
-            <div className={`w-4 h-4 rounded-full shadow-sm z-10 ${isPrimary ? 'bg-amber ring-4 ring-amber/20' : 'bg-ink/40'}`} />
+            <div className={`w-4 h-4 rounded-full shadow-sm z-10 transition-colors ${isSelected ? 'bg-amber ring-4 ring-amber/40 scale-125' : isPrimary ? 'bg-amber ring-4 ring-amber/20' : 'bg-ink/40'}`} />
           </div>
 
           {/* Stop Card */}
@@ -62,8 +63,11 @@ export default function JourneyStop({ activity, dayIndex, activityIndex, onDelet
             </div>
 
             <div 
-              onClick={toggleExpand}
-              className={`flex-1 bg-card hover:bg-gray-50/80 border ${snapshot.isDragging ? 'border-amber shadow-lg scale-[1.01]' : 'border-border shadow-sm'} rounded-3xl p-5 sm:p-6 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-amber outline-none`}
+              onClick={(e) => {
+                onSelect?.();
+                toggleExpand();
+              }}
+              className={`flex-1 bg-card hover:bg-gray-50/80 border ${isSelected ? 'border-amber shadow-md' : snapshot.isDragging ? 'border-amber shadow-lg scale-[1.01]' : 'border-border shadow-sm'} rounded-3xl p-5 sm:p-6 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-amber outline-none`}
               role="button"
               tabIndex={0}
               aria-expanded={expanded}

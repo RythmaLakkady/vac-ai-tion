@@ -77,47 +77,49 @@ function ViewTrip() {
       </div>
 
       {/* Main Dashboard Layout */}
-      <div className='max-w-7xl mx-auto px-6 sm:px-10 lg:px-20 py-8'>
-        <div className='grid grid-cols-1 xl:grid-cols-12 gap-10 lg:gap-14'>
-          
-          {/* Left/Main Column: Active View */}
-          <div className='xl:col-span-8'>
-            {activeView === 'JOURNEY' && (
-              <Journey trip={trip} itinerary={itinerary} setItinerary={setItinerary} />
-            )}
-            {activeView === 'MAP' && (
-              <div className="p-10 text-center text-gray-500 bg-card rounded-3xl border border-border">Map integration coming soon...</div>
-            )}
-            {activeView === 'BUDGET' && (
-              <div className="p-10 text-center text-gray-500 bg-card rounded-3xl border border-border">Budget dashboard coming soon...</div>
-            )}
-            {activeView === 'GUIDE' && (
+      <div className='max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-12 py-8'>
+        
+        {activeView === 'JOURNEY' && (
+          <div className='w-full'>
+            <Journey trip={trip} itinerary={itinerary} setItinerary={setItinerary} />
+          </div>
+        )}
+        
+        {activeView === 'MAP' && (
+          <div className="p-10 text-center text-gray-500 bg-card rounded-3xl border border-border">Map integration is now inside Journey!</div>
+        )}
+        
+        {activeView === 'BUDGET' && (
+          <div className="p-10 text-center text-gray-500 bg-card rounded-3xl border border-border">Budget dashboard coming soon...</div>
+        )}
+        
+        {activeView === 'GUIDE' && (
+          <div className='grid grid-cols-1 xl:grid-cols-12 gap-10 lg:gap-14'>
+            <div className='xl:col-span-8'>
               <div className="p-10 text-center text-gray-500 bg-card rounded-3xl border border-border">Destination guide coming soon...</div>
-            )}
-          </div>
-          
-          {/* Right Column: Widgets */}
-          <div className='xl:col-span-4 flex flex-col gap-10'>
-            {trip?.tripData?.flight_options?.length > 0 && (
-              <div className='bg-card/60 backdrop-blur-md rounded-3xl shadow-xl p-8 border border-border/50'>
-                <Flights trip={trip} currency={currency} exchangeRates={exchangeRates} />
-              </div>
-            )}
+            </div>
             
-            {trip?.tripData?.hotel_options?.length > 0 && (
-              <div className='bg-card/60 backdrop-blur-md rounded-3xl shadow-xl p-8 border border-border/50'>
-                <Hotels trip={trip} currency={currency} exchangeRates={exchangeRates} />
-              </div>
-            )}
-            
-            {trip?.tripData?.wanderer_notes && (
-              <div className='bg-card/60 backdrop-blur-md rounded-3xl shadow-xl p-8 border border-border/50'>
-                <WandererNotes trip={trip} />
-              </div>
-            )}
+            <div className='xl:col-span-4 flex flex-col gap-10'>
+              {trip?.tripData?.flight_options?.length > 0 && (
+                <div className='bg-card/60 backdrop-blur-md rounded-3xl shadow-xl p-8 border border-border/50'>
+                  <Flights trip={trip} currency={currency} exchangeRates={exchangeRates} />
+                </div>
+              )}
+              
+              {trip?.tripData?.hotel_options?.length > 0 && (
+                <div className='bg-card/60 backdrop-blur-md rounded-3xl shadow-xl p-8 border border-border/50'>
+                  <Hotels trip={trip} currency={currency} exchangeRates={exchangeRates} />
+                </div>
+              )}
+              
+              {trip?.tripData?.wanderer_notes && (
+                <div className='bg-card/60 backdrop-blur-md rounded-3xl shadow-xl p-8 border border-border/50'>
+                  <WandererNotes trip={trip} />
+                </div>
+              )}
+            </div>
           </div>
-          
-        </div>
+        )}
       </div>
 
       {/* Floating AI Chatbot */}
