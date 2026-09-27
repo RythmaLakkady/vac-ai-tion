@@ -83,7 +83,7 @@ function ViewTrip() {
           {/* Left/Main Column: Active View */}
           <div className='xl:col-span-8'>
             {activeView === 'JOURNEY' && (
-              <Journey trip={trip} itinerary={itinerary} />
+              <Journey trip={trip} itinerary={itinerary} setItinerary={setItinerary} />
             )}
             {activeView === 'MAP' && (
               <div className="p-10 text-center text-gray-500 bg-card rounded-3xl border border-border">Map integration coming soon...</div>

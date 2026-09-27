@@ -4,6 +4,7 @@ import React from 'react';
 import JourneyChapter from '../JourneyChapter';
 import JourneyStop from '../JourneyStop';
 import JourneyTransition from '../JourneyTransition';
+import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 
 // Mock analytics to prevent real network calls
 vi.mock('@/service/analyticsService', () => ({
@@ -25,9 +26,28 @@ const mockDay = {
   activities: [mockActivity, { ...mockActivity, place_name: 'Louvre', time_travel: '2:00 PM' }]
 };
 
+const TestWrapper = ({ children }) => (
+  <DragDropContext onDragEnd={() => {}}>
+    <Droppable droppableId="test-droppable" type="activity">
+      {(provided) => (
+        <div ref={provided.innerRef} {...provided.droppableProps}>
+          {children}
+          {provided.placeholder}
+        </div>
+      )}
+    </Droppable>
+  </DragDropContext>
+);
+
+const ChapterWrapper = ({ children }) => (
+  <DragDropContext onDragEnd={() => {}}>
+    {children}
+  </DragDropContext>
+);
+
 describe('JourneyStop', () => {
   it('renders activity details correctly', () => {
-    render(<JourneyStop activity={mockActivity} dayIndex={0} activityIndex={0} />);
+    render(<TestWrapper><JourneyStop activity={mockActivity} dayIndex={0} activityIndex={0} /></TestWrapper>);
     
     expect(screen.getByText('Eiffel Tower')).toBeInTheDocument();
     expect(screen.getByText('Attraction')).toBeInTheDocument();
@@ -35,22 +55,19 @@ describe('JourneyStop', () => {
   });
 
   it('safely handles missing optional data', () => {
-    render(<JourneyStop activity={{ place_name: 'Missing Data Place' }} dayIndex={0} activityIndex={0} />);
+    render(<TestWrapper><JourneyStop activity={{ place_name: 'Missing Data Place' }} dayIndex={0} activityIndex={0} /></TestWrapper>);
     
     expect(screen.getByText('Missing Data Place')).toBeInTheDocument();
     expect(screen.getByText('Activity')).toBeInTheDocument();
   });
 
   it('expands to show details when clicked', () => {
-    render(<JourneyStop activity={mockActivity} dayIndex={0} activityIndex={0} />);
+    render(<TestWrapper><JourneyStop activity={mockActivity} dayIndex={0} activityIndex={0} /></TestWrapper>);
     
-    // Initially hidden
     expect(screen.queryByText('"Must see in Paris"')).not.toBeInTheDocument();
     
-    // Click to expand
     fireEvent.click(screen.getByRole('button', { expanded: false }));
     
-    // Details should be visible
     expect(screen.getByText('"Must see in Paris"')).toBeInTheDocument();
     expect(screen.getByText('€25')).toBeInTheDocument();
   });
@@ -65,7 +82,7 @@ describe('JourneyTransition', () => {
 
 describe('JourneyChapter', () => {
   it('renders day title and brief', () => {
-    render(<JourneyChapter day={mockDay} dayIndex={0} />);
+    render(<ChapterWrapper><JourneyChapter day={mockDay} dayIndex={0} /></ChapterWrapper>);
     
     expect(screen.getByText('Day 01')).toBeInTheDocument();
     expect(screen.getByText('Classic Paris')).toBeInTheDocument();
@@ -73,7 +90,7 @@ describe('JourneyChapter', () => {
   });
 
   it('renders correct number of stops and transitions', () => {
-    render(<JourneyChapter day={mockDay} dayIndex={0} />);
+    render(<ChapterWrapper><JourneyChapter day={mockDay} dayIndex={0} /></ChapterWrapper>);
     
     expect(screen.getByText('Eiffel Tower')).toBeInTheDocument();
     expect(screen.getByText('Louvre')).toBeInTheDocument();

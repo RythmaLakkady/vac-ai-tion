@@ -1,8 +1,10 @@
 import React from 'react';
+import { Droppable } from '@hello-pangea/dnd';
+import { Plus } from 'lucide-react';
 import JourneyStop from './JourneyStop';
 import JourneyTransition from './JourneyTransition';
 
-export default function JourneyChapter({ day, dayIndex }) {
+export default function JourneyChapter({ day, dayIndex, onDeleteStop, onAddStop, onEditStop }) {
   if (!day || !day.activities || day.activities.length === 0) return null;
 
   return (
@@ -15,24 +17,48 @@ export default function JourneyChapter({ day, dayIndex }) {
         )}
       </div>
 
-      <div className="relative ml-2 sm:ml-4">
-        {/* Subtle vertical line connecting the entire day */}
-        <div className="absolute top-4 bottom-0 left-[7px] w-[2px] bg-border/40 -z-10 hidden sm:block"></div>
-        
-        {day.activities.map((activity, idx) => {
-          const isLast = idx === day.activities.length - 1;
-          const nextActivity = !isLast ? day.activities[idx + 1] : null;
+      <Droppable droppableId={`day-${dayIndex}`} type="activity">
+        {(provided) => (
+          <div 
+            className="relative ml-2 sm:ml-4"
+            {...provided.droppableProps}
+            ref={provided.innerRef}
+          >
+            {/* Subtle vertical line connecting the entire day */}
+            <div className="absolute top-4 bottom-0 left-[7px] w-[2px] bg-border/40 -z-10 hidden sm:block"></div>
+            
+            {day.activities.map((activity, idx) => {
+              const isLast = idx === day.activities.length - 1;
+              const nextActivity = !isLast ? day.activities[idx + 1] : null;
 
-          return (
-            <React.Fragment key={`day-${dayIndex}-stop-${idx}`}>
-              <JourneyStop activity={activity} dayIndex={dayIndex} activityIndex={idx} />
-              {!isLast && (
-                <JourneyTransition fromStop={activity} toStop={nextActivity} />
-              )}
-            </React.Fragment>
-          );
-        })}
-      </div>
+              return (
+                <React.Fragment key={`day-${dayIndex}-stop-${idx}`}>
+                  <JourneyStop 
+                    activity={activity} 
+                    dayIndex={dayIndex} 
+                    activityIndex={idx} 
+                    onDelete={() => onDeleteStop(dayIndex, idx)}
+                    onEdit={(newData) => onEditStop(dayIndex, idx, newData)}
+                  />
+                  {!isLast && (
+                    <JourneyTransition fromStop={activity} toStop={nextActivity} />
+                  )}
+                </React.Fragment>
+              );
+            })}
+            {provided.placeholder}
+            
+            <div className="mt-6 flex items-center justify-center">
+              <button 
+                onClick={() => onAddStop(dayIndex)}
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-dashed border-border/60 text-ink/50 hover:bg-gray-50 hover:text-ink/80 hover:border-border transition-colors text-sm font-medium"
+              >
+                <Plus className="w-4 h-4" /> Add Stop
+              </button>
+            </div>
+          </div>
+        )}
+      </Droppable>
     </div>
   );
 }

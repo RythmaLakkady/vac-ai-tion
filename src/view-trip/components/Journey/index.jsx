@@ -1,8 +1,9 @@
 import React from 'react';
+import { DragDropContext } from '@hello-pangea/dnd';
 import JourneyIntro from './JourneyIntro';
 import JourneyChapter from './JourneyChapter';
 
-export default function Journey({ trip, itinerary }) {
+export default function Journey({ trip, itinerary, setItinerary }) {
   if (!trip && !itinerary) {
     // Loading State
     return (
@@ -35,15 +36,82 @@ export default function Journey({ trip, itinerary }) {
     );
   }
 
+  const handleDragEnd = (result) => {
+    const { source, destination } = result;
+    if (!destination) return;
+    
+    if (source.droppableId === destination.droppableId && source.index === destination.index) {
+        return;
+    }
+
+    const newItinerary = [...itinerary];
+    const sourceDayIdx = parseInt(source.droppableId.replace('day-', ''));
+    const destDayIdx = parseInt(destination.droppableId.replace('day-', ''));
+    
+    const sourceActivities = Array.from(newItinerary[sourceDayIdx].activities || []);
+    const [movedActivity] = sourceActivities.splice(source.index, 1);
+    
+    if (sourceDayIdx === destDayIdx) {
+      sourceActivities.splice(destination.index, 0, movedActivity);
+      newItinerary[sourceDayIdx].activities = sourceActivities;
+    } else {
+      const destActivities = Array.from(newItinerary[destDayIdx].activities || []);
+      destActivities.splice(destination.index, 0, movedActivity);
+      newItinerary[sourceDayIdx].activities = sourceActivities;
+      newItinerary[destDayIdx].activities = destActivities;
+    }
+    
+    // Auto-delete days that have no activities left
+    const filteredItinerary = newItinerary.filter(day => day.activities && day.activities.length > 0);
+    setItinerary(filteredItinerary);
+  };
+
+  const handleDeleteStop = (dayIndex, activityIndex) => {
+    const newItinerary = [...itinerary];
+    newItinerary[dayIndex].activities.splice(activityIndex, 1);
+    const filteredItinerary = newItinerary.filter(day => day.activities && day.activities.length > 0);
+    setItinerary(filteredItinerary);
+  };
+
+  const handleAddStop = (dayIndex) => {
+    const newItinerary = [...itinerary];
+    const newStop = {
+      place_name: "New Stop",
+      category: "Activity",
+      time_travel: "TBD",
+      place_details: "Added manually",
+    };
+    newItinerary[dayIndex].activities.push(newStop);
+    setItinerary(newItinerary);
+  };
+
+  const handleEditStop = (dayIndex, activityIndex, newActivityData) => {
+    const newItinerary = [...itinerary];
+    newItinerary[dayIndex].activities[activityIndex] = {
+      ...newItinerary[dayIndex].activities[activityIndex],
+      ...newActivityData
+    };
+    setItinerary(newItinerary);
+  };
+
   return (
     <div className="max-w-4xl mx-auto pb-24">
       <JourneyIntro trip={trip} />
       
-      <div className="space-y-4">
-        {itinerary.map((day, idx) => (
-          <JourneyChapter key={`day-${idx}`} day={day} dayIndex={idx} />
-        ))}
-      </div>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="space-y-4">
+          {itinerary.map((day, idx) => (
+            <JourneyChapter 
+              key={`day-${idx}`} 
+              day={day} 
+              dayIndex={idx} 
+              onDeleteStop={handleDeleteStop}
+              onAddStop={handleAddStop}
+              onEditStop={handleEditStop}
+            />
+          ))}
+        </div>
+      </DragDropContext>
       
       <div className="mt-16 pt-8 border-t border-border/50 text-center">
         <span className="text-sm font-bold tracking-widest text-ink/30 uppercase">End of Journey</span>
