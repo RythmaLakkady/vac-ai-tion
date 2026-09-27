@@ -9,11 +9,13 @@ export default function TripForm({
   startQuery,
   handleStartSearch,
   startResults,
+  setStartResults,
   setSelectedStartPlace,
   setStartQuery,
   query,
   handleSearch,
   results,
+  setResults,
   setSelectedPlace,
   setQuery,
   customCurrency,
@@ -46,7 +48,7 @@ export default function TripForm({
                         setSelectedStartPlace(place);
                         setStartQuery(place.display_name);
                         setFormData((prev) => ({ ...prev, startLocation: place.display_name }));
-                        setStartResults([]); // Using a prop wouldn't work if it's state from parent unless we pass setStartResults. Actually, we can just clear it here if we pass setStartResults! Wait, I didn't pass setStartResults. Let's just pass `setStartResults`.
+                        if (setStartResults) setStartResults([]);
                       }}
                       className="p-4 cursor-pointer hover:bg-amber/10 flex items-center gap-3 transition-colors text-ink font-sans"
                     >
@@ -80,6 +82,7 @@ export default function TripForm({
                         setSelectedPlace(place);
                         setQuery(place.display_name);
                         setFormData((prev) => ({ ...prev, destination: place.display_name }));
+                        if (setResults) setResults([]);
                       }}
                       className="p-4 cursor-pointer hover:bg-amber/10 flex items-center gap-3 transition-colors text-ink font-sans"
                     >

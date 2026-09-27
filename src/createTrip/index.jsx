@@ -231,11 +231,13 @@ function CreateTrip() {
             startQuery={startQuery}
             handleStartSearch={handleStartSearch}
             startResults={startResults}
+            setStartResults={setStartResults}
             setSelectedStartPlace={setSelectedStartPlace}
             setStartQuery={setStartQuery}
             query={query}
             handleSearch={handleSearch}
             results={results}
+            setResults={setResults}
             setSelectedPlace={setSelectedPlace}
             setQuery={setQuery}
             customCurrency={customCurrency}
