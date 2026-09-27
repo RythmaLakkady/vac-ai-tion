@@ -5,7 +5,9 @@ import JourneyIntro from './JourneyIntro';
 import JourneyChapter from './JourneyChapter';
 import TripMap from './TripMap';
 import DestinationGuide from './DestinationGuide';
+import BudgetPanel from './BudgetPanel';
 import { db } from '@/firebase';
+import { Wallet } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
 
@@ -197,11 +199,27 @@ export default function Journey({ trip, tripId, itinerary, setItinerary }) {
         <div className={`lg:col-span-7 xl:col-span-6 order-1 lg:order-2 ${showMobileMap ? 'fixed inset-0 z-50 bg-background/80 backdrop-blur-sm p-4' : 'hidden lg:block'}`}>
           <div className={`w-full ${showMobileMap ? 'h-full mt-16 shadow-2xl rounded-3xl overflow-hidden' : 'h-[calc(100vh-160px)] sticky top-28'}`}>
             {activeRightPanel === 'MAP' ? (
-              <TripMap 
-                itinerary={itinerary} 
-                selectedStopId={selectedStopId}
-                selectedDayIndex={selectedDayIndex}
-                onStopSelected={handleMapStopSelected} 
+              <>
+                <div className="absolute top-4 right-4 z-[1000] hidden lg:block">
+                  <button 
+                    onClick={() => setActiveRightPanel('BUDGET')}
+                    className="flex items-center gap-2 px-4 py-2 bg-white text-ink rounded-full shadow-lg font-bold text-sm hover:scale-105 transition-transform"
+                  >
+                    <Wallet className="w-4 h-4" /> Trip Budget
+                  </button>
+                </div>
+                <TripMap 
+                  itinerary={itinerary} 
+                  selectedStopId={selectedStopId}
+                  selectedDayIndex={selectedDayIndex}
+                  onStopSelected={handleMapStopSelected} 
+                />
+              </>
+            ) : activeRightPanel === 'BUDGET' ? (
+              <BudgetPanel 
+                trip={trip}
+                itinerary={itinerary}
+                onClose={() => { setActiveRightPanel('MAP'); setShowMobileMap(false); }}
               />
             ) : (
               <DestinationGuide 
@@ -225,13 +243,19 @@ export default function Journey({ trip, tripId, itinerary, setItinerary }) {
         </div>
       </div>
 
-      {/* Mobile Map Toggle */}
-      <div className="lg:hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-40">
+      {/* Mobile Actions */}
+      <div className="lg:hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3">
         <button 
-          onClick={() => setShowMobileMap(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-ink text-white rounded-full shadow-2xl font-medium text-sm hover:scale-105 transition-transform border border-white/20"
+          onClick={() => { setActiveRightPanel('BUDGET'); setShowMobileMap(true); }}
+          className="flex items-center gap-2 px-6 py-3 bg-white text-ink rounded-full shadow-2xl font-bold text-sm hover:scale-105 transition-transform border border-border"
         >
-          <MapIcon className="w-4 h-4" /> View Map
+          <Wallet className="w-4 h-4" /> Budget
+        </button>
+        <button 
+          onClick={() => { setActiveRightPanel('MAP'); setShowMobileMap(true); }}
+          className="flex items-center gap-2 px-6 py-3 bg-ink text-white rounded-full shadow-2xl font-bold text-sm hover:scale-105 transition-transform border border-white/20"
+        >
+          <MapIcon className="w-4 h-4" /> Map
         </button>
       </div>
     </div>

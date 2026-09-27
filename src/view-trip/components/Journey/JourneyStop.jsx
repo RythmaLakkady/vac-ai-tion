@@ -3,6 +3,8 @@ import { Wallet, MoreVertical, MapPin, Edit2, Replace, Trash2, GripVertical, Com
 import { analytics } from '@/service/analyticsService';
 import { Draggable } from '@hello-pangea/dnd';
 import { journeyIntelligence } from '@/service/journeyIntelligence';
+import { priceService } from '@/service/priceService';
+import { auth } from '@/firebase';
 
 export default function JourneyStop({ 
   trip, activity, dayIndex, activityIndex, id, isSelected, 
@@ -12,8 +14,8 @@ export default function JourneyStop({
   const [expanded, setExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   
-  // Nearby / Alternatives state
-  const [activeTab, setActiveTab] = useState(null); // 'nearby' | 'alternatives' | null
+  // Nearby / Alternatives / Compare Prices state
+  const [activeTab, setActiveTab] = useState(null); // 'nearby' | 'alternatives' | 'compare_prices' | null
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
   const [error, setError] = useState(null);
@@ -126,6 +128,47 @@ export default function JourneyStop({
        setLoading(false);
     }
   };
+  const comparePrices = async (e) => {
+    if (e) e.stopPropagation();
+    setActiveTab('compare_prices');
+    setLoading(true);
+    setError(null);
+    analytics.trackEvent('price_comparison_opened', { placeName, category });
+    
+    try {
+       const data = await priceService.comparePrices({
+         destination: placeName,
+         dates: { 
+            start: trip?.tripData?.startDate || new Date().toISOString(), 
+            end: trip?.tripData?.endDate || new Date().toISOString() 
+         },
+         preferences: {
+            userId: auth?.currentUser?.uid || 'anon',
+            budget: trip?.tripData?.budget || 'Affordable Comfort'
+         }
+       });
+       
+       let relevantResults = data.results || [];
+       if (category.toLowerCase().includes('hotel') || category.toLowerCase().includes('accommodation')) {
+          relevantResults = relevantResults.filter(r => r.type === 'Hotel');
+       } else if (category.toLowerCase().includes('flight') || category.toLowerCase().includes('transport') || category.toLowerCase().includes('flight')) {
+          relevantResults = relevantResults.filter(r => r.type === 'Flight');
+       } else {
+          relevantResults = relevantResults.filter(r => r.type === 'Ticket' || r.type === 'Activity');
+       }
+
+       if (relevantResults.length === 0) {
+         setError("No comparable options found.");
+       } else {
+         setResults(relevantResults);
+       }
+    } catch (err) {
+       setError("Live pricing unavailable. Showing available estimates.");
+    } finally {
+       setLoading(false);
+    }
+  };
+
 
 
   
@@ -272,6 +315,12 @@ export default function JourneyStop({
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 text-ink/60 hover:text-ink transition-colors font-medium text-xs"
                         >
                           <Replace className="w-3.5 h-3.5" /> Replace
+                        </button>
+                        <button 
+                          onClick={(e) => comparePrices(e)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors font-medium text-xs"
+                        >
+                          <Wallet className="w-3.5 h-3.5" /> Compare prices
                         </button>
                         <button 
                           onClick={(e) => { setIsEditing(true); }}
@@ -471,6 +520,130 @@ export default function JourneyStop({
                               className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-white bg-ink hover:bg-ink/90 transition-colors"
                             >
                               Replace Stop
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* COMPARE PRICES VIEW */}
+                  {activeTab === 'compare_prices' && (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="flex items-center justify-between mb-4">
+                        <h5 className="font-bold text-ink flex items-center gap-2"><Wallet className="w-4 h-4 text-green-600"/> Compare Options for {placeName}</h5>
+                        <button onClick={() => { setActiveTab(null); setCompareStop(null); }} className="text-gray-400 hover:text-ink p-1"><X className="w-4 h-4" /></button>
+                      </div>
+
+                      {!compareStop ? (
+                        <>
+                          {loading ? (
+                            <div className="py-8 text-center text-gray-400 animate-pulse text-sm">Searching live providers...</div>
+                          ) : error ? (
+                            <div className="py-8 text-center text-red-400 text-sm">{error}</div>
+                          ) : (
+                            <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                              <div className="p-3 bg-gray-50 rounded-xl mb-4 text-xs text-gray-600 flex items-center justify-between border border-border">
+                                <div>
+                                  <span className="font-bold block uppercase tracking-widest text-[10px] text-gray-400">Current Cost</span>
+                                  <span className="font-semibold text-ink text-sm">{cost || 'Unknown'}</span>
+                                </div>
+                                <div className="text-right">
+                                  <span className="font-bold block uppercase tracking-widest text-[10px] text-gray-400">Source</span>
+                                  <span className="capitalize">{costDetails.provenance}</span>
+                                </div>
+                              </div>
+                              {results.map((res, i) => {
+                                // calculate diff visually if possible
+                                let diffLabel = null;
+                                let currentPriceNum = parseFloat((cost || '').replace(/[^0-9.]/g, ''));
+                                let newPriceNum = parseFloat(String(res.price).replace(/[^0-9.]/g, ''));
+                                
+                                if (!isNaN(currentPriceNum) && !isNaN(newPriceNum) && currentPriceNum > 0) {
+                                  let diff = currentPriceNum - newPriceNum;
+                                  if (diff > 0) {
+                                    diffLabel = <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded text-[10px] font-bold">Save ${diff}</span>;
+                                  } else if (diff < 0) {
+                                    diffLabel = <span className="text-red-500 bg-red-50 px-2 py-0.5 rounded text-[10px] font-bold">+${Math.abs(diff)}</span>;
+                                  } else {
+                                    diffLabel = <span className="text-gray-500 bg-gray-100 px-2 py-0.5 rounded text-[10px] font-bold">Same price</span>;
+                                  }
+                                }
+
+                                return (
+                                  <div key={i} className="p-3 rounded-xl border border-border/60 hover:border-amber bg-white transition-all flex items-center justify-between gap-4">
+                                    <div className="min-w-0 flex-1">
+                                      <h6 className="font-bold text-ink text-sm truncate">{res.vendor}</h6>
+                                      <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                                        <span className="font-bold text-amber">${res.price}</span>
+                                        <span>⭐ {res.rating}</span>
+                                        {diffLabel}
+                                      </div>
+                                    </div>
+                                    <button 
+                                      onClick={(e) => {
+                                        analytics.trackEvent('price_option_selected', { vendor: res.vendor, price: res.price });
+                                        handleCompare(e, {
+                                          ...activity,
+                                          place_name: `${activity.place_name} (${res.vendor})`,
+                                          ticket_pricing: `$${res.price}`,
+                                          costState: 'known',
+                                          place_details: `Selected via ${res.vendor}. Refundable: ${res.refundable}. Score: ${res.score}. CO2: ${res.co2Kg}kg`
+                                        });
+                                      }}
+                                      className="px-3 py-1.5 text-xs font-bold text-amber bg-amber/10 rounded-lg hover:bg-amber hover:text-white transition-colors"
+                                    >
+                                      Select
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        /* COMPARE VIEW (REUSED) */
+                        <div className="animate-in fade-in zoom-in-95 duration-200">
+                          <div className="grid grid-cols-2 gap-4 mb-6 relative">
+                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-100 rounded-full p-2 z-10 font-bold text-xs text-gray-500 border border-white">VS</div>
+                            
+                            <div className="bg-gray-50 p-4 rounded-xl border border-border/50 opacity-70">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Current</span>
+                              <h6 className="font-bold text-ink text-sm mb-2 truncate">{placeName}</h6>
+                              <div className="space-y-1.5 text-xs text-gray-500">
+                                <div className="flex items-center gap-1.5" title={`Source: ${costDetails.provenance}`}>
+                                  <Wallet className="w-3.5 h-3.5"/> 
+                                  <span>{cost || 'Unknown cost'}</span>
+                                  <span className="text-[9px] uppercase text-gray-400 ml-1">({costDetails.state})</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-green-50/50 p-4 rounded-xl border border-green-200">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-green-600 mb-1 block">Selected Option</span>
+                              <h6 className="font-bold text-ink text-sm mb-2 truncate">{compareStop.place_name}</h6>
+                              <div className="space-y-1.5 text-xs text-ink/70">
+                                <div className="flex items-center gap-1.5" title="Source: actual provider price">
+                                  <Wallet className="w-3.5 h-3.5 text-green-700"/> 
+                                  <span className="font-bold text-green-800">{compareStop.ticket_pricing !== 'unknown' ? compareStop.ticket_pricing : 'Cost unknown'}</span>
+                                  <span className="text-[9px] uppercase text-green-600 ml-1">(known)</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 mt-4">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setCompareStop(null); }}
+                              className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                            >
+                              Go Back
+                            </button>
+                            <button 
+                              onClick={handleConfirmReplace}
+                              className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-white bg-ink hover:bg-ink/90 transition-colors"
+                            >
+                              Confirm Change
                             </button>
                           </div>
                         </div>
