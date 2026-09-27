@@ -4,11 +4,28 @@ import { Map as MapIcon, X } from 'lucide-react';
 import JourneyIntro from './JourneyIntro';
 import JourneyChapter from './JourneyChapter';
 import TripMap from './TripMap';
+import { db } from '@/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import { toast } from 'sonner';
 
-export default function Journey({ trip, itinerary, setItinerary }) {
+export default function Journey({ trip, tripId, itinerary, setItinerary }) {
   const [selectedStopId, setSelectedStopId] = useState(null);
   const [selectedDayIndex, setSelectedDayIndex] = useState(null);
   const [showMobileMap, setShowMobileMap] = useState(false);
+
+  const saveItinerary = async (newItinerary) => {
+    setItinerary(newItinerary);
+    if (!tripId) return;
+    try {
+      const docRef = doc(db, 'UserTrips', tripId);
+      await updateDoc(docRef, {
+        'tripData.itinerary': newItinerary
+      });
+    } catch (e) {
+      console.error("Failed to persist itinerary updates", e);
+      toast.error('Failed to save changes to cloud');
+    }
+  };
 
   if (!trip && !itinerary) {
     return (
@@ -64,14 +81,14 @@ export default function Journey({ trip, itinerary, setItinerary }) {
     }
     
     const filteredItinerary = newItinerary.filter(day => day.activities && day.activities.length > 0);
-    setItinerary(filteredItinerary);
+    saveItinerary(filteredItinerary);
   };
 
   const handleDeleteStop = (dayIndex, activityIndex) => {
     const newItinerary = [...itinerary];
     newItinerary[dayIndex].activities.splice(activityIndex, 1);
     const filteredItinerary = newItinerary.filter(day => day.activities && day.activities.length > 0);
-    setItinerary(filteredItinerary);
+    saveItinerary(filteredItinerary);
   };
 
   const handleAddStop = (dayIndex) => {
@@ -83,7 +100,7 @@ export default function Journey({ trip, itinerary, setItinerary }) {
       place_details: "Added manually",
     };
     newItinerary[dayIndex].activities.push(newStop);
-    setItinerary(newItinerary);
+    saveItinerary(newItinerary);
   };
 
   const handleEditStop = (dayIndex, activityIndex, newActivityData) => {
@@ -92,13 +109,13 @@ export default function Journey({ trip, itinerary, setItinerary }) {
       ...newItinerary[dayIndex].activities[activityIndex],
       ...newActivityData
     };
-    setItinerary(newItinerary);
+    saveItinerary(newItinerary);
   };
 
   const handleInsertStop = (dayIndex, insertAfterIndex, newActivityData) => {
     const newItinerary = [...itinerary];
     newItinerary[dayIndex].activities.splice(insertAfterIndex + 1, 0, newActivityData);
-    setItinerary(newItinerary);
+    saveItinerary(newItinerary);
   };
 
   const handleReplaceStop = (dayIndex, activityIndex, newActivityData) => {
@@ -107,7 +124,7 @@ export default function Journey({ trip, itinerary, setItinerary }) {
       ...newItinerary[dayIndex].activities[activityIndex],
       ...newActivityData
     };
-    setItinerary(newItinerary);
+    saveItinerary(newItinerary);
   };
 
   const handleMapStopSelected = (stopId, dayIndex) => {

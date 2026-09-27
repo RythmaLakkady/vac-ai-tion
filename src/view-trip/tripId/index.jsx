@@ -5,7 +5,6 @@ import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import Flights from '../components/Flights';
 import Hotels from '../components/Hotels';
-import Itinerary from '../components/Itinerary';
 import WandererNotes from '../components/WandererNotes';
 import AIChatbot from '../../components/ui/custom/AIChatbot';
 import { analytics } from '@/service/analyticsService';
@@ -81,7 +80,7 @@ function ViewTrip() {
         
         {activeView === 'JOURNEY' && (
           <div className='w-full'>
-            <Journey trip={trip} itinerary={itinerary} setItinerary={setItinerary} />
+            <Journey trip={trip} tripId={tripId} itinerary={itinerary} setItinerary={setItinerary} />
           </div>
         )}
         
