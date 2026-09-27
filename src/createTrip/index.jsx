@@ -102,6 +102,7 @@ function CreateTrip() {
   const handleStartSearch = async (e) => {
     const value = e.target.value;
     setStartQuery(value);
+    setFormData(prev => ({ ...prev, startLocation: value }));
     if (value.length > 2) {
       const data = await destinationService.searchDestinations(value);
       setStartResults(data);
@@ -113,6 +114,7 @@ function CreateTrip() {
   const handleSearch = async (e) => {
     const value = e.target.value;
     setQuery(value);
+    setFormData(prev => ({ ...prev, destination: value }));
     if (value.length > 2) {
       const data = await destinationService.searchDestinations(value);
       setResults(data);
