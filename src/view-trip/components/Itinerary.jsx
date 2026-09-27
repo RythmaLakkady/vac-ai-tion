@@ -6,19 +6,12 @@ import { GripVertical, Trash2, Edit2, ExternalLink, BookOpen, Map, ChevronDown, 
 import { motion } from 'framer-motion';
 import { convertPrice } from '../../utils/currencyFormatter';
 
-function Itinerary({ trip, currency, exchangeRates }) {
-  const [itinerary, setItinerary] = useState([]);
+function Itinerary({ trip, currency, exchangeRates, itinerary, setItinerary }) {
   const [collapsedDays, setCollapsedDays] = useState({});
 
   const toggleDay = (index) => {
     setCollapsedDays(prev => ({ ...prev, [index]: !prev[index] }));
   };
-
-  useEffect(() => {
-    if (trip?.tripData?.itinerary && Array.isArray(trip.tripData.itinerary)) {
-      setItinerary(trip.tripData.itinerary);
-    }
-  }, [trip]);
 
   if (!itinerary || itinerary.length === 0) {
     return (
