@@ -95,6 +95,21 @@ export default function Journey({ trip, itinerary, setItinerary }) {
     setItinerary(newItinerary);
   };
 
+  const handleInsertStop = (dayIndex, insertAfterIndex, newActivityData) => {
+    const newItinerary = [...itinerary];
+    newItinerary[dayIndex].activities.splice(insertAfterIndex + 1, 0, newActivityData);
+    setItinerary(newItinerary);
+  };
+
+  const handleReplaceStop = (dayIndex, activityIndex, newActivityData) => {
+    const newItinerary = [...itinerary];
+    newItinerary[dayIndex].activities[activityIndex] = {
+      ...newItinerary[dayIndex].activities[activityIndex],
+      ...newActivityData
+    };
+    setItinerary(newItinerary);
+  };
+
   const handleMapStopSelected = (stopId, dayIndex) => {
     setSelectedStopId(stopId);
     setSelectedDayIndex(dayIndex);
@@ -135,6 +150,8 @@ export default function Journey({ trip, itinerary, setItinerary }) {
                   onDeleteStop={handleDeleteStop}
                   onAddStop={handleAddStop}
                   onEditStop={handleEditStop}
+                  onInsertStop={handleInsertStop}
+                  onReplaceStop={handleReplaceStop}
                   onSelectStop={handleJourneyStopSelected}
                   selectedStopId={selectedStopId}
                 />

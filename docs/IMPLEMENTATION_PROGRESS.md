@@ -24,10 +24,11 @@
 - [x] UX: Editable Itinerary (Drag & Drop)
 
 ## Phase 5 — Travel Intelligence (P2 & P3)
-- [ ] Feature: Destination Guides
-- [ ] UX: Travel Alternatives
-- [ ] Feature: Price Comparison Engine
-- [ ] Feature: Budget Planner
+- [x] Feature: Contextual Journey Actions (Explore Nearby)
+- [x] UX: Contextual Travel Alternatives
+- [ ] Feature: Destination Guides (Contextual layer)
+- [ ] Feature: Price Comparison Engine (Prep done)
+- [ ] Feature: Budget Planner (Prep done)
 
 ## Phase 6 — User Accounts (P3)
 - [ ] Feature: Public Sharing (`/v/{id}`)
