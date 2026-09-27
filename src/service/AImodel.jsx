@@ -1,38 +1,23 @@
-import OpenAI from 'openai';
-
-const systemPrompt = `You are a strict, highly accurate data generator. You MUST output a fully valid JSON object without any syntax errors. Double-check all closing brackets and braces. Do NOT include any markdown formatting, conversational text, or trailing commas.`;
-
-let client;
-
-function getClient() {
-  if (!client) {
-    const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-    if (!apiKey) {
-      throw new Error(
-        'Missing GROQ API key. Please set the VITE_GROQ_API_KEY environment variable.'
-      );
-    }
-    client = new OpenAI({
-      apiKey,
-      baseURL: 'https://api.groq.com/openai/v1',
-      dangerouslyAllowBrowser: true,
-    });
-  }
-  return client;
-}
+import { FUNCTION_URL } from './config';
 
 export const chatSession = {
   async sendMessage(prompt) {
-    const response = await client.chat.completions.create({
-      model: 'openai/gpt-oss-20b',
-      max_tokens: 3500,
-      temperature: 0.2,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: prompt }
-      ]
-    });
-    const text = response.choices[0].message.content;
-    return { response: { text: () => text } };
+    try {
+      const response = await fetch(`${FUNCTION_URL}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      return { response: { text: () => data.text } };
+    } catch (error) {
+      console.error("Chat Session Error:", error);
+      throw error;
+    }
   }
 };

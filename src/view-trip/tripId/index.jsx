@@ -9,6 +9,7 @@ import Hotels from '../components/Hotels';
 import Itinerary from '../components/Itinerary';
 import WandererNotes from '../components/WandererNotes';
 import AIChatbot from '../../components/ui/custom/AIChatbot';
+import { analytics } from '@/service/analyticsService';
 
 function ViewTrip() {
   const { tripId } = useParams();
@@ -35,8 +36,12 @@ function ViewTrip() {
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        console.log('document: ', docSnap.data());
-        setTrip(docSnap.data());
+        const data = docSnap.data();
+        setTrip(data);
+        analytics.trackEvent('itinerary_viewed', { 
+          tripId, 
+          destination: data?.tripData?.location || data?.userSelection?.destination 
+        });
       } else {
         console.log('no such doc');
         toast('No trip found');

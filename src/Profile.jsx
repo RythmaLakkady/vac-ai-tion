@@ -3,8 +3,8 @@ import { signOut } from "firebase/auth";
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Link } from "react-router-dom";
 import { auth, db } from "./firebase";
-import { motion } from "framer-motion";
-import { LogOut, Map, Calendar, Users, Globe2, Plane, Sparkles, Trash2, MapPin, HeartPulse } from "lucide-react";
+import { HeartPulse } from "lucide-react";
+import { destinationService } from "@/service/destinationService";
 
 function Profile() {
   const [user, setUser] = useState(null);
@@ -86,13 +86,8 @@ function Profile() {
     const value = e.target.value;
     setNewNoteDestination(value);
     if (value.length > 2) {
-      try {
-        const res = await fetch(`https://api.locationiq.com/v1/autocomplete.php?key=${import.meta.env.VITE__LOCATION_IQ_API_KEY}&q=${value}&limit=5&format=json`);
-        const data = await res.json();
-        setDestinationResults(data);
-      } catch (error) {
-        console.error("Autocomplete error:", error);
-      }
+      const data = await destinationService.searchDestinations(value);
+      setDestinationResults(data);
     } else {
       setDestinationResults([]);
     }

@@ -6,17 +6,17 @@
 - [x] Create `PRODUCTION_ROADMAP.md`
 
 ## Phase 2 — Stabilize (P0)
-- [ ] Security: Remove Client-Side Secrets
-- [ ] Security: Remove Hardcoded Firebase Key
-- [ ] Security: Fix Firestore Rules
-- [ ] Reliability: Setup internal Cloud Functions properly
+- [x] Security: Remove Client-Side Secrets
+- [x] Security: Remove Hardcoded Firebase Key
+- [x] Security: Fix Firestore Rules
+- [x] Reliability: Setup internal Cloud Functions properly
 
 ## Phase 3 — Production Foundation (P1)
-- [ ] Observability: Analytics Tracking
-- [ ] Reliability: Error Boundaries & Handling
-- [ ] Architecture: Refactor `createTrip/index.jsx`
-- [ ] Performance: Lazy Loading
-- [ ] Testing: Setup Vitest & Playwright
+- [x] Observability: Analytics Tracking
+- [x] Reliability: Error Boundaries & Handling
+- [x] Architecture: Refactor `createTrip/index.jsx`
+- [x] Performance: Lazy Loading
+- [x] Testing: Setup Vitest & Playwright
 
 ## Phase 4 — UX Redesign (P2)
 - [ ] UX: Visual Trip Roadmap
