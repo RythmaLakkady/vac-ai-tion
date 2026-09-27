@@ -4,7 +4,7 @@ import { Plus } from 'lucide-react';
 import JourneyStop from './JourneyStop';
 import JourneyTransition from './JourneyTransition';
 
-export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAddStop, onEditStop, onInsertStop, onReplaceStop, onSelectStop, selectedStopId }) {
+export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAddStop, onEditStop, onInsertStop, onReplaceStop, onSelectStop, onExploreArea, selectedStopId }) {
   if (!day || !day.activities || day.activities.length === 0) return null;
 
   return (
@@ -45,6 +45,11 @@ export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAd
                     onInsert={(newData) => onInsertStop(dayIndex, idx, newData)}
                     onReplace={(newData) => onReplaceStop(dayIndex, idx, newData)}
                     onSelect={() => onSelectStop(`day-${dayIndex}-stop-${idx}`, dayIndex)}
+                    onExploreArea={() => onExploreArea({
+                      activity, dayIndex, activityIndex: idx, 
+                      previousActivity: idx > 0 ? day.activities[idx - 1] : null,
+                      nextActivity: !isLast ? day.activities[idx + 1] : null
+                    })}
                     previousActivity={idx > 0 ? day.activities[idx - 1] : null}
                     nextActivity={nextActivity}
                   />

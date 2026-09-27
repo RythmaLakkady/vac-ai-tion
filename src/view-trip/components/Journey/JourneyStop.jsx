@@ -6,7 +6,7 @@ import { journeyIntelligence } from '@/service/journeyIntelligence';
 
 export default function JourneyStop({ 
   trip, activity, dayIndex, activityIndex, id, isSelected, 
-  onDelete, onEdit, onInsert, onReplace, onSelect,
+  onDelete, onEdit, onInsert, onReplace, onSelect, onExploreArea,
   previousActivity, nextActivity 
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -256,7 +256,7 @@ export default function JourneyStop({
                       {/* Action Bar */}
                       <div className="flex flex-wrap items-center gap-2 mt-6 pt-4 border-t border-border/30">
                         <button 
-                          onClick={(e) => { e.stopPropagation(); toast('Destination guide context layer coming soon!'); analytics.trackEvent('destination_guide_preview_clicked'); }}
+                          onClick={(e) => { e.stopPropagation(); onExploreArea?.(); }}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors font-medium text-xs"
                         >
                           <MapPin className="w-3.5 h-3.5" /> Explore {activity?.location || 'Area'}

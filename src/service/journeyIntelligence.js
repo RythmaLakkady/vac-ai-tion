@@ -146,5 +146,46 @@ export const journeyIntelligence = {
       costImpact: costAdded ? `+${costAdded} estimated` : null,
       compatible: true
     };
+  },
+
+  async getDestinationContext(context) {
+    const prompt = `
+      Act as a contextual travel guide for a user currently planning their trip.
+      Destination Area: ${context.location}
+      Current Stop: ${context.currentStop?.place_name || 'Unknown'}
+      Previous Stop: ${context.previousStop?.place_name || 'Start of day'}
+      Next Stop: ${context.nextStop?.place_name || 'End of day'}
+      Trip Profile: ${context.traveler || 'Unknown'} traveler, Budget: ${context.budget || 'Unknown'}
+      
+      Generate a contextual guide that helps the user understand how this location fits into their SPECIFIC journey.
+      Return ONLY a valid JSON object with EXACTLY this structure:
+      {
+        "overview": "Short editorial introduction to this area.",
+        "why_here": "Explain the relationship between this area and their current journey (e.g. 'You are spending the afternoon here between X and Y...'). DO NOT fabricate itinerary relationships.",
+        "know_before_you_go": [
+          "Practical tip 1 (e.g., opening considerations, etiquette)",
+          "Practical tip 2"
+        ],
+        "journey_impact": [
+          "Actionable advice (e.g. 'This museum usually takes 3 hours. Consider moving your next stop later.')",
+          "Actionable advice 2"
+        ],
+        "useful_resources": [
+          { "title": "Official Tourism Board", "reason": "Official info", "url": "https://example.com" }
+        ]
+      }
+    `;
+
+    try {
+      const result = await chatSession.sendMessage(prompt);
+      const text = await result.response.text();
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("Failed to parse guide context");
+      
+      return JSON.parse(jsonMatch[0]);
+    } catch (e) {
+      console.error("Destination context failed:", e);
+      throw new Error("Destination guide is temporarily unavailable.");
+    }
   }
 };

@@ -26,7 +26,7 @@
 ## Phase 5 — Travel Intelligence (P2 & P3)
 - [x] Feature: Contextual Journey Actions (Explore Nearby)
 - [x] UX: Contextual Travel Alternatives
-- [ ] Feature: Destination Guides (Contextual layer)
+- [x] Feature: Destination Guides (Phase 5B - Contextual Journey Panel)
 - [ ] Feature: Price Comparison Engine (Prep done)
 - [ ] Feature: Budget Planner (Prep done)
 

@@ -4,6 +4,7 @@ import { Map as MapIcon, X } from 'lucide-react';
 import JourneyIntro from './JourneyIntro';
 import JourneyChapter from './JourneyChapter';
 import TripMap from './TripMap';
+import DestinationGuide from './DestinationGuide';
 import { db } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
@@ -12,6 +13,8 @@ export default function Journey({ trip, tripId, itinerary, setItinerary }) {
   const [selectedStopId, setSelectedStopId] = useState(null);
   const [selectedDayIndex, setSelectedDayIndex] = useState(null);
   const [showMobileMap, setShowMobileMap] = useState(false);
+  const [activeRightPanel, setActiveRightPanel] = useState('MAP'); // 'MAP' | 'GUIDE'
+  const [guideContext, setGuideContext] = useState(null);
 
   const saveItinerary = async (newItinerary) => {
     setItinerary(newItinerary);
@@ -148,6 +151,14 @@ export default function Journey({ trip, tripId, itinerary, setItinerary }) {
     setSelectedDayIndex(dayIndex);
   };
 
+  const handleExploreArea = (contextualStop) => {
+    setGuideContext(contextualStop);
+    setActiveRightPanel('GUIDE');
+    if (window.innerWidth < 1024) {
+      setShowMobileMap(true); // Reusing this to show the modal container on mobile
+    }
+  };
+
   return (
     <div className="w-full pb-24 relative">
       <div className="max-w-4xl mx-auto mb-8">
@@ -171,6 +182,7 @@ export default function Journey({ trip, tripId, itinerary, setItinerary }) {
                   onInsertStop={handleInsertStop}
                   onReplaceStop={handleReplaceStop}
                   onSelectStop={handleJourneyStopSelected}
+                  onExploreArea={handleExploreArea}
                   selectedStopId={selectedStopId}
                 />
               ))}
@@ -184,12 +196,23 @@ export default function Journey({ trip, tripId, itinerary, setItinerary }) {
         {/* Right Column: Trip Map */}
         <div className={`lg:col-span-7 xl:col-span-6 order-1 lg:order-2 ${showMobileMap ? 'fixed inset-0 z-50 bg-background/80 backdrop-blur-sm p-4' : 'hidden lg:block'}`}>
           <div className={`w-full ${showMobileMap ? 'h-full mt-16 shadow-2xl rounded-3xl overflow-hidden' : 'h-[calc(100vh-160px)] sticky top-28'}`}>
-            <TripMap 
-              itinerary={itinerary} 
-              selectedStopId={selectedStopId}
-              selectedDayIndex={selectedDayIndex}
-              onStopSelected={handleMapStopSelected} 
-            />
+            {activeRightPanel === 'MAP' ? (
+              <TripMap 
+                itinerary={itinerary} 
+                selectedStopId={selectedStopId}
+                selectedDayIndex={selectedDayIndex}
+                onStopSelected={handleMapStopSelected} 
+              />
+            ) : (
+              <DestinationGuide 
+                trip={trip}
+                contextualStop={guideContext}
+                onClose={() => { setActiveRightPanel('MAP'); setGuideContext(null); setShowMobileMap(false); }}
+                onAddStop={(stop) => { 
+                  if(guideContext) handleInsertStop(guideContext.dayIndex, guideContext.activityIndex, stop);
+                }}
+              />
+            )}
           </div>
           {showMobileMap && (
             <button 
