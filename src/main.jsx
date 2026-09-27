@@ -3,13 +3,23 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
-import CreateTrip from './createTrip';
-import SignUpForm from './SignUpForm';
-import LoginPage from './LoginPage';
-import Profile from './Profile';
-import Hero from './components/ui/custom/Dashboard';  // Assuming Hero is a component
-import ViewTrip from './view-trip/tripId';
-import ComparePrices from './createTrip/ComparePrices';
+import { Suspense, lazy } from 'react';
+import { ErrorBoundary } from './components/ErrorBoundary';
+
+const Hero = lazy(() => import('./components/ui/custom/Dashboard'));
+const CreateTrip = lazy(() => import('./createTrip'));
+const SignUpForm = lazy(() => import('./SignUpForm'));
+const LoginPage = lazy(() => import('./LoginPage'));
+const Profile = lazy(() => import('./Profile'));
+const ViewTrip = lazy(() => import('./view-trip/tripId'));
+const ComparePrices = lazy(() => import('./createTrip/ComparePrices'));
+const AdminDashboard = lazy(() => import('./admin/AdminDashboard'));
+
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber"></div>
+  </div>
+);
 
 const router = createBrowserRouter([
   {
@@ -44,12 +54,20 @@ const router = createBrowserRouter([
         path: '/compare-prices',
         element: <ComparePrices />,
       },
+      {
+        path: '/admin',
+        element: <AdminDashboard />,
+      },
     ],
   },
 ]);
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingFallback />}>
+        <RouterProvider router={router} />
+      </Suspense>
+    </ErrorBoundary>
   </StrictMode>
 );

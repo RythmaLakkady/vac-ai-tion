@@ -12,5 +12,11 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: ['.vercel.run', '.vercel.app', 'localhost']
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.js',
+    css: true,
   }
 })

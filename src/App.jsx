@@ -6,8 +6,15 @@ import { Toaster } from './components/ui/sonner';
 import Cursor from './components/ui/custom/Cursor';
 import Footer from './components/ui/custom/Footer';
 
+import { analytics } from './service/analyticsService';
+import { useEffect } from 'react';
+
 function App() {
   const location = useLocation();
+
+  useEffect(() => {
+    analytics.pageView(location.pathname);
+  }, [location.pathname]);
 
   return (
     <div>

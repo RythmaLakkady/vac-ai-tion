@@ -1,3 +1,4 @@
+const { onRequest } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 const express = require("express");
 const cors = require("cors");
@@ -40,6 +41,35 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json());
 
+// Rate Limiting Middleware
+const rateLimit = async (req, res, next) => {
+  const ip = req.ip || req.connection.remoteAddress || 'unknown';
+  const db = admin.firestore();
+  const ref = db.collection("rateLimits").doc(ip.replace(/:/g, '_'));
+  
+  try {
+    const doc = await ref.get();
+    const now = Date.now();
+    if (doc.exists) {
+      const data = doc.data();
+      if (now - data.timestamp < 60000 && data.count >= 10) {
+        return res.status(429).json({ error: "Too many requests. Please try again later." });
+      }
+      if (now - data.timestamp > 60000) {
+        await ref.set({ count: 1, timestamp: now });
+      } else {
+        await ref.update({ count: admin.firestore.FieldValue.increment(1) });
+      }
+    } else {
+      await ref.set({ count: 1, timestamp: now });
+    }
+    next();
+  } catch (err) {
+    next(); // fail open
+  }
+};
+app.use(rateLimit);
+
 // ── Mock vendor fetcher ──────────────────────────────────
 async function fetchVendorPrices(destination, _dates) {
   const base = destination.length * 12;
@@ -57,7 +87,8 @@ async function fetchVendorPrices(destination, _dates) {
 
 // ── POST /compare ────────────────────────────────────────
 app.post("/compare", async (req, res) => {
-  const { destination, dates, preferences, groqApiKey } = req.body;
+  const { destination, dates, preferences } = req.body;
+  const groqApiKey = process.env.GROQ_API_KEY;
 
   if (!destination || !dates) {
     return res.status(400).json({ error: "destination and dates are required" });
@@ -119,7 +150,8 @@ app.post("/compare", async (req, res) => {
 
 // ── POST /create-job ─────────────────────────────────────
 app.post("/create-job", async (req, res) => {
-  const { startLocation, destination, days, budget, travelers, travelStyle, savedNotes, userId, userEmail, groqApiKey, prebookedFlights, prebookedHotels } = req.body;
+  const { startLocation, destination, days, budget, travelers, travelStyle, savedNotes, userId, userEmail, prebookedFlights, prebookedHotels } = req.body;
+  const groqApiKey = process.env.GROQ_API_KEY;
 
   if (!destination || !days || !budget || !travelers) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -161,11 +193,8 @@ app.post("/create-job", async (req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Fire and forget the orchestrator (Runs in the background on Render/Railway)
-    // We do NOT await this, so the frontend gets a quick 202 response.
     runAgentOrchestrator(jobId, { startLocation, destination, days: Number(days), budget, travelers, travelStyle, savedNotes, userId, userEmail, prebookedFlights, prebookedHotels }, groqApiKey)
       .then(async () => {
-        // Cache if successful
         const updatedSnap = await jobRef.get();
         const updatedData = updatedSnap.data();
         if (updatedData?.status === "completed" && updatedData?.tripData) {
@@ -181,12 +210,61 @@ app.post("/create-job", async (req, res) => {
   }
 });
 
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok", service: "price-aggregator-express" });
+// ── POST /chat ───────────────────────────────────────────
+app.post("/chat", async (req, res) => {
+  const { prompt } = req.body;
+  const groqApiKey = process.env.GROQ_API_KEY;
+  if (!groqApiKey) return res.status(500).json({ error: "Missing API Key on Server" });
+  
+  try {
+    const systemPrompt = `You are an elite travel AI assistant for 'vac-ai-tion'. You MUST output a fully valid JSON object when requested, without any syntax errors. Double-check all closing brackets and braces. Do NOT include any markdown formatting, conversational text, or trailing commas if asked for strict JSON.`;
+    
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${groqApiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-oss-20b",
+        max_tokens: 3500,
+        temperature: 0.2,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompt }
+        ]
+      })
+    });
+    const groqData = await groqRes.json();
+    if (groqData?.choices?.[0]?.message?.content) {
+      res.json({ text: groqData.choices[0].message.content });
+    } else {
+      res.status(500).json({ error: "No response from AI" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Standard Express server startup
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+// ── GET /autocomplete ────────────────────────────────────
+app.get("/autocomplete", async (req, res) => {
+  const { q } = req.query;
+  const locationIqKey = process.env.LOCATION_IQ_API_KEY;
+  if (!locationIqKey) return res.status(500).json({ error: "Missing LocationIQ API Key on Server" });
+  if (!q) return res.status(400).json({ error: "Missing query" });
+  
+  try {
+    const url = `https://api.locationiq.com/v1/autocomplete.php?key=${locationIqKey}&q=${encodeURIComponent(q)}&limit=5&format=json`;
+    const locationRes = await fetch(url);
+    const data = await locationRes.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
+
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok", service: "vac-ai-tion-api" });
+});
+
+exports.api = onRequest({ maxInstances: 10, cors: true }, app);

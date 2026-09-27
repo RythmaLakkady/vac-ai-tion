@@ -14,10 +14,8 @@ import { Bar } from "react-chartjs-2";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
-const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-const FUNCTION_URL = import.meta.env.VITE_PRICE_FUNCTION_URL || 
-  (isLocal ? "http://127.0.0.1:8080" 
-           : "https://us-central1-wandergen---ai-travel-planner.cloudfunctions.net/priceAggregator");
+import { destinationService } from "@/service/destinationService";
+import { priceService } from "@/service/priceService";
 
 const BUDGET_OPTIONS = ["Low-Cost", "Affordable Comfort", "Luxury"];
 
@@ -35,10 +33,7 @@ export default function ComparePrices() {
 
     if (value.length > 2) {
       try {
-        const res = await fetch(
-          `https://api.locationiq.com/v1/autocomplete.php?key=${import.meta.env.VITE__LOCATION_IQ_API_KEY}&q=${value}&limit=5&format=json`
-        );
-        const data = await res.json();
+        const data = await destinationService.searchDestinations(value);
         setSearchResults(data);
       } catch (error) {
         console.error("Error fetching autocomplete data:", error);
@@ -83,26 +78,17 @@ export default function ComparePrices() {
     setLoading(true);
 
     try {
-      const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
-
-      const res = await fetch(`${FUNCTION_URL}/compare`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          destination,
-          dates: { start: startDate, end: endDate },
-          groqApiKey,
-          preferences: {
-            userId: auth.currentUser?.uid || "anon",
-            budget,
-            prefersRefundable,
-            ecoConscious,
-          },
-        }),
+      const data = await priceService.comparePrices({
+        destination,
+        dates: { start: startDate, end: endDate },
+        preferences: {
+          userId: auth.currentUser?.uid || "anon",
+          budget,
+          prefersRefundable,
+          ecoConscious,
+        },
       });
 
-      if (!res.ok) throw new Error(`Server error ${res.status}`);
-      const data = await res.json();
       setRawResults(data.results || []);
       setInsights(data.insights || "");
     } catch (err) {

@@ -3,38 +3,57 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Existing trips — anyone can read, authenticated users can write
+    // UserTrips — only owner can read, create, update, or delete
     match /UserTrips/{tripId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
 
-    // Price searches — Cloud Function (admin SDK) writes;
-    // users can read their own searches for history chart
+    // UserNotes — only owner can read and write
+    match /UserNotes/{noteId} {
+      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // UserProfiles — each user reads/writes only their own profile
+    match /UserProfiles/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Price searches — Cloud Function writes; users read own history
     match /priceSearches/{docId} {
-      allow read: if request.auth != null
-                  && resource.data.userId == request.auth.uid;
-      allow write: if false; // admin SDK bypasses rules
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow write: if false; 
     }
 
     // User preferences — each user reads/writes only their own doc
     match /userPreferences/{userId} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == userId;
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Agent jobs — users can read their own jobs (onSnapshot listener)
-    // Cloud Function (admin SDK) handles writes
+    // Agent jobs — users read their own jobs, Cloud Function writes
     match /agentJobs/{jobId} {
-      allow read: if request.auth != null;
-      allow write: if false; // admin SDK bypasses rules
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow write: if false; 
     }
 
-    // Itinerary cache — read-only for authenticated users
-    // Cloud Function (admin SDK) handles writes
+    // Itinerary cache — read-only for authenticated users, function writes
     match /itineraryCache/{docId} {
       allow read: if request.auth != null;
-      allow write: if false; // admin SDK bypasses rules
+      allow write: if false; 
+    }
+
+    // Admins - Read-only for checking own status
+    match /Admins/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; 
+    }
+
+    // Analytics — append-only by anyone, read by admins
+    match /analytics_events/{eventId} {
+      allow create: if true;
+      allow read: if request.auth != null && exists(/databases/$(database)/documents/Admins/$(request.auth.uid));
+      allow update, delete: if false;
     }
   }
 }
