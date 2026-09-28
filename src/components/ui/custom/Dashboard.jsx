@@ -28,76 +28,29 @@ const features = [
 ];
 
 function FeatureCard({ feature, i }) {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 20 });
-  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 20 });
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
-
-  const handleMouseMove = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
-    x.set(xPct);
-    y.set(yPct);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.7, delay: i * 0.15, ease: "easeOut" }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        rotateX,
-        rotateY,
-        transformStyle: "preserve-3d",
-      }}
-      className="group relative rounded-[2rem] p-8 text-left border border-white/60 bg-card/80 backdrop-blur-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-colors duration-300 hover:border-amber/40 hover:bg-card/90 cursor-default"
+      className="group relative rounded-3xl p-8 text-left border border-border/60 bg-card shadow-sm transition-all duration-300 hover:border-amber/40 hover:shadow-md cursor-default"
     >
       <div 
-        className="mb-8 inline-flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber/20 to-orange-500/20 text-orange-600 shadow-inner border border-orange-500/10 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-2"
-        style={{ transform: "translateZ(40px)" }}
+        className="mb-8 inline-flex size-14 items-center justify-center rounded-xl bg-amber/10 text-orange-600 transition-transform duration-300 group-hover:scale-110"
       >
         {feature.icon}
       </div>
       <h3 
-        className="mb-4 text-2xl font-bold text-ink tracking-tight"
-        style={{ transform: "translateZ(30px)" }}
+        className="mb-4 text-xl font-bold text-ink tracking-tight"
       >
         {feature.title}
       </h3>
       <p 
-        className="text-muted-foreground leading-relaxed text-[1.05rem]"
-        style={{ transform: "translateZ(20px)" }}
+        className="text-muted-foreground leading-relaxed"
       >
         {feature.description}
       </p>
-      
-      {/* Dynamic Glow */}
-      <motion.div 
-        className="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-        style={{
-          background: useTransform(
-            () => `radial-gradient(800px circle at ${(x.get() + 0.5) * 100}% ${(y.get() + 0.5) * 100}%, rgba(251,146,60,0.06), transparent 40%)`
-          )
-        }}
-      />
-      <div className="absolute inset-0 -z-20 rounded-[2rem] bg-gradient-to-br from-white/40 to-transparent opacity-50" />
     </motion.div>
   );
 }

@@ -222,7 +222,7 @@ function CreateTrip() {
       </div>
 
       {/* Main Form Content */}
-      <div className="bg-card/80 backdrop-blur-2xl rounded-[40px] shadow-2xl border border-border/50 p-10 md:p-16 min-h-[400px] flex flex-col justify-center">
+      <div className="bg-card rounded-[32px] shadow-sm border border-border p-10 md:p-16 min-h-[400px] flex flex-col justify-center">
         <AnimatePresence mode="wait">
           <TripForm 
             step={step}
@@ -262,7 +262,7 @@ function CreateTrip() {
           <button 
             disabled={loading}
             onClick={onGenerateWithAgents} 
-            className="flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-amber to-coral text-primary-foreground rounded-full font-bold text-lg hover:shadow-[0_20px_40px_-15px_rgba(90,161,150,0.5)] transition-all hover:-translate-y-1 disabled:opacity-50"
+            className="flex items-center gap-3 px-10 py-4 bg-ink text-white rounded-full font-bold text-lg hover:bg-black transition-all hover:-translate-y-1 disabled:opacity-50"
           >
             {loading ? "Initializing Swarm..." : "Generate Itinerary"}
             {!loading && <PlaneTakeoff className="w-5 h-5" />}

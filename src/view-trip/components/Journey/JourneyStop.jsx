@@ -297,40 +297,40 @@ export default function JourneyStop({
                       </div>
 
                       {/* Action Bar */}
-                      <div className="flex flex-wrap items-center gap-2 mt-6 pt-4 border-t border-border/30">
+                      <div className="flex flex-wrap items-center gap-4 mt-6 pt-4 border-t border-border/30 text-xs font-medium text-ink/50">
                         <button 
                           onClick={(e) => { e.stopPropagation(); onExploreArea?.(); }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors font-medium text-xs"
+                          className="flex items-center gap-1.5 hover:text-ink transition-colors"
                         >
                           <MapPin className="w-3.5 h-3.5" /> Explore {activity?.location || 'Area'}
                         </button>
                         <button 
                           onClick={(e) => exploreNearby(e, 'Cafés')}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber/10 text-amber hover:bg-amber hover:text-white transition-colors font-medium text-xs"
+                          className="flex items-center gap-1.5 hover:text-ink transition-colors"
                         >
-                          <Compass className="w-3.5 h-3.5" /> Explore nearby
+                          <Compass className="w-3.5 h-3.5" /> Nearby
                         </button>
                         <button 
                           onClick={(e) => exploreAlternatives(e, 'closer')}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 text-ink/60 hover:text-ink transition-colors font-medium text-xs"
+                          className="flex items-center gap-1.5 hover:text-ink transition-colors"
                         >
                           <Replace className="w-3.5 h-3.5" /> Replace
                         </button>
                         <button 
                           onClick={(e) => comparePrices(e)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors font-medium text-xs"
+                          className="flex items-center gap-1.5 hover:text-ink transition-colors"
                         >
                           <Wallet className="w-3.5 h-3.5" /> Compare prices
                         </button>
                         <button 
                           onClick={(e) => { setIsEditing(true); }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 text-ink/60 hover:text-ink transition-colors font-medium text-xs"
+                          className="flex items-center gap-1.5 hover:text-ink transition-colors"
                         >
                           <Edit2 className="w-3.5 h-3.5" /> Edit
                         </button>
                         <button 
                           onClick={(e) => { onDelete?.(); }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-red-50 text-ink/60 hover:text-red-500 transition-colors font-medium text-xs ml-auto"
+                          className="flex items-center gap-1.5 hover:text-red-500 transition-colors ml-auto"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
