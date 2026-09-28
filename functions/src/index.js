@@ -267,4 +267,4 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "vac-ai-tion-api" });
 });
 
-exports.api = onRequest({ maxInstances: 10, cors: true }, app);
+exports.api = onRequest({ maxInstances: 10 }, app);
