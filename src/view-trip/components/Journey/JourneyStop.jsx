@@ -5,11 +5,12 @@ import { Draggable } from '@hello-pangea/dnd';
 import { journeyIntelligence } from '@/service/journeyIntelligence';
 import { priceService } from '@/service/priceService';
 import { auth } from '@/firebase';
+import { convertPrice } from '../../../utils/currencyFormatter';
 
 export default function JourneyStop({ 
   trip, activity, dayIndex, activityIndex, id, isSelected, 
   onDelete, onEdit, onInsert, onReplace, onSelect, onExploreArea,
-  previousActivity, nextActivity 
+  previousActivity, nextActivity, currency, exchangeRates 
 }) {
   const [expanded, setExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -51,7 +52,7 @@ export default function JourneyStop({
   };
 
   const costDetails = getCostDetails(activity);
-  const cost = costDetails.amount !== null ? costDetails.display : null;
+  const cost = costDetails.amount !== null ? convertPrice(String(costDetails.display), currency, exchangeRates) : null;
   const why = activity?.importance || null;
   const lat = activity?.geo_coordinates?.lat || activity?.geo_coordinates?.latitude;
   const lng = activity?.geo_coordinates?.lng || activity?.geo_coordinates?.longitude;
@@ -462,7 +463,7 @@ export default function JourneyStop({
                                   <p className="text-sm text-gray-600 mb-2">{res.place_details}</p>
                                   <div className="flex items-center gap-3 text-xs font-semibold text-gray-500">
                                     <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {res.time_travel}</span>
-                                    {res.ticket_pricing !== 'unknown' && <span className="flex items-center gap-1"><Wallet className="w-3.5 h-3.5" /> {res.ticket_pricing}</span>}
+                                    {res.ticket_pricing !== 'unknown' && <span className="flex items-center gap-1"><Wallet className="w-3.5 h-3.5" /> {convertPrice(String(res.ticket_pricing), currency, exchangeRates)}</span>}
                                   </div>
                                 </div>
                               ))}
@@ -497,7 +498,7 @@ export default function JourneyStop({
                                 <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5"/> {compareStop.time_travel}</div>
                                 <div className="flex items-center gap-1.5" title={`Source: ${compareStop.costState || 'estimated'}`}>
                                   <Wallet className="w-3.5 h-3.5"/> 
-                                  <span>{compareStop.ticket_pricing !== 'unknown' ? compareStop.ticket_pricing : 'Cost unknown'}</span>
+                                  <span>{compareStop.ticket_pricing !== 'unknown' ? convertPrice(String(compareStop.ticket_pricing), currency, exchangeRates) : 'Cost unknown'}</span>
                                   {compareStop.costState === 'estimated' && <span className="text-[9px] uppercase text-amber/60 ml-1">Est</span>}
                                 </div>
                               </div>
@@ -575,7 +576,7 @@ export default function JourneyStop({
                                     <div className="min-w-0 flex-1">
                                       <h6 className="font-bold text-ink text-sm truncate">{res.vendor}</h6>
                                       <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-                                        <span className="font-bold text-amber">${res.price}</span>
+                                        <span className="font-bold text-amber">{convertPrice('$' + res.price, currency, exchangeRates)}</span>
                                         <span>⭐ {res.rating}</span>
                                         {diffLabel}
                                       </div>
@@ -625,7 +626,7 @@ export default function JourneyStop({
                               <div className="space-y-1.5 text-xs text-ink/70">
                                 <div className="flex items-center gap-1.5" title="Source: actual provider price">
                                   <Wallet className="w-3.5 h-3.5 text-green-700"/> 
-                                  <span className="font-bold text-green-800">{compareStop.ticket_pricing !== 'unknown' ? compareStop.ticket_pricing : 'Cost unknown'}</span>
+                                  <span className="font-bold text-green-800">{compareStop.ticket_pricing !== 'unknown' ? convertPrice(String(compareStop.ticket_pricing), currency, exchangeRates) : 'Cost unknown'}</span>
                                   <span className="text-[9px] uppercase text-green-600 ml-1">(known)</span>
                                 </div>
                               </div>

@@ -10,7 +10,7 @@ import { Wallet } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
 
-export default function Journey({ trip, tripId, itinerary, setItinerary }) {
+export default function Journey({ trip, tripId, itinerary, setItinerary, currency, exchangeRates }) {
   const [selectedStopId, setSelectedStopId] = useState(null);
   const [selectedDayIndex, setSelectedDayIndex] = useState(null);
   const [showMobileMap, setShowMobileMap] = useState(false);
@@ -181,6 +181,8 @@ export default function Journey({ trip, tripId, itinerary, setItinerary }) {
                   onSelectStop={handleJourneyStopSelected}
                   onExploreArea={handleExploreArea}
                   selectedStopId={selectedStopId}
+                  currency={currency}
+                  exchangeRates={exchangeRates}
                 />
               ))}
             </div>
@@ -214,6 +216,8 @@ export default function Journey({ trip, tripId, itinerary, setItinerary }) {
               <BudgetPanel 
                 trip={trip}
                 itinerary={itinerary}
+                currency={currency}
+                exchangeRates={exchangeRates}
                 onClose={() => { setActiveRightPanel('MAP'); setShowMobileMap(false); }}
               />
             ) : (

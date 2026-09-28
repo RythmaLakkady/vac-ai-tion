@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { Wallet, PieChart, Info, ArrowLeft, X, TrendingUp, AlertTriangle } from 'lucide-react';
 import { analytics } from '@/service/analyticsService';
+import { convertPrice } from '../../../utils/currencyFormatter';
 
-export default function BudgetPanel({ trip, itinerary, onClose }) {
-  const tripBudget = trip?.tripData?.budget; // String like "Affordable Comfort" or numeric? If string, we might not have a hard target, but we'll show "No trip budget set" or just "Unknown".
+export default function BudgetPanel({ trip, itinerary, currency, exchangeRates, onClose }) {
   // Note: the prompt says "If a trip has an explicit budget: Budget: 1,500... If no budget exists: Do not invent one. Show: No trip budget set."
   // Wait, let's assume we can try to parse a numeric budget if it exists, otherwise it's just categories.
   
@@ -104,18 +104,17 @@ export default function BudgetPanel({ trip, itinerary, onClose }) {
           <div className="relative z-10">
             <p className="text-white/60 font-bold uppercase tracking-widest text-xs mb-2">Total Projected</p>
             <div className="flex items-end gap-3 mb-6">
-              <span className="text-5xl font-bold font-serif">${overallTotal.toFixed(0)}</span>
-              <span className="text-white/60 font-semibold mb-1">USD</span>
+              <span className="text-5xl font-bold font-serif">{convertPrice('$' + overallTotal.toFixed(0), currency, exchangeRates)}</span>
             </div>
             
             <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-6">
               <div>
                 <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mb-1">Known Costs</p>
-                <p className="font-semibold">${totalKnown.toFixed(0)}</p>
+                <p className="font-semibold">{convertPrice('$' + totalKnown.toFixed(0), currency, exchangeRates)}</p>
               </div>
               <div>
                 <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mb-1">Estimated Costs</p>
-                <p className="font-semibold text-amber/90">${totalEstimated.toFixed(0)}</p>
+                <p className="font-semibold text-amber/90">{convertPrice('$' + totalEstimated.toFixed(0), currency, exchangeRates)}</p>
               </div>
             </div>
           </div>
@@ -149,7 +148,7 @@ export default function BudgetPanel({ trip, itinerary, onClose }) {
                 }}
               >
                 <div className="w-6 h-6 rounded-full bg-white border border-border flex items-center justify-center shrink-0 mt-0.5 shadow-sm text-xs font-bold text-gray-400">1</div>
-                <p className="text-sm text-ink/80 font-medium">Day {mostExpensiveDay + 1} is currently your most expensive day (${maxDayCost.toFixed(0)}).</p>
+                <p className="text-sm text-ink/80 font-medium">Day {mostExpensiveDay + 1} is currently your most expensive day ({convertPrice('$' + maxDayCost.toFixed(0), currency, exchangeRates)}).</p>
               </div>
             )}
             {topCategoryPercentage > 0 && (
@@ -176,7 +175,7 @@ export default function BudgetPanel({ trip, itinerary, onClose }) {
                     <div key={idx}>
                       <div className="flex justify-between text-sm font-semibold text-ink mb-2">
                         <span>{cat}</span>
-                        <span>${amount.toFixed(0)}</span>
+                        <span>{convertPrice('$' + amount.toFixed(0), currency, exchangeRates)}</span>
                       </div>
                       <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
                         <div className="h-full bg-coral/80 rounded-full" style={{ width: `${pct}%` }}></div>

@@ -80,7 +80,14 @@ function ViewTrip() {
         
         {activeView === 'JOURNEY' && (
           <div className='w-full'>
-            <Journey trip={trip} tripId={tripId} itinerary={itinerary} setItinerary={setItinerary} />
+            <Journey 
+              trip={trip} 
+              tripId={tripId} 
+              itinerary={itinerary} 
+              setItinerary={setItinerary} 
+              currency={currency} 
+              exchangeRates={exchangeRates} 
+            />
           </div>
         )}
         

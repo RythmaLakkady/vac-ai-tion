@@ -3,8 +3,9 @@ import { Droppable } from '@hello-pangea/dnd';
 import { Plus, Wallet } from 'lucide-react';
 import JourneyStop from './JourneyStop';
 import JourneyTransition from './JourneyTransition';
+import { convertPrice } from '../../../utils/currencyFormatter';
 
-export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAddStop, onEditStop, onInsertStop, onReplaceStop, onSelectStop, onExploreArea, selectedStopId }) {
+export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAddStop, onEditStop, onInsertStop, onReplaceStop, onSelectStop, onExploreArea, selectedStopId, currency, exchangeRates }) {
   if (!day || !day.activities || day.activities.length === 0) return null;
 
   const extractCost = (pricingStr, costState) => {
@@ -37,7 +38,7 @@ export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAd
           <div className="flex items-center gap-2 bg-gray-50 border border-border px-4 py-2 rounded-xl shrink-0">
             <Wallet className="w-4 h-4 text-gray-400" />
             <span className="font-bold text-ink">
-              ${dailyTotal.toFixed(0)}
+              {convertPrice('$' + dailyTotal.toFixed(0), currency, exchangeRates)}
             </span>
             {(hasUnknown || hasEstimated) && (
                <span className="text-[10px] font-bold uppercase bg-gray-200 text-gray-600 px-1.5 rounded" title={hasUnknown ? "Contains unknown costs" : "Contains estimated costs"}>
@@ -86,6 +87,8 @@ export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAd
                     })}
                     previousActivity={idx > 0 ? day.activities[idx - 1] : null}
                     nextActivity={nextActivity}
+                    currency={currency}
+                    exchangeRates={exchangeRates}
                   />
                   {!isLast && (
                     <JourneyTransition fromStop={activity} toStop={nextActivity} />
