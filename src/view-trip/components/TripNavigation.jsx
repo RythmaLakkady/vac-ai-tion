@@ -3,7 +3,6 @@ import { Map, Route, Clock, CalendarRange, Wallet, BookOpen } from 'lucide-react
 export default function TripNavigation({ activeView, setActiveView }) {
   const navItems = [
     { id: 'JOURNEY', label: 'Journey', icon: Route },
-    { id: 'MAP', label: 'Map', icon: Map },
     { id: 'BUDGET', label: 'Budget', icon: Wallet },
     { id: 'GUIDE', label: 'Guide', icon: BookOpen },
   ];

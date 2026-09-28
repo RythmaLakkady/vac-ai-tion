@@ -84,10 +84,6 @@ function ViewTrip() {
           </div>
         )}
         
-        {activeView === 'MAP' && (
-          <div className="p-10 text-center text-gray-500 bg-card rounded-3xl border border-border">Map integration is now inside Journey!</div>
-        )}
-        
         {activeView === 'BUDGET' && (
           <div className="p-10 text-center text-gray-500 bg-card rounded-3xl border border-border">Budget dashboard coming soon...</div>
         )}
