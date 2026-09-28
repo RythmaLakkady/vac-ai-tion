@@ -9,7 +9,7 @@ const AGENTS = [
     icon: <Target className="w-5 h-5" />,
     color: "#8b5cf6",    // violet-500
     glowColor: "rgba(139, 92, 246, 0.5)",
-    x: 50, y: 15,
+    x: 50, y: 25,
   },
   {
     id: "planner",
@@ -17,7 +17,7 @@ const AGENTS = [
     icon: <MapIcon className="w-5 h-5" />,
     color: "#10b981",    // emerald-500
     glowColor: "rgba(16, 185, 129, 0.5)",
-    x: 15, y: 80,
+    x: 20, y: 70,
   },
   {
     id: "critic",
@@ -25,7 +25,7 @@ const AGENTS = [
     icon: <Search className="w-5 h-5" />,
     color: "#f59e0b",    // amber-500
     glowColor: "rgba(245, 158, 11, 0.5)",
-    x: 85, y: 80,
+    x: 80, y: 70,
   },
 ];
 
@@ -63,7 +63,7 @@ export default function AgentOrbs({ logs = [], status = "pending" }) {
   const getAgent = (id) => AGENTS.find((a) => a.id === id);
 
   return (
-    <div className="w-full max-w-lg mx-auto relative h-[300px]">
+    <div className="w-full max-w-lg mx-auto relative h-[400px]">
       {/* Background SVG Connections */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
         <defs>
