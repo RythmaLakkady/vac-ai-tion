@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { DragDropContext } from '@hello-pangea/dnd';
 import { Map as MapIcon, X } from 'lucide-react';
-import JourneyIntro from './JourneyIntro';
 import JourneyChapter from './JourneyChapter';
 import TripMap from './TripMap';
 import DestinationGuide from './DestinationGuide';
@@ -163,10 +162,6 @@ export default function Journey({ trip, tripId, itinerary, setItinerary }) {
 
   return (
     <div className="w-full pb-24 relative">
-      <div className="max-w-4xl mx-auto mb-8">
-        <JourneyIntro trip={trip} />
-      </div>
-      
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
         {/* Left Column: Journey Timeline */}
         <div className="lg:col-span-5 xl:col-span-6 order-2 lg:order-1">
