@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { auth, db } from "./firebase";
 import { HeartPulse } from "lucide-react";
 import { destinationService } from "@/service/destinationService";
+import { motion } from "framer-motion";
 
 function Profile() {
   const [user, setUser] = useState(null);
