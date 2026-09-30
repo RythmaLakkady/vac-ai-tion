@@ -3,6 +3,16 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+const DAY_COLORS = [
+  '#0EA5E9', // Sky blue
+  '#10B981', // Emerald green
+  '#F59E0B', // Amber
+  '#8B5CF6', // Violet
+  '#EC4899', // Pink
+  '#F43F5E', // Rose
+  '#14B8A6', // Teal
+];
+
 // Helper component to center map on bounds or selected stop
 function MapBoundsUpdater({ stops, selectedStopId }) {
   const map = useMap();
@@ -30,13 +40,13 @@ function MapBoundsUpdater({ stops, selectedStopId }) {
   return null;
 }
 
-const createStopIcon = (number, isSelected) => {
+const createStopIcon = (number, isSelected, color) => {
   return L.divIcon({
     className: 'custom-map-marker',
     html: `<div style="
-      background-color: ${isSelected ? '#F59E0B' : 'white'};
+      background-color: ${isSelected ? color : 'white'};
       color: ${isSelected ? 'white' : '#1E1B4B'};
-      border: 2px solid #F59E0B;
+      border: 3px solid ${color};
       border-radius: 50%;
       width: 28px;
       height: 28px;
@@ -75,6 +85,7 @@ export default function TripMap({ itinerary, selectedStopId, onStopSelected, sel
             lat: parseFloat(lat),
             lng: parseFloat(lng),
             number: aIdx + 1,
+            color: DAY_COLORS[dIdx % DAY_COLORS.length],
             isFaded: selectedDayIndex !== null && selectedDayIndex !== undefined && selectedDayIndex !== dIdx
           });
         }
@@ -102,6 +113,7 @@ export default function TripMap({ itinerary, selectedStopId, onStopSelected, sel
       if (dayStops.length > 1) {
         lines.push({
           dayIndex: dIdx,
+          color: DAY_COLORS[dIdx % DAY_COLORS.length],
           positions: dayStops.map(s => [s.lat, s.lng]),
           isFaded: selectedDayIndex !== null && selectedDayIndex !== undefined && selectedDayIndex !== dIdx
         });
@@ -130,7 +142,7 @@ export default function TripMap({ itinerary, selectedStopId, onStopSelected, sel
           <Polyline 
             key={`line-${idx}`} 
             positions={line.positions} 
-            color={line.isFaded ? "#cbd5e1" : "#F59E0B"} 
+            color={line.isFaded ? "#cbd5e1" : line.color} 
             weight={3}
             dashArray="5, 10"
             opacity={line.isFaded ? 0.5 : 0.8}
@@ -143,7 +155,7 @@ export default function TripMap({ itinerary, selectedStopId, onStopSelected, sel
             <Marker 
               key={stop.id}
               position={[stop.lat, stop.lng]}
-              icon={createStopIcon(stop.number, isSelected)}
+              icon={createStopIcon(stop.number, isSelected, stop.color)}
               eventHandlers={{
                 click: () => onStopSelected?.(stop.id, stop.dayIndex)
               }}
@@ -161,6 +173,21 @@ export default function TripMap({ itinerary, selectedStopId, onStopSelected, sel
         
         <MapBoundsUpdater stops={stops} selectedStopId={selectedStopId} />
       </MapContainer>
+      
+      {/* Legend */}
+      {polylines.length > 0 && (
+        <div className="absolute bottom-4 left-4 z-[400] bg-white/90 backdrop-blur-sm p-3 rounded-xl shadow-md border border-border">
+          <h4 className="text-[10px] uppercase font-bold text-ink/40 mb-2">Days</h4>
+          <div className="flex flex-col gap-1">
+            {polylines.map(line => (
+              <div key={line.dayIndex} className="flex items-center gap-2 text-xs font-semibold text-ink/70">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: line.color }}></div>
+                Day {line.dayIndex + 1}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

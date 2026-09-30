@@ -129,6 +129,82 @@ export const journeyIntelligence = {
       throw new Error("Alternatives are temporarily unavailable.");
     }
   },
+
+  async getLocalGems(context) {
+    const prompt = `
+      Act as a strict travel expert API finding local/hidden gems. Find 2-3 highly relevant hidden gems near this route.
+      Current Stop: ${context.currentStop?.place_name || 'Start of day'}
+      Current Location: ${context.location}
+      Previous Stop: ${context.previousStop?.place_name || 'Start of day'}
+      Next Stop: ${context.nextStop?.place_name || 'End of day'}
+      Trip Budget: ${context.budget || 'Unknown'}
+      Trip Preferences: ${context.preferences || 'Unknown'}
+      Season: ${context.season || 'Unknown'}
+      
+      A hidden gem must:
+      1. Not be simply a random unpopular place.
+      2. Naturally fit the current Journey between the previous and next stop.
+      3. Make sense for the season and budget.
+      
+      Return ONLY a valid JSON array of objects with exactly this structure:
+      [
+        {
+          "place_name": "Name of the local gem",
+          "place_details": "What it is and what to do there",
+          "reason_why": "Why this specifically fits this journey (e.g. '10 min from your current stop and naturally fits before your next activity.')",
+          "category": "Activity or Food, etc.",
+          "time_travel": "Estimated duration (e.g. 45 mins)",
+          "ticket_pricing": "Estimated cost (e.g. $5, or Free)",
+          "geo_coordinates": { "lat": Number, "lng": Number }
+        }
+      ]
+    `;
+
+    try {
+      const result = await chatSession.sendMessage(prompt);
+      const text = await result.response.text();
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) throw new Error("Failed to parse local gems");
+      
+      const gems = JSON.parse(jsonMatch[0]);
+      return gems.map(gem => ({
+        ...gem,
+        costState: gem.ticket_pricing === 'Free' || gem.ticket_pricing === 'unknown' ? 'unknown' : 'estimated'
+      }));
+    } catch (e) {
+      console.error("Local gems failed:", e);
+      throw new Error("Local gems are temporarily unavailable.");
+    }
+  },
+
+  async getStopIntelligence(context) {
+    const prompt = `
+      Act as an AI itinerary analyzer.
+      Stop: ${context.currentStop?.place_name || 'Unknown'}
+      Destination: ${context.location}
+      Season: ${context.season || 'Unknown'}
+      Profile: ${context.traveler || 'Unknown'}
+      
+      Analyze this specific stop for this specific trip and return ONLY a valid JSON object:
+      {
+        "priority": "MUST-DO" | "RECOMMENDED" | "OPTIONAL" | "CONSIDER SKIPPING",
+        "priority_reason": "Why this priority was assigned (e.g. 'Iconic must-do' or 'Too similar to previous stop')",
+        "seasonality": "GOOD FOR THIS SEASON" | "SEASONALLY DEPENDENT" | "LESS SUITABLE" | "UNKNOWN",
+        "seasonality_reason": "Why this seasonality applies based on the travel dates."
+      }
+    `;
+
+    try {
+      const result = await chatSession.sendMessage(prompt);
+      const text = await result.response.text();
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) return null;
+      return JSON.parse(jsonMatch[0]);
+    } catch (e) {
+      console.error("Stop intelligence failed:", e);
+      return null;
+    }
+  },
   
   // Calculate impact of adding a stop between two others
   calculateImpact(newStop, previousStop, nextStop) {

@@ -107,12 +107,16 @@ function buildManagerPrompt(params) {
     ? `\n\nDietary preference: "${params.foodPreferences}". You MUST ensure dining recommendations cater to this diet.\n`
     : "";
 
+  const accessibilitySection = params.accessibilityMode
+    ? `\n\nAccessibility Need: The user requires an accessible itinerary. You MUST prioritize accessible activities and avoid strenuous physical tasks.\n`
+    : "";
+
   return `You are the Swarm Manager for a travel planning AI. Your job is to draft a high-level strategy for a ${params.days}-day trip from ${params.startLocation || 'their origin'} to ${params.destination}.
 User Constraints:
 - Origin: ${params.startLocation || 'Unknown'}
 - Budget: ${params.budget}
 - Travelers: ${params.travelers}
-- Travel Style: ${params.travelStyle}${notesSection}${foodSection}
+- Travel Style: ${params.travelStyle}${notesSection}${foodSection}${accessibilitySection}
 
 Instructions:
 Provide a plain-text, day-by-day outline. For each of the ${params.days} days, provide a "Theme" and 2-3 key activities or locations.
@@ -138,7 +142,11 @@ function buildPlannerPrompt(params, feedback, managerStrategy) {
     : "";
 
   const healthSection = params.healthInfo
-    ? `\n\nCRITICAL REQUIREMENT - HEALTH & ACCESSIBILITY:\nThe user has specified the following health/allergy/accessibility needs: "${params.healthInfo}". You MUST prioritize accommodations and activities that fit these needs. For any hotel or activity that specifically accommodates these needs, you MUST provide a short explanation in the 'customization_banner' field (e.g., 'Gluten-Free Menu Available', 'Wheelchair Accessible'). If no special accommodation is needed or available, leave it empty.\n`
+    ? `\n\nCRITICAL REQUIREMENT - HEALTH & ALLERGY:\nThe user has specified the following health/allergy needs: "${params.healthInfo}". You MUST prioritize accommodations and activities that fit these needs. For any hotel or activity that specifically accommodates these needs, you MUST provide a short explanation in the 'customization_banner' field.\n`
+    : "";
+    
+  const accessibilitySection = params.accessibilityMode
+    ? `\n\nCRITICAL REQUIREMENT - ACCESSIBILITY:\nThe user has requested an ACCESSIBLE itinerary (e.g. wheelchair friendly, no steep hikes). You MUST avoid activities with intense physical requirements or poor accessibility. You MUST provide a short explanation in the 'customization_banner' field (e.g., 'Wheelchair Accessible') for accessible venues.\n`
     : "";
 
   const seasonSection = params.season && params.season !== 'Not specified'
@@ -160,7 +168,7 @@ ${managerStrategy}
 -------------------
 
 Your job is to take the Manager's Strategy and format it EXACTLY into the required JSON structure.
-Generate a ${params.days}-day travel itinerary for ${params.travelers} traveling from ${params.startLocation || 'their origin'} to ${params.destination}, with a budget of ${params.budget} and a travel style of ${params.travelStyle}. You MUST generate EXACTLY ${params.days} days in the itinerary array. No fewer and no more.${notesSection}${foodSection}${healthSection}${seasonSection}${feedbackSection}
+Generate a ${params.days}-day travel itinerary for ${params.travelers} traveling from ${params.startLocation || 'their origin'} to ${params.destination}, with a budget of ${params.budget} and a travel style of ${params.travelStyle}. You MUST generate EXACTLY ${params.days} days in the itinerary array. No fewer and no more.${notesSection}${foodSection}${healthSection}${accessibilitySection}${seasonSection}${feedbackSection}
 
 IMPORTANT RULES:
 1. The first day MUST be designated as the "Arrival Day" (theme should reflect arrival/check-in/light exploration) and the final day MUST be designated as the "Departure Day" (theme should reflect departure/packing/final sightseeing).

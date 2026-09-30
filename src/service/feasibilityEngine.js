@@ -89,5 +89,123 @@ export const feasibilityEngine = {
     const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c;
+  },
+
+  getTransportOptions(distanceMeters) {
+    if (!distanceMeters || distanceMeters <= 0) return [];
+    
+    const options = [];
+    
+    // Walk option (if less than 2.5km)
+    if (distanceMeters < 2500) {
+      const walkMins = Math.round(distanceMeters / 80); // ~4.8 km/h
+      options.push({
+        mode: 'Walk',
+        duration: `${walkMins} min`,
+        distance: distanceMeters > 1000 ? `${(distanceMeters/1000).toFixed(1)} km` : `${Math.round(distanceMeters)} m`,
+        cost: null
+      });
+    }
+
+    // Cab option
+    // Base 5 mins wait + drive time at ~24 km/h (400 m/min)
+    const driveMins = 5 + Math.round(distanceMeters / 400); 
+    const minDriveMins = Math.max(Math.floor(driveMins * 0.8), 2);
+    const maxDriveMins = Math.ceil(driveMins * 1.3);
+
+    // Rough cost heuristic: base $3 + $1.5 per km
+    // We will just provide a relative "Est." since we don't have perfect currency knowledge here, 
+    // or we just omit the exact price and say "Metered fare".
+    options.push({
+      mode: 'Cab/Ride',
+      duration: `${minDriveMins}–${maxDriveMins} min`,
+      distance: distanceMeters > 1000 ? `${(distanceMeters/1000).toFixed(1)} km` : `${Math.round(distanceMeters)} m`,
+      cost: 'Metered fare'
+    });
+
+    if (distanceMeters > 5000) {
+      options.push({
+        mode: 'Public Transport',
+        duration: 'Times vary',
+        distance: `${(distanceMeters/1000).toFixed(1)} km`,
+        cost: 'Check local transit apps'
+      });
+    }
+
+    return options;
+  },
+
+  getItineraryScore(itinerary) {
+    if (!itinerary || itinerary.length === 0) {
+      return { score: null, strengths: [], warnings: [], status: 'unavailable' };
+    }
+
+    let score = 100;
+    const strengths = [];
+    const warnings = [];
+    
+    let totalStops = 0;
+    let daysWithOverload = 0;
+    let daysWithLongTransitions = 0;
+    let daysWellPaced = 0;
+
+    itinerary.forEach((day, idx) => {
+      const dayWarnings = this.analyzeDay(day, idx);
+      if (!day.activities || day.activities.length === 0) return;
+      
+      totalStops += day.activities.length;
+
+      const hasOverload = dayWarnings.some(w => w.type === 'overload' || w.type === 'exhaustion');
+      const hasDistance = dayWarnings.some(w => w.type === 'distance');
+
+      if (hasOverload) daysWithOverload++;
+      if (hasDistance) daysWithLongTransitions++;
+      
+      if (!hasOverload && !hasDistance && day.activities.length >= 2 && day.activities.length <= 4) {
+        daysWellPaced++;
+      }
+    });
+
+    if (totalStops === 0) {
+      return { score: null, strengths: [], warnings: [], status: 'unavailable' };
+    }
+
+    // Deductions
+    const overloadDeduction = daysWithOverload * 15;
+    const distanceDeduction = daysWithLongTransitions * 10;
+    
+    score -= (overloadDeduction + distanceDeduction);
+    score = Math.max(score, 30); // Floor at 30
+
+    // Strengths
+    if (daysWellPaced > 0 && daysWellPaced === itinerary.length) {
+      strengths.push('Excellent pacing across all days');
+    } else if (daysWellPaced > 0) {
+      strengths.push('Good geographic grouping on most days');
+    }
+
+    if (distanceDeduction === 0 && totalStops > 2) {
+      strengths.push('Highly efficient routing (no long transitions)');
+    }
+
+    // Warnings
+    if (daysWithOverload > 0) {
+      warnings.push(`${daysWithOverload} day(s) have very ambitious schedules`);
+    }
+    if (daysWithLongTransitions > 0) {
+      warnings.push(`Contains travel-heavy transitions`);
+    }
+
+    // Default strength if nothing else
+    if (strengths.length === 0 && warnings.length === 0) {
+      strengths.push('Balanced standard itinerary');
+    }
+
+    return {
+      score,
+      strengths,
+      warnings,
+      status: 'available'
+    };
   }
 };

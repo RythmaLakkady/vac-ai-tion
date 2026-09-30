@@ -6,7 +6,7 @@ import { doc, updateDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '@/firebase';
 import { toast } from 'sonner';
 import { analytics } from '@/service/analyticsService';
-import { Cloud, CloudFog, CloudLightning } from 'lucide-react';
+import { Cloud, CloudFog, CloudLightning, ShieldAlert, Accessibility } from 'lucide-react';
 
 export default function TripHeader({ trip, tripId, currency, setCurrency, isReadOnly = false, saveState = 'saved' }) {
   const tripData = trip?.tripData || {};
@@ -113,6 +113,24 @@ export default function TripHeader({ trip, tripId, currency, setCurrency, isRead
             </span>
           )}
         </div>
+        
+        {/* Private Health/Accessibility Metadata */}
+        {!isReadOnly && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {userSelection.foodPreferences && userSelection.foodPreferences !== 'No Restrictions' && (
+              <span className="flex items-center gap-1.5 bg-red-50 text-red-700 px-3 py-1 rounded-md text-xs font-bold border border-red-100 uppercase tracking-wide">
+                <ShieldAlert className="w-3.5 h-3.5" />
+                {userSelection.foodPreferences} Diet (Private)
+              </span>
+            )}
+            {userSelection.accessibilityMode && (
+              <span className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-xs font-bold border border-blue-100 uppercase tracking-wide">
+                <Accessibility className="w-3.5 h-3.5" />
+                Accessibility Priority (Private)
+              </span>
+            )}
+          </div>
+        )}
       </div>
       
       <div className="flex flex-col items-end gap-4 w-full md:w-auto">

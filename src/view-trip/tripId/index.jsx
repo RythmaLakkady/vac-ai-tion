@@ -12,6 +12,7 @@ import { analytics } from '@/service/analyticsService';
 import TripHeader from '../components/TripHeader';
 import TripNavigation from '../components/TripNavigation';
 import Journey from '../components/Journey';
+import TripAnalyzer from '../components/TripAnalyzer';
 
 function ViewTrip() {
   const { tripId } = useParams();
@@ -95,6 +96,10 @@ function ViewTrip() {
         
         {activeView === 'BUDGET' && (
           <div className="p-10 text-center text-gray-500 bg-card rounded-3xl border border-border">Budget dashboard coming soon...</div>
+        )}
+
+        {activeView === 'ANALYZER' && (
+          <TripAnalyzer trip={trip} itinerary={itinerary} />
         )}
         
         {activeView === 'GUIDE' && (

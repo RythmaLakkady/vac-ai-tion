@@ -31,12 +31,16 @@
 - [x] Feature: Journey Budget
 
 ## Phase 6 — User Accounts (P3)
-- [ ] Feature: Public Sharing (`/v/{id}`)
-- [ ] Feature: Saved Trips & Preferences Polish
+- [x] Feature: Public Sharing (`/v/{id}`)
+- [x] Feature: Saved Trips & Preferences Polish
 
 ## Phase 7 — Advanced Intelligence (P3)
-- [ ] Intelligence: Trip Feasibility Score
-- [ ] UX: Microinteractions
+- [x] Intelligence: Trip Feasibility Score
+- [x] UX: Microinteractions
+- [x] Feature: Advanced Itinerary Scoring & Analyzer
+- [x] Intelligence: Transport Options & Map Color-Coding
+- [x] Intelligence: Hidden Gems & Stop Priority Analysis
+- [x] Privacy: Accessible & Dietary Profiles
 
 ## Phase 8 — Performance
 - [ ] Measure bundle size and optimize images

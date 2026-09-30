@@ -354,6 +354,24 @@ export default function TripForm({
               )}
             </motion.div>
           </div>
+
+          <div className="pt-8 border-t border-border/50">
+            <label className="flex items-center gap-4 cursor-pointer group bg-gray-50 hover:bg-coral/5 p-4 rounded-2xl border border-gray-200 transition-colors">
+              <div className="flex-1">
+                <h4 className="font-bold text-lg text-ink">Accessibility Mode</h4>
+                <p className="text-gray-500 text-sm leading-snug">Prioritize wheelchair-friendly and low-physical-exertion activities.</p>
+              </div>
+              <div className="relative">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={!!formData.accessibilityMode} 
+                  onChange={(e) => setFormData(prev => ({ ...prev, accessibilityMode: e.target.checked }))} 
+                />
+                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-coral"></div>
+              </div>
+            </label>
+          </div>
         </motion.div>
       );
     case 7:

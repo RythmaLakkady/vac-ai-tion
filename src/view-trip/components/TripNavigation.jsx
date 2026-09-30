@@ -4,6 +4,7 @@ export default function TripNavigation({ activeView, setActiveView }) {
   const navItems = [
     { id: 'JOURNEY', label: 'Journey', icon: Route },
     { id: 'BUDGET', label: 'Budget', icon: Wallet },
+    { id: 'ANALYZER', label: 'Trip Analyzer', icon: BookOpen },
     { id: 'GUIDE', label: 'Guide', icon: BookOpen },
   ];
 

@@ -30,6 +30,10 @@ export default function JourneyStop({
   const [editName, setEditName] = useState(activity?.place_name || "");
   const [editTime, setEditTime] = useState(activity?.time_travel || "");
 
+  // Intelligence State
+  const [intelligence, setIntelligence] = useState(null);
+  const [intelligenceLoading, setIntelligenceLoading] = useState(false);
+
   // Fallbacks
   const placeName = activity?.place_name || "Unknown Stop";
   const category = activity?.category || "Activity";
@@ -70,6 +74,26 @@ export default function JourneyStop({
     }
     if (newExpanded) {
       analytics.trackEvent('stop_opened', { placeName, category, dayIndex });
+      if (!intelligence && !intelligenceLoading && !isReadOnly) {
+        fetchIntelligence();
+      }
+    }
+  };
+
+  const fetchIntelligence = async () => {
+    setIntelligenceLoading(true);
+    try {
+      const data = await journeyIntelligence.getStopIntelligence({
+        currentStop: activity,
+        location: trip?.tripData?.location || trip?.userSelection?.destination,
+        season: trip?.tripData?.wanderer_notes?.season_recommendations || 'Unknown',
+        traveler: trip?.userSelection?.travelers || 'Unknown'
+      });
+      if (data) setIntelligence(data);
+    } catch (e) {
+      console.warn("Failed to load stop intelligence", e);
+    } finally {
+      setIntelligenceLoading(false);
     }
   };
 
@@ -280,8 +304,46 @@ export default function JourneyStop({
                   {/* Default Content view (when no tab is active) */}
                   {!activeTab && (
                     <>
+                      {/* Intelligence Banner */}
+                      {!isReadOnly && intelligence && (
+                        <div className="flex flex-col gap-2 mb-4">
+                          <div className={`flex items-start gap-2 p-3 rounded-xl border ${
+                            intelligence.priority === 'MUST-DO' ? 'bg-amber/10 border-amber/20 text-amber-800' :
+                            intelligence.priority === 'CONSIDER SKIPPING' ? 'bg-red-50 border-red-100 text-red-800' :
+                            'bg-blue-50 border-blue-100 text-blue-800'
+                          }`}>
+                            <div className="flex-1">
+                              <span className="text-[10px] uppercase font-bold tracking-wider opacity-60 block mb-0.5">Priority</span>
+                              <div className="flex items-center gap-2 font-bold mb-1">
+                                {intelligence.priority}
+                              </div>
+                              <p className="text-sm opacity-90 leading-snug">{intelligence.priority_reason}</p>
+                            </div>
+                          </div>
+                          
+                          {intelligence.seasonality && intelligence.seasonality !== 'UNKNOWN' && (
+                            <div className="flex items-start gap-2 p-3 rounded-xl border bg-emerald-50 border-emerald-100 text-emerald-800">
+                              <div className="flex-1">
+                                <span className="text-[10px] uppercase font-bold tracking-wider opacity-60 block mb-0.5">Seasonality</span>
+                                <div className="flex items-center gap-2 font-bold mb-1">
+                                  {intelligence.seasonality}
+                                </div>
+                                <p className="text-sm opacity-90 leading-snug">{intelligence.seasonality_reason}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {intelligenceLoading && (
+                        <div className="mb-4 text-xs font-semibold text-gray-400 animate-pulse flex items-center gap-2">
+                          <span className="w-3 h-3 border-2 border-amber border-t-transparent rounded-full animate-spin"></span>
+                          Analyzing stop context...
+                        </div>
+                      )}
+
                       {why && (
-                        <div className="flex items-start gap-3 text-ink/80 bg-amber/5 p-4 rounded-2xl border border-amber/10">
+                        <div className="flex items-start gap-3 text-ink/80 bg-amber/5 p-4 rounded-2xl border border-amber/10 mb-4">
                           <span className="font-serif italic font-medium leading-relaxed">"{why}"</span>
                         </div>
                       )}
