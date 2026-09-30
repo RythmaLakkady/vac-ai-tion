@@ -20,6 +20,7 @@ function ViewTrip() {
   const [currency, setCurrency] = useState('USD');
   const [exchangeRates, setExchangeRates] = useState(null);
   const [activeView, setActiveView] = useState('JOURNEY');
+  const [saveState, setSaveState] = useState('saved');
 
   useEffect(() => {
     const fetchRates = async () => {
@@ -67,7 +68,7 @@ function ViewTrip() {
       {/* Hero Header Area */}
       <div className='bg-card/90 backdrop-blur-xl border-b border-border/50 shadow-sm pt-32 pb-8 px-6 sm:px-10 lg:px-20'>
         <div className='max-w-7xl mx-auto'>
-          <TripHeader trip={trip} tripId={tripId} currency={currency} setCurrency={setCurrency} />
+          <TripHeader trip={trip} tripId={tripId} currency={currency} setCurrency={setCurrency} saveState={saveState} />
         </div>
       </div>
 
@@ -87,6 +88,7 @@ function ViewTrip() {
               setItinerary={setItinerary} 
               currency={currency} 
               exchangeRates={exchangeRates} 
+              setSaveState={setSaveState}
             />
           </div>
         )}

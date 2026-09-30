@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Droppable } from '@hello-pangea/dnd';
-import { Plus, Wallet } from 'lucide-react';
+import { Plus, Wallet, AlertTriangle, Info } from 'lucide-react';
 import JourneyStop from './JourneyStop';
 import JourneyTransition from './JourneyTransition';
 import { convertPrice } from '../../../utils/currencyFormatter';
+import { feasibilityEngine } from '../../../service/feasibilityEngine';
+import { analytics } from '../../../service/analyticsService';
 
 export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAddStop, onEditStop, onInsertStop, onReplaceStop, onSelectStop, onExploreArea, selectedStopId, currency, exchangeRates, isReadOnly = false }) {
   if (!day || !day.activities || day.activities.length === 0) return null;
@@ -27,6 +29,16 @@ export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAd
     if (cost.state === 'estimated') hasEstimated = true;
   });
 
+  const warnings = isReadOnly ? [] : feasibilityEngine.analyzeDay(day, dayIndex);
+  
+  useEffect(() => {
+    if (warnings.length > 0) {
+      warnings.forEach(warn => {
+        analytics.trackEvent('journey_feasibility_viewed', { type: warn.type, severity: warn.severity, dayIndex });
+      });
+    }
+  }, [warnings.length, dayIndex]);
+
   return (
     <div className="relative mb-16 last:mb-0 pt-8 font-sans">
       <div className="mb-10">
@@ -49,6 +61,20 @@ export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAd
         </div>
         {day.daily_brief && (
           <p className="text-ink/60 mt-3 text-lg leading-relaxed max-w-2xl">{day.daily_brief}</p>
+        )}
+        
+        {warnings.length > 0 && (
+          <div className="mt-4 flex flex-col gap-2">
+            {warnings.map((warn, i) => (
+              <div key={i} className={`flex items-start gap-3 p-3 rounded-xl border ${warn.severity === 'warning' ? 'bg-amber/5 border-amber/20 text-amber' : 'bg-blue-50/50 border-blue-100 text-blue-700'}`}>
+                {warn.severity === 'warning' ? <AlertTriangle className="w-5 h-5 shrink-0" /> : <Info className="w-5 h-5 shrink-0" />}
+                <div className="text-sm">
+                  <span className="font-bold">{warn.title}: </span>
+                  <span className="opacity-90">{warn.explanation}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

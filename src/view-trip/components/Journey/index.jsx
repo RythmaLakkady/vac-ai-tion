@@ -10,7 +10,7 @@ import { Wallet } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
 
-export default function Journey({ trip, tripId, itinerary, setItinerary, currency, exchangeRates, isReadOnly = false }) {
+export default function Journey({ trip, tripId, itinerary, setItinerary, currency, exchangeRates, isReadOnly = false, setSaveState = () => {} }) {
   const [selectedStopId, setSelectedStopId] = useState(null);
   const [selectedDayIndex, setSelectedDayIndex] = useState(null);
   const [showMobileMap, setShowMobileMap] = useState(false);
@@ -21,6 +21,7 @@ export default function Journey({ trip, tripId, itinerary, setItinerary, currenc
     setItinerary(newItinerary);
     if (!tripId) return;
     try {
+      setSaveState('saving');
       const docRef = doc(db, 'UserTrips', tripId);
       await updateDoc(docRef, {
         'tripData.itinerary': newItinerary
@@ -34,8 +35,10 @@ export default function Journey({ trip, tripId, itinerary, setItinerary, currenc
           'lastUpdatedAt': new Date().toISOString()
         }).catch(err => console.warn('Failed to update shared trip itinerary', err));
       }
+      setSaveState('saved');
     } catch (e) {
       console.error("Failed to persist itinerary updates", e);
+      setSaveState('error');
       toast.error('Failed to save changes to cloud');
     }
   };

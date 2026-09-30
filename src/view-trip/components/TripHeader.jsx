@@ -6,8 +6,9 @@ import { doc, updateDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '@/firebase';
 import { toast } from 'sonner';
 import { analytics } from '@/service/analyticsService';
+import { Cloud, CloudFog, CloudLightning } from 'lucide-react';
 
-export default function TripHeader({ trip, tripId, currency, setCurrency, isReadOnly = false }) {
+export default function TripHeader({ trip, tripId, currency, setCurrency, isReadOnly = false, saveState = 'saved' }) {
   const tripData = trip?.tripData || {};
   const userSelection = trip?.userSelection || {};
   
@@ -104,6 +105,13 @@ export default function TripHeader({ trip, tripId, currency, setCurrency, isRead
             <Wallet className="w-5 h-5 text-green-500" />
             Budget: {budget}
           </span>
+          {!isReadOnly && (
+            <span className="flex items-center gap-2 px-3 py-1.5 ml-2 text-xs font-semibold text-gray-400">
+              {saveState === 'saved' && <><Cloud className="w-4 h-4 text-green-500" /> Saved to cloud</>}
+              {saveState === 'saving' && <><CloudFog className="w-4 h-4 text-amber animate-pulse" /> Saving...</>}
+              {saveState === 'error' && <><CloudLightning className="w-4 h-4 text-red-500" /> Save failed</>}
+            </span>
+          )}
         </div>
       </div>
       
