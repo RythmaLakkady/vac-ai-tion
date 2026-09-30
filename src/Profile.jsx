@@ -66,13 +66,12 @@ function Profile() {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Wander Notes State
+  // Saved Places State
   const [activeTab, setActiveTab] = useState('trips');
-  const [notes, setNotes] = useState([]);
-  const [newNote, setNewNote] = useState('');
-  const [newNoteDestination, setNewNoteDestination] = useState('');
-  const [destinationResults, setDestinationResults] = useState([]);
-  const [loadingNotes, setLoadingNotes] = useState(false);
+  const [savedPlaces, setSavedPlaces] = useState([]);
+  const [newPlaceQuery, setNewPlaceQuery] = useState('');
+  const [placeResults, setPlaceResults] = useState([]);
+  const [loadingPlaces, setLoadingPlaces] = useState(false);
   
   // Health Info State
   const [healthInfo, setHealthInfo] = useState('');
@@ -83,12 +82,12 @@ function Profile() {
       if (currentUser) {
         setUser(currentUser);
         fetchUserTrips(currentUser.uid);
-        fetchUserNotes(currentUser.uid);
+        fetchSavedPlaces(currentUser.uid);
         fetchHealthInfo(currentUser.uid);
       } else {
         setUser(null);
         setTrips([]);
-        setNotes([]);
+        setSavedPlaces([]);
         setLoading(false);
       }
     });
@@ -119,64 +118,67 @@ function Profile() {
     setSavingHealth(false);
   };
 
-  const fetchUserNotes = async (userId) => {
-    setLoadingNotes(true);
+  const fetchSavedPlaces = async (userId) => {
+    setLoadingPlaces(true);
     try {
-      const q = query(collection(db, "UserNotes"), where("userId", "==", userId));
+      const q = query(collection(db, "SavedPlaces"), where("userId", "==", userId));
       const querySnapshot = await getDocs(q);
-      const userNotes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Sort in memory by timestamp descending (if present)
-      userNotes.sort((a, b) => {
+      const places = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      places.sort((a, b) => {
         if (!a.timestamp || !b.timestamp) return 0;
         return b.timestamp.seconds - a.timestamp.seconds;
       });
-      setNotes(userNotes);
+      setSavedPlaces(places);
     } catch (err) {
-      console.error("Error fetching notes:", err);
+      console.error("Error fetching saved places:", err);
     }
-    setLoadingNotes(false);
+    setLoadingPlaces(false);
   };
 
-  const handleDestinationSearch = async (e) => {
+  const handlePlaceSearch = async (e) => {
     const value = e.target.value;
-    setNewNoteDestination(value);
+    setNewPlaceQuery(value);
     if (value.length > 2) {
       const data = await destinationService.searchDestinations(value);
-      setDestinationResults(data);
+      setPlaceResults(data);
     } else {
-      setDestinationResults([]);
+      setPlaceResults([]);
     }
   };
 
-  const handleAddNote = async () => {
-    if (!newNote.trim() || !newNoteDestination.trim() || !user) {
-      alert("Please enter both a place and a destination.");
-      return;
-    }
+  const handleAddPlace = async (selectedPlace) => {
+    if (!user) return;
     try {
-      setLoadingNotes(true);
-      const noteData = {
+      setLoadingPlaces(true);
+      const parts = selectedPlace.display_name.split(',');
+      const destination = parts.length > 1 ? parts.slice(1).join(',').trim() : selectedPlace.display_name;
+      const placeName = parts[0].trim();
+
+      const placeData = {
         userId: user.uid,
-        place: newNote.trim(),
-        destination: newNoteDestination.trim(),
+        name: placeName,
+        destination: destination,
+        coordinates: { lat: selectedPlace.lat, lon: selectedPlace.lon },
+        source: "User Saved",
         timestamp: serverTimestamp()
       };
-      const docRef = await addDoc(collection(db, "UserNotes"), noteData);
-      setNotes([{ id: docRef.id, ...noteData, timestamp: { seconds: Date.now() / 1000 } }, ...notes]);
-      setNewNote('');
-      setNewNoteDestination('');
+      
+      const docRef = await addDoc(collection(db, "SavedPlaces"), placeData);
+      setSavedPlaces([{ id: docRef.id, ...placeData, timestamp: { seconds: Date.now() / 1000 } }, ...savedPlaces]);
+      setNewPlaceQuery('');
+      setPlaceResults([]);
     } catch (err) {
-      console.error("Error adding note:", err);
+      console.error("Error adding place:", err);
     }
-    setLoadingNotes(false);
+    setLoadingPlaces(false);
   };
 
-  const handleDeleteNote = async (noteId) => {
+  const handleDeletePlace = async (placeId) => {
     try {
-      await deleteDoc(doc(db, "UserNotes", noteId));
-      setNotes(notes.filter(n => n.id !== noteId));
+      await deleteDoc(doc(db, "SavedPlaces", placeId));
+      setSavedPlaces(savedPlaces.filter(p => p.id !== placeId));
     } catch (err) {
-      console.error("Error deleting note:", err);
+      console.error("Error deleting place:", err);
     }
   };
 
@@ -329,11 +331,18 @@ function Profile() {
         >
           <Sparkles className="absolute top-4 right-4 w-24 h-24 text-primary-foreground/20" />
           <h3 className="text-2xl font-bold font-serif mb-2">Ready for more?</h3>
-          <Link to="/createTrip">
-            <button className="px-6 py-2 bg-card text-ink rounded-full font-bold text-sm hover:scale-105 transition-transform w-max">
-              Plan New Trip
-            </button>
-          </Link>
+          <div className="flex gap-2">
+            <Link to="/createTrip">
+              <button className="px-6 py-2 bg-card text-ink rounded-full font-bold text-sm hover:scale-105 transition-transform w-max">
+                Plan New
+              </button>
+            </Link>
+            <Link to="/import">
+              <button className="px-6 py-2 bg-white/20 text-white border border-white/40 rounded-full font-bold text-sm hover:bg-white/30 transition-colors w-max">
+                Import PDF
+              </button>
+            </Link>
+          </div>
         </motion.div>
       </div>
 
@@ -458,73 +467,69 @@ function Profile() {
           <p className="text-gray-500 mb-8">Save places you want to visit. Our AI will try to include them when you plan a trip to that destination!</p>
           
           <div className="flex flex-col gap-4 mb-8">
-            <div className="flex flex-col md:flex-row gap-4">
-              <input 
-                type="text" 
-                value={newNote}
-                onChange={(e) => setNewNote(e.target.value)}
-                placeholder="e.g. The Louvre"
-                className="flex-1 px-6 py-4 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-amber focus:outline-none transition-colors text-lg"
-              />
               <div className="relative flex-1">
                 <input 
                   type="text" 
-                  value={newNoteDestination}
-                  onChange={handleDestinationSearch}
-                  placeholder="Destination (e.g. Paris, France)"
+                  value={newPlaceQuery}
+                  onChange={handlePlaceSearch}
+                  placeholder="Search for a specific place or attraction to save..."
                   className="w-full px-6 py-4 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-amber focus:outline-none transition-colors text-lg"
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddNote()}
                 />
-                {destinationResults.length > 0 && (
+                {placeResults.length > 0 && (
                   <ul className="absolute top-full left-0 w-full bg-card/90 backdrop-blur-xl border border-amber/20 rounded-2xl mt-2 shadow-2xl overflow-hidden z-50">
-                    {destinationResults.map((place, idx) => (
+                    {placeResults.map((place, idx) => (
                       <li
                         key={idx}
-                        onClick={() => {
-                          setNewNoteDestination(place.display_name);
-                          setDestinationResults([]);
-                        }}
-                        className="p-4 cursor-pointer hover:bg-amber/10 flex items-center gap-3 transition-colors text-ink font-sans"
+                        onClick={() => handleAddPlace(place)}
+                        className="p-4 cursor-pointer hover:bg-amber/10 flex items-center gap-3 transition-colors text-ink font-sans border-b border-gray-100 last:border-0"
                       >
-                        <MapPin className="w-4 h-4 text-amber" /> {place.display_name}
+                        <MapPin className="w-4 h-4 text-amber" /> 
+                        <div>
+                           <p className="font-bold text-sm">{place.display_name.split(',')[0]}</p>
+                           <p className="text-xs text-gray-500">{place.display_name.split(',').slice(1).join(',').trim()}</p>
+                        </div>
                       </li>
                     ))}
                   </ul>
                 )}
               </div>
-              <button 
-                onClick={handleAddNote}
-                disabled={loadingNotes || !newNote.trim() || !newNoteDestination.trim()}
-                className="px-8 py-4 bg-amber text-primary-foreground font-bold rounded-2xl hover:bg-amber/90 transition-colors disabled:opacity-50 shadow-md whitespace-nowrap"
-              >
-                Add Place
-              </button>
             </div>
-          </div>
 
           <div className="space-y-4">
-            {loadingNotes && notes.length === 0 ? (
+            {loadingPlaces && savedPlaces.length === 0 ? (
                <div className="flex justify-center py-10">
                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber"></div>
                </div>
-            ) : notes.length > 0 ? (
-              notes.map(note => (
-                <div key={note.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100 hover:border-amber/30 transition-colors group">
+            ) : savedPlaces.length > 0 ? (
+              savedPlaces.map(place => (
+                <div key={place.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100 hover:border-amber/30 transition-colors group">
                   <div>
-                    <span className="block text-lg font-bold font-serif text-ink">{note.place}</span>
-                    {note.destination && (
+                    <span className="block text-lg font-bold font-serif text-ink">{place.name}</span>
+                    {place.destination && (
                       <span className="text-sm font-medium text-gray-500 flex items-center gap-1 mt-1">
-                        <MapPin className="w-3 h-3" /> {note.destination}
+                        <MapPin className="w-3 h-3" /> {place.destination}
+                      </span>
+                    )}
+                    {place.coordinates && (
+                      <span className="text-xs font-medium text-amber mt-1 inline-block bg-amber/10 px-2 py-0.5 rounded-full">
+                        Saved Location
                       </span>
                     )}
                   </div>
-                  <button 
-                    onClick={() => handleDeleteNote(note.id)}
-                    className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors opacity-0 group-hover:opacity-100"
-                    title="Delete Note"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <Link to="/createTrip">
+                       <button className="px-4 py-2 bg-ink text-primary-foreground text-sm font-bold rounded-xl hover:bg-amber transition-colors opacity-0 group-hover:opacity-100 shadow-sm">
+                         Plan Trip Here
+                       </button>
+                    </Link>
+                    <button 
+                      onClick={() => handleDeletePlace(place.id)}
+                      className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors opacity-0 group-hover:opacity-100"
+                      title="Remove Saved Place"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
               ))
             ) : (

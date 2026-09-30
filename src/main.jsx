@@ -15,6 +15,7 @@ const ViewTrip = lazy(() => import('./view-trip/tripId'));
 const SharedTrip = lazy(() => import('./view-trip/shared'));
 const ComparePrices = lazy(() => import('./createTrip/ComparePrices'));
 const AdminDashboard = lazy(() => import('./admin/AdminDashboard'));
+const ImportTrip = lazy(() => import('./importTrip'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
       {
         path: '/createTrip',
         element: <CreateTrip />,
+      },
+      {
+        path: '/import',
+        element: <ImportTrip />,
       },
       {
         path: '/signIn',

@@ -394,11 +394,21 @@ export default function JourneyStop({
                           >
                             <Edit2 className="w-3.5 h-3.5" /> Edit
                           </button>
+                          {trip?.source === "PDF Import" && (
+                            <>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); analytics.trackEvent('pdf_stop_kept'); setExpanded(false); }}
+                                className="flex items-center gap-1.5 hover:text-green-600 transition-colors ml-auto mr-2"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Keep
+                              </button>
+                            </>
+                          )}
                           <button 
                             onClick={(e) => { onDelete?.(); }}
-                            className="flex items-center gap-1.5 hover:text-red-500 transition-colors ml-auto"
+                            className={`flex items-center gap-1.5 hover:text-red-500 transition-colors ${trip?.source !== "PDF Import" ? 'ml-auto' : ''}`}
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3.5 h-3.5" /> {trip?.source === "PDF Import" ? "Skip" : ""}
                           </button>
                         </div>
                       )}

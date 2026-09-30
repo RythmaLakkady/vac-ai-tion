@@ -137,12 +137,15 @@ export const feasibilityEngine = {
 
   getItineraryScore(itinerary) {
     if (!itinerary || itinerary.length === 0) {
-      return { score: null, strengths: [], warnings: [], status: 'unavailable' };
+      return { score: null, strengths: [], warnings: [], status: 'unavailable', skippable: [], replaceable: [], additions: [] };
     }
 
     let score = 100;
     const strengths = [];
     const warnings = [];
+    const skippable = [];
+    const replaceable = [];
+    const additions = [];
     
     let totalStops = 0;
     let daysWithOverload = 0;
@@ -186,15 +189,27 @@ export const feasibilityEngine = {
 
     if (distanceDeduction === 0 && totalStops > 2) {
       strengths.push('Highly efficient routing (no long transitions)');
+      additions.push('Since routing is efficient, you can easily add a nearby local gem without ruining your pace.');
     }
 
     // Warnings
     if (daysWithOverload > 0) {
       warnings.push(`${daysWithOverload} day(s) have very ambitious schedules`);
+      skippable.push(`Consider skipping one activity on the most packed days to avoid rushing.`);
     }
     if (daysWithLongTransitions > 0) {
       warnings.push(`Contains travel-heavy transitions`);
+      replaceable.push(`Some locations are far apart. Consider replacing isolated stops with nearby alternatives.`);
     }
+
+    // PDF Import specific
+    itinerary.forEach((dayObj, i) => {
+       dayObj.plan?.forEach(p => {
+          if (p.uncertain) {
+             replaceable.push(`The timing for ${p.placeName} is uncertain. Verify it or find a known alternative.`);
+          }
+       });
+    });
 
     // Default strength if nothing else
     if (strengths.length === 0 && warnings.length === 0) {
@@ -205,7 +220,10 @@ export const feasibilityEngine = {
       score,
       strengths,
       warnings,
-      status: 'available'
+      status: 'available',
+      skippable,
+      replaceable,
+      additions
     };
   }
 };

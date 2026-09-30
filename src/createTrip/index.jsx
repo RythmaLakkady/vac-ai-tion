@@ -151,7 +151,7 @@ function CreateTrip() {
       let userNotes = [];
       if (user?.uid) {
         try {
-          const q = query(collection(db, "UserNotes"), where("userId", "==", user.uid));
+          const q = query(collection(db, "SavedPlaces"), where("userId", "==", user.uid));
           const querySnapshot = await getDocs(q);
           userNotes = querySnapshot.docs
             .map(doc => doc.data())
@@ -161,7 +161,7 @@ function CreateTrip() {
               const tripCity = formData.destination.split(',')[0].trim().toLowerCase();
               return noteCity === tripCity || data.destination.toLowerCase().includes(tripCity);
             })
-            .map(data => data.place);
+            .map(data => data.name);
             
           const profileSnap = await getDoc(doc(db, "UserProfiles", user.uid));
           if (profileSnap.exists()) {

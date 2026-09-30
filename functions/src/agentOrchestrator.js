@@ -104,7 +104,7 @@ function buildManagerPrompt(params) {
     : "";
 
   const foodSection = params.foodPreferences && params.foodPreferences !== 'No Restrictions'
-    ? `\n\nDietary preference: "${params.foodPreferences}". You MUST ensure dining recommendations cater to this diet.\n`
+    ? `\n\nDietary ${params.isAllergy ? 'Medical Allergy' : 'preference'}: "${params.foodPreferences}". You MUST ensure dining recommendations cater to this.\n`
     : "";
 
   const accessibilitySection = params.accessibilityMode
@@ -138,7 +138,7 @@ function buildPlannerPrompt(params, feedback, managerStrategy) {
     : "";
 
   const foodSection = params.foodPreferences && params.foodPreferences !== 'No Restrictions'
-    ? `\n\nCRITICAL REQUIREMENT - DIETARY PREFERENCES:\nThe user has specified a strict dietary preference: "${params.foodPreferences}". You MUST ensure that the activities include restaurant and dining recommendations (at least 1 per day) that explicitly cater to this diet. State how they accommodate it in the 'place_details' field.\n`
+    ? `\n\nCRITICAL REQUIREMENT - DIETARY ${params.isAllergy ? 'MEDICAL ALLERGY' : 'PREFERENCES'}:\nThe user has specified a ${params.isAllergy ? 'STRICT MEDICAL ALLERGY' : 'dietary preference'}: "${params.foodPreferences}". You MUST ensure that the activities include restaurant and dining recommendations (at least 1 per day) that explicitly cater to this. State how they accommodate it in the 'place_details' field.\n`
     : "";
 
   const healthSection = params.healthInfo

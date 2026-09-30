@@ -76,7 +76,7 @@ describe('JourneyStop', () => {
 describe('JourneyTransition', () => {
   it('renders a transition correctly', () => {
     render(<JourneyTransition fromStop={mockActivity} toStop={mockDay.activities[1]} />);
-    expect(screen.getByText('Travel details unavailable')).toBeInTheDocument();
+    expect(screen.getByText('Transport details unavailable')).toBeInTheDocument();
   });
 });
 
@@ -94,6 +94,6 @@ describe('JourneyChapter', () => {
     
     expect(screen.getByText('Eiffel Tower')).toBeInTheDocument();
     expect(screen.getByText('Louvre')).toBeInTheDocument();
-    expect(screen.getAllByText('Travel details unavailable').length).toBe(1);
+    expect(screen.getAllByText('Transport details unavailable').length).toBe(1);
   });
 });

@@ -71,6 +71,42 @@ export default function TripAnalyzer({ trip, itinerary }) {
             )}
           </div>
         </div>
+
+        {/* Actionable Recommendations */}
+        <div className="mt-10 border-t border-border pt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+            <h4 className="font-bold text-ink mb-3 uppercase tracking-wide text-xs">Consider Skipping</h4>
+            {analysis.skippable && analysis.skippable.length > 0 ? (
+              <ul className="space-y-2 text-sm text-gray-600">
+                 {analysis.skippable.map((s, i) => <li key={i} className="flex gap-2"><span>•</span> <span>{s}</span></li>)}
+              </ul>
+            ) : (
+              <p className="text-gray-400 text-sm">No obvious skips.</p>
+            )}
+          </div>
+          
+          <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+            <h4 className="font-bold text-ink mb-3 uppercase tracking-wide text-xs">Could Be Replaced</h4>
+            {analysis.replaceable && analysis.replaceable.length > 0 ? (
+              <ul className="space-y-2 text-sm text-gray-600">
+                 {analysis.replaceable.map((s, i) => <li key={i} className="flex gap-2"><span>•</span> <span>{s}</span></li>)}
+              </ul>
+            ) : (
+              <p className="text-gray-400 text-sm">Every stop seems solid.</p>
+            )}
+          </div>
+
+          <div className="bg-amber/5 rounded-2xl p-5 border border-amber/10">
+            <h4 className="font-bold text-amber-700 mb-3 uppercase tracking-wide text-xs">Worth Adding</h4>
+            {analysis.additions && analysis.additions.length > 0 ? (
+              <ul className="space-y-2 text-sm text-amber-800/80">
+                 {analysis.additions.map((s, i) => <li key={i} className="flex gap-2"><span>+</span> <span>{s}</span></li>)}
+              </ul>
+            ) : (
+              <p className="text-amber-800/50 text-sm">Itinerary is packed.</p>
+            )}
+          </div>
+        </div>
       </div>
       
       {/* Missing dimensions section */}
