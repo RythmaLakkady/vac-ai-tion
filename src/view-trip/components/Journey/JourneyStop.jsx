@@ -10,7 +10,7 @@ import { convertPrice } from '../../../utils/currencyFormatter';
 export default function JourneyStop({ 
   trip, activity, dayIndex, activityIndex, id, isSelected, 
   onDelete, onEdit, onInsert, onReplace, onSelect, onExploreArea,
-  previousActivity, nextActivity, currency, exchangeRates 
+  previousActivity, nextActivity, currency, exchangeRates, isReadOnly = false
 }) {
   const [expanded, setExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -206,12 +206,14 @@ export default function JourneyStop({
           <div className="flex-1 pb-1 w-full min-w-0 flex items-stretch">
             
             {/* Drag Handle */}
-            <div 
-              className="flex items-center justify-center px-1 text-border hover:text-ink/40 cursor-grab active:cursor-grabbing transition-colors shrink-0"
-              {...provided.dragHandleProps}
-            >
-              <GripVertical className="w-5 h-5" />
-            </div>
+            {!isReadOnly && (
+              <div 
+                className="flex items-center justify-center px-1 text-border hover:text-ink/40 cursor-grab active:cursor-grabbing transition-colors shrink-0"
+                {...provided.dragHandleProps}
+              >
+                <GripVertical className="w-5 h-5" />
+              </div>
+            )}
 
             <div 
               onClick={(e) => {
@@ -254,7 +256,7 @@ export default function JourneyStop({
                   )}
                 </div>
                 
-                {!isEditing && !expanded && (
+                {!isEditing && !expanded && !isReadOnly && (
                   <button 
                     className="text-gray-400 hover:text-ink opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity p-2 -mr-2 shrink-0"
                     aria-label="Actions"
@@ -298,44 +300,46 @@ export default function JourneyStop({
                       </div>
 
                       {/* Action Bar */}
-                      <div className="flex flex-wrap items-center gap-4 mt-6 pt-4 border-t border-border/30 text-xs font-medium text-ink/50">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); onExploreArea?.(); }}
-                          className="flex items-center gap-1.5 hover:text-ink transition-colors"
-                        >
-                          <MapPin className="w-3.5 h-3.5" /> Explore {activity?.location || 'Area'}
-                        </button>
-                        <button 
-                          onClick={(e) => exploreNearby(e, 'Cafés')}
-                          className="flex items-center gap-1.5 hover:text-ink transition-colors"
-                        >
-                          <Compass className="w-3.5 h-3.5" /> Nearby
-                        </button>
-                        <button 
-                          onClick={(e) => exploreAlternatives(e, 'closer')}
-                          className="flex items-center gap-1.5 hover:text-ink transition-colors"
-                        >
-                          <Replace className="w-3.5 h-3.5" /> Replace
-                        </button>
-                        <button 
-                          onClick={(e) => comparePrices(e)}
-                          className="flex items-center gap-1.5 hover:text-ink transition-colors"
-                        >
-                          <Wallet className="w-3.5 h-3.5" /> Compare prices
-                        </button>
-                        <button 
-                          onClick={(e) => { setIsEditing(true); }}
-                          className="flex items-center gap-1.5 hover:text-ink transition-colors"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" /> Edit
-                        </button>
-                        <button 
-                          onClick={(e) => { onDelete?.(); }}
-                          className="flex items-center gap-1.5 hover:text-red-500 transition-colors ml-auto"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                      {!isReadOnly && (
+                        <div className="flex flex-wrap items-center gap-4 mt-6 pt-4 border-t border-border/30 text-xs font-medium text-ink/50">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); onExploreArea?.(); }}
+                            className="flex items-center gap-1.5 hover:text-ink transition-colors"
+                          >
+                            <MapPin className="w-3.5 h-3.5" /> Explore {activity?.location || 'Area'}
+                          </button>
+                          <button 
+                            onClick={(e) => exploreNearby(e, 'Cafés')}
+                            className="flex items-center gap-1.5 hover:text-ink transition-colors"
+                          >
+                            <Compass className="w-3.5 h-3.5" /> Nearby
+                          </button>
+                          <button 
+                            onClick={(e) => exploreAlternatives(e, 'closer')}
+                            className="flex items-center gap-1.5 hover:text-ink transition-colors"
+                          >
+                            <Replace className="w-3.5 h-3.5" /> Replace
+                          </button>
+                          <button 
+                            onClick={(e) => comparePrices(e)}
+                            className="flex items-center gap-1.5 hover:text-ink transition-colors"
+                          >
+                            <Wallet className="w-3.5 h-3.5" /> Compare prices
+                          </button>
+                          <button 
+                            onClick={(e) => { setIsEditing(true); }}
+                            className="flex items-center gap-1.5 hover:text-ink transition-colors"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" /> Edit
+                          </button>
+                          <button 
+                            onClick={(e) => { onDelete?.(); }}
+                            className="flex items-center gap-1.5 hover:text-red-500 transition-colors ml-auto"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
                     </>
                   )}
 

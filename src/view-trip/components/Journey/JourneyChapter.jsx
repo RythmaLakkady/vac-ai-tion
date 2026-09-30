@@ -5,7 +5,7 @@ import JourneyStop from './JourneyStop';
 import JourneyTransition from './JourneyTransition';
 import { convertPrice } from '../../../utils/currencyFormatter';
 
-export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAddStop, onEditStop, onInsertStop, onReplaceStop, onSelectStop, onExploreArea, selectedStopId, currency, exchangeRates }) {
+export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAddStop, onEditStop, onInsertStop, onReplaceStop, onSelectStop, onExploreArea, selectedStopId, currency, exchangeRates, isReadOnly = false }) {
   if (!day || !day.activities || day.activities.length === 0) return null;
 
   const extractCost = (pricingStr, costState) => {
@@ -89,6 +89,7 @@ export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAd
                     nextActivity={nextActivity}
                     currency={currency}
                     exchangeRates={exchangeRates}
+                    isReadOnly={isReadOnly}
                   />
                   {!isLast && (
                     <JourneyTransition fromStop={activity} toStop={nextActivity} />
@@ -98,14 +99,16 @@ export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAd
             })}
             {provided.placeholder}
             
-            <div className="mt-6 flex items-center justify-center">
-              <button 
-                onClick={() => onAddStop(dayIndex)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full border border-dashed border-border/60 text-ink/50 hover:bg-gray-50 hover:text-ink/80 hover:border-border transition-colors text-sm font-medium"
-              >
-                <Plus className="w-4 h-4" /> Add Stop
-              </button>
-            </div>
+            {!isReadOnly && (
+              <div className="mt-6 flex items-center justify-center">
+                <button 
+                  onClick={() => onAddStop(dayIndex)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full border border-dashed border-border/60 text-ink/50 hover:bg-gray-50 hover:text-ink/80 hover:border-border transition-colors text-sm font-medium"
+                >
+                  <Plus className="w-4 h-4" /> Add Stop
+                </button>
+              </div>
+            )}
           </div>
         )}
       </Droppable>

@@ -2,10 +2,64 @@ import React, { useEffect, useState } from "react";
 import { signOut } from "firebase/auth";
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Link } from "react-router-dom";
-import { auth, db } from "./firebase";
-import { HeartPulse } from "lucide-react";
+import { HeartPulse, Sparkles, LogOut, Plane, Globe2, MapPin, Calendar, Users, Trash2 } from "lucide-react";
 import { destinationService } from "@/service/destinationService";
 import { motion } from "framer-motion";
+
+function TripCard({ trip, idx, formatDate, handleDelete }) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: idx * 0.1 }}
+      className="group bg-card rounded-[32px] overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:border-amber transition-all duration-500 flex flex-col h-full relative"
+    >
+      {/* Image Header */}
+      <div className="h-48 bg-gray-100 relative overflow-hidden">
+        <img 
+          src={`https://picsum.photos/seed/${trip.id}/800/600`} 
+          alt={trip.destination}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=800"; }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/60 to-transparent" />
+        <div className="absolute bottom-4 left-6 text-primary-foreground pr-4">
+          <h3 className="text-2xl font-bold font-serif line-clamp-1 drop-shadow-md">{trip?.destination?.split(',')[0]}</h3>
+        </div>
+      </div>
+      <div className="p-8 flex-grow flex flex-col">
+        <div className="space-y-4 mb-8">
+          <div className="flex items-center gap-3 text-ink/70 font-medium">
+            <Calendar className="w-5 h-5 text-coral" />
+            <span>{trip.duration} Days</span>
+          </div>
+          <div className="flex items-center gap-3 text-ink/70 font-medium">
+            <Users className="w-5 h-5 text-amber" />
+            <span className="line-clamp-1">{trip.travelers}</span>
+          </div>
+          <div className="flex items-center gap-3 text-gray-400 text-sm">
+            <span>Generated on {trip.timestamp ? formatDate(trip.timestamp) : "No Date"}</span>
+          </div>
+        </div>
+        
+        <div className="mt-auto flex items-center gap-2">
+          <Link to={`/view-trip/${trip.id}`} className="flex-1">
+            <button className="w-full py-3 bg-ink text-primary-foreground font-bold rounded-xl hover:bg-amber transition-colors duration-300 shadow-sm hover:shadow-md text-sm">
+              Continue Journey
+            </button>
+          </Link>
+          <button 
+            onClick={handleDelete}
+            className="p-3 bg-red-50 text-red-500 font-bold rounded-xl hover:bg-red-500 hover:text-primary-foreground transition-colors duration-300 shadow-sm hover:shadow-md"
+            title="Delete Trip"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 function Profile() {
   const [user, setUser] = useState(null);
@@ -28,7 +82,7 @@ function Profile() {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        fetchUserTrips(currentUser.email);
+        fetchUserTrips(currentUser.uid);
         fetchUserNotes(currentUser.uid);
         fetchHealthInfo(currentUser.uid);
       } else {
@@ -126,10 +180,10 @@ function Profile() {
     }
   };
 
-  const fetchUserTrips = async (userEmail) => {
+  const fetchUserTrips = async (userId) => {
     setLoading(true);
     try {
-      const q = query(collection(db, "UserTrips"), where("userEmail", "==", userEmail));
+      const q = query(collection(db, "UserTrips"), where("userId", "==", userId));
       const querySnapshot = await getDocs(q);
 
       const userTrips = querySnapshot.docs.map((doc) => {
@@ -152,6 +206,15 @@ function Profile() {
                          tripData.travelers || 
                          "Not Specified";
 
+        const startDateStr = tripData.startDate || userSelection.startDate || null;
+        let isPast = false;
+        if (startDateStr) {
+          const startDate = new Date(startDateStr);
+          if (startDate < new Date()) {
+            isPast = true;
+          }
+        }
+
         return {
           id: doc.id,
           tripName: tripData.trip_name || `${destination} Trip`,
@@ -159,7 +222,15 @@ function Profile() {
           duration: duration,
           travelers: travelers,
           timestamp: data.timestamp || null,
+          isPast: isPast,
+          shareId: data.shareId || null,
         };
+      });
+
+      // Sort by timestamp descending
+      userTrips.sort((a, b) => {
+        if (!a.timestamp || !b.timestamp) return 0;
+        return b.timestamp.seconds - a.timestamp.seconds;
       });
 
       setTrips(userTrips);
@@ -295,59 +366,27 @@ function Profile() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber"></div>
             </div>
           ) : trips.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 font-sans mb-10">
-              {trips.map((trip, idx) => (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: idx * 0.1 }}
-                  key={trip.id} 
-                  className="group bg-card rounded-[32px] overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:border-amber transition-all duration-500 flex flex-col h-full relative"
-                >
-                  {/* Image Header */}
-                  <div className="h-48 bg-gray-100 relative overflow-hidden">
-                    <img 
-                      src={`https://picsum.photos/seed/${trip.id}/800/600`} 
-                      alt={trip.destination}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=800"; }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-ink/60 to-transparent" />
-                    <div className="absolute bottom-4 left-6 text-primary-foreground pr-4">
-                      <h3 className="text-2xl font-bold font-serif line-clamp-1 drop-shadow-md">{trip?.destination?.split(',')[0]}</h3>
-                    </div>
-                  </div>
-                  <div className="p-8 flex-grow flex flex-col">
-                    <div className="space-y-4 mb-8">
-                      <div className="flex items-center gap-3 text-ink/70 font-medium">
-                        <Calendar className="w-5 h-5 text-coral" />
-                        <span>{trip.duration} Days</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-ink/70 font-medium">
-                        <Users className="w-5 h-5 text-amber" />
-                        <span className="line-clamp-1">{trip.travelers}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-gray-400 text-sm">
-                        <span>Generated on {trip.timestamp ? formatDate(trip.timestamp) : "No Date"}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-auto flex items-center gap-2">
-                      <Link to={`/view-trip/${trip.id}`} className="flex-1">
-                        <button className="w-full py-3 bg-ink text-primary-foreground font-bold rounded-xl hover:bg-amber transition-colors duration-300 shadow-sm hover:shadow-md text-sm">
-                          View
-                        </button>
-                      </Link>
-                      <Link to={`/view-trip/${trip.id}?edit=true`} className="flex-1">
-                        <button className="w-full py-3 bg-amber/10 text-amber font-bold rounded-xl hover:bg-amber hover:text-primary-foreground transition-colors duration-300 shadow-sm hover:shadow-md text-sm">
-                          Modify
-                        </button>
-                      </Link>
-                      <button 
-                        onClick={async (e) => {
+            <div className="space-y-12 mb-10">
+              {/* Upcoming Trips */}
+              {trips.filter(t => !t.isPast).length > 0 && (
+                <div>
+                  <h3 className="text-2xl font-bold font-serif text-ink mb-6 flex items-center gap-2">
+                    <Sparkles className="w-6 h-6 text-amber" /> Upcoming Journeys
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 font-sans">
+                    {trips.filter(t => !t.isPast).map((trip, idx) => (
+                      <TripCard 
+                        key={trip.id} 
+                        trip={trip} 
+                        idx={idx} 
+                        formatDate={formatDate}
+                        handleDelete={async (e) => {
                           e.preventDefault();
                           if(window.confirm('Are you sure you want to delete this trip?')) {
                             try {
+                              if (trip.shareId) {
+                                await deleteDoc(doc(db, "SharedTrips", trip.shareId)).catch(err => console.warn('Failed to delete shared trip', err));
+                              }
                               await deleteDoc(doc(db, "UserTrips", trip.id));
                               setTrips(trips.filter(t => t.id !== trip.id));
                             } catch(err) {
@@ -355,15 +394,44 @@ function Profile() {
                             }
                           }
                         }}
-                        className="p-3 bg-red-50 text-red-500 font-bold rounded-xl hover:bg-red-500 hover:text-primary-foreground transition-colors duration-300 shadow-sm hover:shadow-md"
-                        title="Delete Trip"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
+                      />
+                    ))}
                   </div>
-                </motion.div>
-              ))}
+                </div>
+              )}
+
+              {/* Past Trips */}
+              {trips.filter(t => t.isPast).length > 0 && (
+                <div>
+                  <h3 className="text-2xl font-bold font-serif text-ink mb-6 flex items-center gap-2">
+                    <Globe2 className="w-6 h-6 text-gray-400" /> Past Adventures
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 font-sans opacity-80 hover:opacity-100 transition-opacity">
+                    {trips.filter(t => t.isPast).map((trip, idx) => (
+                      <TripCard 
+                        key={trip.id} 
+                        trip={trip} 
+                        idx={idx} 
+                        formatDate={formatDate}
+                        handleDelete={async (e) => {
+                          e.preventDefault();
+                          if(window.confirm('Are you sure you want to delete this trip?')) {
+                            try {
+                              if (trip.shareId) {
+                                await deleteDoc(doc(db, "SharedTrips", trip.shareId)).catch(err => console.warn('Failed to delete shared trip', err));
+                              }
+                              await deleteDoc(doc(db, "UserTrips", trip.id));
+                              setTrips(trips.filter(t => t.id !== trip.id));
+                            } catch(err) {
+                              console.error("Failed to delete", err);
+                            }
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-20 bg-gray-50 rounded-[40px] border border-gray-100 font-sans mb-10">

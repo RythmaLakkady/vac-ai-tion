@@ -10,7 +10,7 @@ import { Wallet } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
 
-export default function Journey({ trip, tripId, itinerary, setItinerary, currency, exchangeRates }) {
+export default function Journey({ trip, tripId, itinerary, setItinerary, currency, exchangeRates, isReadOnly = false }) {
   const [selectedStopId, setSelectedStopId] = useState(null);
   const [selectedDayIndex, setSelectedDayIndex] = useState(null);
   const [showMobileMap, setShowMobileMap] = useState(false);
@@ -25,6 +25,15 @@ export default function Journey({ trip, tripId, itinerary, setItinerary, currenc
       await updateDoc(docRef, {
         'tripData.itinerary': newItinerary
       });
+      
+      // Update shared trip if it exists
+      if (trip?.shareId) {
+        const sharedDocRef = doc(db, 'SharedTrips', trip.shareId);
+        await updateDoc(sharedDocRef, {
+          'tripData.itinerary': newItinerary,
+          'lastUpdatedAt': new Date().toISOString()
+        }).catch(err => console.warn('Failed to update shared trip itinerary', err));
+      }
     } catch (e) {
       console.error("Failed to persist itinerary updates", e);
       toast.error('Failed to save changes to cloud');
@@ -165,7 +174,7 @@ export default function Journey({ trip, tripId, itinerary, setItinerary, currenc
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
         {/* Left Column: Journey Timeline */}
         <div className="lg:col-span-5 xl:col-span-6 order-2 lg:order-1">
-          <DragDropContext onDragEnd={handleDragEnd}>
+          {isReadOnly ? (
             <div className="space-y-4">
               {itinerary.map((day, idx) => (
                 <JourneyChapter 
@@ -173,20 +182,39 @@ export default function Journey({ trip, tripId, itinerary, setItinerary, currenc
                   trip={trip}
                   day={day} 
                   dayIndex={idx} 
-                  onDeleteStop={handleDeleteStop}
-                  onAddStop={handleAddStop}
-                  onEditStop={handleEditStop}
-                  onInsertStop={handleInsertStop}
-                  onReplaceStop={handleReplaceStop}
                   onSelectStop={handleJourneyStopSelected}
-                  onExploreArea={handleExploreArea}
                   selectedStopId={selectedStopId}
                   currency={currency}
                   exchangeRates={exchangeRates}
+                  isReadOnly={true}
                 />
               ))}
             </div>
-          </DragDropContext>
+          ) : (
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <div className="space-y-4">
+                {itinerary.map((day, idx) => (
+                  <JourneyChapter 
+                    key={`day-${idx}`} 
+                    trip={trip}
+                    day={day} 
+                    dayIndex={idx} 
+                    onDeleteStop={handleDeleteStop}
+                    onAddStop={handleAddStop}
+                    onEditStop={handleEditStop}
+                    onInsertStop={handleInsertStop}
+                    onReplaceStop={handleReplaceStop}
+                    onSelectStop={handleJourneyStopSelected}
+                    onExploreArea={handleExploreArea}
+                    selectedStopId={selectedStopId}
+                    currency={currency}
+                    exchangeRates={exchangeRates}
+                    isReadOnly={false}
+                  />
+                ))}
+              </div>
+            </DragDropContext>
+          )}
           <div className="mt-16 pt-8 border-t border-border/50 text-center">
             <span className="text-sm font-bold tracking-widest text-ink/30 uppercase">End of Journey</span>
           </div>

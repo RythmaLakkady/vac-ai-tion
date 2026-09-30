@@ -12,6 +12,7 @@ const SignUpForm = lazy(() => import('./SignUpForm'));
 const LoginPage = lazy(() => import('./LoginPage'));
 const Profile = lazy(() => import('./Profile'));
 const ViewTrip = lazy(() => import('./view-trip/tripId'));
+const SharedTrip = lazy(() => import('./view-trip/shared'));
 const ComparePrices = lazy(() => import('./createTrip/ComparePrices'));
 const AdminDashboard = lazy(() => import('./admin/AdminDashboard'));
 
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
       {
         path: '/view-trip/:tripId',
         element: <ViewTrip />,
+      },
+      {
+        path: '/v/:shareId',
+        element: <SharedTrip />,
       },
       {
         path: '/compare-prices',

@@ -1,20 +1,19 @@
 import { db } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import Flights from '../components/Flights';
-import Hotels from '../components/Hotels';
-import WandererNotes from '../components/WandererNotes';
-import AIChatbot from '../../components/ui/custom/AIChatbot';
 import { analytics } from '@/service/analyticsService';
 
 import TripHeader from '../components/TripHeader';
 import TripNavigation from '../components/TripNavigation';
 import Journey from '../components/Journey';
+import Flights from '../components/Flights';
+import Hotels from '../components/Hotels';
+import WandererNotes from '../components/WandererNotes';
 
-function ViewTrip() {
-  const { tripId } = useParams();
+export default function SharedTrip() {
+  const { shareId } = useParams();
   const [trip, setTrip] = useState(null); 
   const [itinerary, setItinerary] = useState([]);
   const [currency, setCurrency] = useState('USD');
@@ -36,38 +35,49 @@ function ViewTrip() {
 
   useEffect(() => {
     const GetTripData = async () => {
-      const docRef = doc(db, 'UserTrips', tripId);
+      const docRef = doc(db, 'SharedTrips', shareId);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
         const data = docSnap.data();
+        data.isReadOnly = true; // Mark as read-only
         setTrip(data);
         if (data?.tripData?.itinerary && Array.isArray(data.tripData.itinerary)) {
           setItinerary(data.tripData.itinerary);
         }
-        analytics.trackEvent('itinerary_viewed', { 
-          tripId, 
+        analytics.trackEvent('public_trip_viewed', { 
+          shareId, 
           destination: data?.tripData?.location || data?.userSelection?.destination 
         });
       } else {
-        console.log('no such doc');
-        toast('No trip found');
+        toast.error('Shared trip not found or has been disabled');
       }
     };
 
-    if (tripId) {
+    if (shareId) {
       GetTripData();
     }
-  }, [tripId]);
+  }, [shareId]);
 
-  if (!trip) return <p className='text-center text-gray-500 mt-20'>Loading trip details...</p>;
+  if (!trip) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50/50">
+      <p className='text-gray-500 mb-6'>Loading shared trip...</p>
+      <Link to="/" className="text-amber font-bold underline">Go to home</Link>
+    </div>
+  );
 
   return (
     <div className='min-h-screen bg-gray-50/50 font-sans'>
+      {/* Top Banner indicating read-only */}
+      <div className="bg-amber text-white text-center py-2 font-bold text-sm">
+        You are viewing a shared read-only trip.
+        <Link to="/" className="ml-2 underline hover:text-white/80">Plan your own</Link>
+      </div>
+      
       {/* Hero Header Area */}
-      <div className='bg-card/90 backdrop-blur-xl border-b border-border/50 shadow-sm pt-32 pb-8 px-6 sm:px-10 lg:px-20'>
+      <div className='bg-card/90 backdrop-blur-xl border-b border-border/50 shadow-sm pt-20 pb-8 px-6 sm:px-10 lg:px-20'>
         <div className='max-w-7xl mx-auto'>
-          <TripHeader trip={trip} tripId={tripId} currency={currency} setCurrency={setCurrency} />
+          <TripHeader trip={trip} tripId={null} currency={currency} setCurrency={setCurrency} isReadOnly={true} />
         </div>
       </div>
 
@@ -82,11 +92,12 @@ function ViewTrip() {
           <div className='w-full'>
             <Journey 
               trip={trip} 
-              tripId={tripId} 
+              tripId={null} 
               itinerary={itinerary} 
-              setItinerary={setItinerary} 
+              setItinerary={() => {}} // Disabled
               currency={currency} 
               exchangeRates={exchangeRates} 
+              isReadOnly={true}
             />
           </div>
         )}
@@ -123,11 +134,6 @@ function ViewTrip() {
           </div>
         )}
       </div>
-
-      {/* Floating AI Chatbot */}
-      {!trip?.isReadOnly && <AIChatbot trip={trip} setTrip={setTrip} setCurrency={setCurrency} />}
     </div>
   );
 }
-
-export default ViewTrip;

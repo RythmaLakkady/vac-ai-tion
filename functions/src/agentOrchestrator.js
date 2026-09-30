@@ -417,6 +417,7 @@ async function runAgentOrchestrator(jobId, params, apiKey) {
     const db = admin.firestore();
     const tripDocId = Date.now().toString();
     await db.collection("UserTrips").doc(tripDocId).set({
+      userId: params.userId,
       userEmail: params.userEmail,
       userSelection: {
         destination: params.destination,

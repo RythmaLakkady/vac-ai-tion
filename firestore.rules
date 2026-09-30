@@ -9,6 +9,13 @@ service cloud.firestore {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
 
+    // SharedTrips — anyone can read, only owner of associated UserTrip can create/update/delete
+    match /SharedTrips/{shareId} {
+      allow read: if true;
+      allow create: if request.auth != null && get(/databases/$(database)/documents/UserTrips/$(request.resource.data.tripId)).data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && get(/databases/$(database)/documents/UserTrips/$(resource.data.tripId)).data.userId == request.auth.uid;
+    }
+
     // UserNotes — only owner can read and write
     match /UserNotes/{noteId} {
       allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
