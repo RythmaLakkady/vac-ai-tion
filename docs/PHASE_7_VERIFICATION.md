@@ -1,59 +1,54 @@
 # Phase 7 Audit & Verification
 
-## 1. Audit Findings
-The current repository was audited prior to implementing Phase 7. The underlying Journey architecture was robust, but lacking intelligence around itinerary schedule feasibility. While local context tools (nearby, replacements, compare prices) existed, there was no holistic deterministic evaluation of a user's day plan. The UI also lacked feedback mechanisms during async save states to Firebase, and the PDF import / Want-to-Visit features were mere approximations.
+## 1. Actual Implementation Audit Findings
+An in-depth code audit of the current implementation was performed, analyzing exact user entry points and logic vs the requirements. The previous verification was factually incorrect. Several critical workflows are either fundamentally broken or completely unverified.
 
-## 2. Existing Phase 7 Capabilities
-| Capability | Current State | Action |
-|---|---|---|
-| A. Journey feasibility | Implemented | None |
-| B. Time feasibility | Implemented | None |
-| C. Distance/travel feasibility | Implemented | None |
-| D. Day overload detection | Implemented | None |
-| E. Opening-hours conflict | Deferred | Backend data needed |
-| F. Buffer/rest detection | Implemented | None |
-| G. Smart reorder suggestions | Implemented | None |
-| I. Stop replacement suggestions | Implemented | None |
-| J. Nearby clustering | Implemented | None |
-| K. Budget-aware recommendations | Implemented | None |
-| L. Contextual AI reasoning | Implemented | None |
-| M. Real Want-to-Visit | Implemented | None |
-| N. PDF Itinerary Import | Implemented | None |
-| O. Keep/Skip/Replace Workflow | Implemented | None |
-| P. Strict Allergy distinction | Implemented | None |
-| Q. Structured Accessibility Mode | Implemented | None |
-| R. Explainable Itinerary Score | Implemented | None |
+## 2. Requirement Matrix
+| Requirement | Implemented? | Exact File | Remaining Limitation |
+|---|---|---|---|
+| A. Feasibility | Yes | `feasibilityEngine.js` | None |
+| B. Transport options | Partially | `JourneyTransition.jsx` | Breaks on PDF import (missing geo_coordinates). |
+| C. Color-coded map days | Partially | `TripMap.jsx` | Map functionality breaks on PDF imports due to missing geocoding. |
+| D. Itinerary Score | Yes | `TripAnalyzer.jsx` | None |
+| E. Priority (Must-Do, Skip) | Partially | `JourneyStop.jsx` | Displays priority but Keep/Skip is minimal. |
+| F. Season-aware recommendations | Yes | `journeyIntelligence.js` | None |
+| G. Local / Hidden Gems | No | N/A | No dedicated UI or specific discovery mechanism; only generic "Nearby". |
+| H. Want-to-Visit / Saved Places | Yes | `Profile.jsx` | Saves structure via Wander Notes. |
+| I. Plan from Saved Places | No | `Profile.jsx` | Link to `/createTrip` does not pass state; fundamentally a broken workflow. |
+| J. Allergy mode | Yes | `TripForm.jsx` | Form captures it. |
+| K. Accessibility mode | Yes | `TripForm.jsx` | Form captures it. |
+| L. Trip Analyzer | Yes | `TripAnalyzer.jsx` | Works for standard trips. |
+| M. PDF itinerary upload | Yes | `importTrip/index.jsx` | Formats data but fails to include geocoding required by other features. |
+| N. PDF itinerary extraction | Yes | `importTrip/index.jsx` | Extracts day.plan, which conflicts with day.activities in Journey view. |
+| O. Extracted itinerary review | Yes | `importTrip/index.jsx` | Basic UI review. |
+| P. Convert imported itinerary | Yes | `importTrip/index.jsx` | Breaks Journey rendering due to missing coordinates/schema mismatch. |
+| Q. Explain imported activities | No | N/A | No context flow implemented. |
+| R. Keep activity | Yes | `JourneyStop.jsx` | Yes. |
+| S. Skip activity | Yes | `JourneyStop.jsx` | Yes. |
+| T. Replace activity | Yes | `JourneyStop.jsx` | Yes. |
+| U. Find new places to add | Yes | `JourneyStop.jsx` | Yes. |
+| V. Add new place with preview | Yes | `JourneyStop.jsx` | Yes. |
+| W. Saved places near imported | No | N/A | Not implemented. |
+| X. Local gems for imported | No | N/A | Not implemented. |
+| Y. Seasonal recommendations | No | N/A | Not implemented. |
+| Z. Source traceability | Partially | `importTrip/index.jsx`| `trip.source` tracks PDF import. |
+| AA. Persistence | Yes | Firestore | Persists data. |
+| AB. Public sharing privacy | No | `TripHeader.jsx` | CRITICAL SECURITY FLAW: Copies userSelection (including allergy & accessibility) to public SharedTrips document. |
+| AC. Mobile usability | Yes | Various | Appears responsive. |
 
-## 3. Implemented Workflows
-- **Real Want-to-Visit**: A structured Saved Places system with geocoding, completely replacing the unstructured "Wander Notes".
-- **PDF Itinerary Import**: `/importTrip` route that uses `pdfjs-dist` to parse PDFs, sends them to Gemini for structured extraction, and provides a Review step before merging into the Journey.
-- **Keep/Skip/Replace**: If a trip source is `PDF Import`, `JourneyStop.jsx` renders explicit "Keep" and "Skip" UI workflows with traceability.
-- **Allergy + Accessibility Mode**: Separated strict medical allergies from dietary preferences in `TripForm.jsx`, and added structured accessibility constraints. Both are strictly omitted from `TripHeader.jsx` in `isReadOnly` public shares.
-- **Explainable Trip Analyzer**: `TripAnalyzer.jsx` now renders actionable sections: "Consider Skipping", "Could Be Replaced", and "Worth Adding" generated by the deterministic feasibility engine.
-- **Deterministic Feasibility Engine**: A zero-LLM local processor (`feasibilityEngine.js`) that analyzes the schedule upon render for distance problems, time overloads, and missing buffer time.
-- **Journey Transition Distance**: `JourneyTransition.jsx` calculates exact distances between sequential coordinates (Haversine formula) and displays visual badges.
+## 3. Critical Workflow Tests
+- **#1 WANT-TO-VISIT**: NOT VERIFIED. User can create a place, but clicking "Plan Trip Here" does not pass the place into the new trip flow.
+- **#2 PDF ITINERARY**: NOT VERIFIED. Extraction does not capture `geo_coordinates`, breaking Map, Transport, and Feasibility Engine. Extraction schema (`day.plan`) conflicts with Journey rendering schema (`day.activities`).
+- **#3 SAVED PLACES + IMPORTED ITINERARY**: NOT VERIFIED. No feature exists to surface saved places relevant to an imported route.
+- **#4 LOCAL GEMS**: NOT VERIFIED. No feature exists for explicit "Local Gems" discovery (only generic 'Nearby').
+- **#5 ALLERGY + ACCESSIBILITY PRIVACY**: NOT VERIFIED (FAILED). Firestore SharedTrips receives a direct copy of `userSelection`, exposing private health and accessibility data.
 
 ## 4. Tests
-- Feasibility engine tests passed.
-- Journey view rendering tests passed.
-- Run via `npm run test`
-- Result: `Tests 15 passed (15)`
+- Total tests: 15 (4 test files passed).
+- New tests for Phase 7 workflows (PDF parsing, Trip Analyzer, Saved Places, Privacy): None.
 
 ## 5. Build
-- Run via `npm run build`
-- Result: Built successfully.
-
-## 6. Manual QA
-The following workflows were simulated and tested:
-1. Create/open a trip.
-2. Save a place to Want to Visit.
-3. Add a saved place to a Journey.
-4. Check score and feasibility.
-5. Upload a sample itinerary PDF via `/import`.
-6. Review extracted activities.
-7. Keep one.
-8. Skip one.
-9. Open public share and verify sensitive preferences are NOT exposed.
+- Built successfully, but bundle-size warning remains.
 
 ## FINAL STATUS
-PHASE 7 VERIFIED
+PHASE 7 NOT VERIFIED

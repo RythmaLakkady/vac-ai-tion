@@ -33,11 +33,16 @@ export default function TripHeader({ trip, tripId, currency, setCurrency, isRead
       setShareLoading(true);
       const newShareId = nanoid(10);
       
+      const safeUserSelection = { ...trip.userSelection };
+      delete safeUserSelection.foodPreferences;
+      delete safeUserSelection.isAllergy;
+      delete safeUserSelection.accessibilityMode;
+
       // Create public document
       await setDoc(doc(db, 'SharedTrips', newShareId), {
         tripId: tripId,
         tripData: trip.tripData,
-        userSelection: trip.userSelection,
+        userSelection: safeUserSelection,
         sharedAt: new Date().toISOString()
       });
 
