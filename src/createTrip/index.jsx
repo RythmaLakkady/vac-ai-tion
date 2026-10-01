@@ -19,11 +19,13 @@ import { destinationService } from "@/service/destinationService";
 
 import TripForm from "./components/TripForm";
 import TripGenerationProgress from "./components/TripGenerationProgress";
+import SmartTripDiscovery from "./components/SmartTripDiscovery";
 
 function CreateTrip() {
   const navigate = useNavigate();
   const location = useLocation();
   const [step, setStep] = useState(1);
+  const [entryMode, setEntryMode] = useState(null); // null, 'KNOWN', 'DISCOVERY'
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
@@ -32,6 +34,8 @@ function CreateTrip() {
     startLocation: "",
     destination: location.state?.prefillDestination || location.state?.destination || "",
     days: "",
+    startDate: null,
+    endDate: null,
     budget: "",
     travelers: "",
     people: "",
@@ -124,7 +128,7 @@ function CreateTrip() {
 
   const handleNext = () => {
     if (step === 1 && (!formData.startLocation || !formData.destination)) return toast("Please enter both your origin and destination.");
-    if (step === 2 && (!formData.days || formData.days > 15 || formData.days < 1)) return toast("Please enter valid days (1 to 15).");
+    if (step === 2 && (!formData.startDate || !formData.endDate)) return toast("Please select a date range.");
     if (step === 3) {
       if (!formData.travelers) return toast("Please select your travel companions.");
       if (['Friends', 'Family'].includes(formData.travelers) && (!formData.people || isNaN(formData.people))) {
@@ -136,7 +140,26 @@ function CreateTrip() {
     setStep((prev) => prev + 1);
   };
 
-  const handleBack = () => setStep((prev) => prev - 1);
+  const handleBack = () => {
+    if (step === 1) setEntryMode(null);
+    else setStep((prev) => prev - 1);
+  };
+
+  const handleDiscoveredDestination = (discoveredData) => {
+    setFormData(prev => ({
+      ...prev,
+      destination: discoveredData.destination,
+      days: discoveredData.days,
+      startDate: discoveredData.startDate,
+      endDate: discoveredData.endDate,
+      travelers: discoveredData.travelers,
+      budget: discoveredData.budget,
+      discoveryIntent: discoveredData.discoveryIntent
+    }));
+    setQuery(discoveredData.destination);
+    setEntryMode('KNOWN');
+    setStep(1); // Drop them into TripForm step 1 to review
+  };
 
   const onGenerateWithAgents = async () => {
     if (!isLoggedIn) return setIsModalOpen(true);
@@ -203,10 +226,53 @@ function CreateTrip() {
     return <TripGenerationProgress destination={formData.destination} agentLogs={agentLogs} agentStatus={agentStatus} />;
   }
 
+  // ENTRY MODE SELECTION
+  if (entryMode === null) {
+    return (
+      <div className="min-h-screen pt-32 pb-16 px-6 max-w-4xl mx-auto font-sans flex flex-col items-center justify-center space-y-12">
+        <div className="text-center space-y-4">
+          <h1 className="text-5xl md:text-6xl font-serif font-black text-ink">How do you want to begin?</h1>
+          <p className="text-xl text-gray-500 max-w-2xl mx-auto">Start with a destination in mind, or let us help you find the perfect spot based on what you're looking for.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setEntryMode('KNOWN')}
+            className="p-10 bg-white border border-gray-200 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:border-amber/50 cursor-pointer transition-all flex flex-col items-center text-center group"
+          >
+            <div className="w-20 h-20 bg-amber/10 rounded-full flex justify-center items-center mb-6 group-hover:scale-110 transition-transform">
+              <MapPin className="w-10 h-10 text-amber" />
+            </div>
+            <h2 className="text-3xl font-bold font-serif text-ink mb-3">I know where I want to go</h2>
+            <p className="text-gray-500 font-medium">I already have a destination. Let's plan the itinerary.</p>
+          </motion.div>
+
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setEntryMode('DISCOVERY')}
+            className="p-10 bg-white border border-gray-200 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:border-coral/50 cursor-pointer transition-all flex flex-col items-center text-center group"
+          >
+            <div className="w-20 h-20 bg-coral/10 rounded-full flex justify-center items-center mb-6 group-hover:scale-110 transition-transform">
+              <Sparkles className="w-10 h-10 text-coral" />
+            </div>
+            <h2 className="text-3xl font-bold font-serif text-ink mb-3">Help me decide</h2>
+            <p className="text-gray-500 font-medium">I don't have a specific destination yet. Suggest somewhere for me.</p>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pt-32 pb-16 px-6 max-w-3xl mx-auto font-sans">
       
-      {/* Progress Bar */}
+      {entryMode === 'DISCOVERY' ? (
+        <SmartTripDiscovery onDestinationSelected={handleDiscoveredDestination} />
+      ) : (
+        <>
+          {/* Progress Bar */}
       <div className="mb-16">
         <div className="flex justify-between items-center mb-4">
           <span className="text-sm font-bold text-amber tracking-widest uppercase">Step {step} of 7</span>
@@ -253,7 +319,7 @@ function CreateTrip() {
           <button onClick={handleBack} className="flex items-center gap-2 text-ink/60 hover:text-ink font-bold transition-colors">
             <ChevronLeft className="w-5 h-5" /> Back
           </button>
-        ) : <div />}
+        ) : <button onClick={handleBack} className="flex items-center gap-2 text-ink/60 hover:text-ink font-bold transition-colors"><ChevronLeft className="w-5 h-5" /> Back</button>}
 
         {step < 7 ? (
           <button onClick={handleNext} className="flex items-center gap-2 px-8 py-4 bg-ink text-primary-foreground rounded-full font-bold hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
@@ -270,6 +336,8 @@ function CreateTrip() {
           </button>
         )}
       </div>
+        </>
+      )}
 
       {/* Auth Modal */}
       <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />

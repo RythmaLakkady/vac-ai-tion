@@ -322,5 +322,83 @@ export const journeyIntelligence = {
       console.error("Destination context failed:", e);
       throw new Error("Destination guide is temporarily unavailable.");
     }
+  },
+
+  async extractDiscoveryIntent(userText) {
+    const cacheKey = `intent_${userText.trim().toLowerCase()}`;
+    if (aiCache.has(cacheKey)) return aiCache.get(cacheKey);
+
+    const prompt = `
+      You are an AI travel assistant trying to understand a user's vague trip request.
+      User request: "${userText}"
+      
+      Extract any implicit or explicit preferences from this request into a structured JSON object. 
+      If a field is not mentioned or heavily implied, leave it null.
+      
+      Return ONLY a valid JSON object with EXACTLY this structure:
+      {
+        "climate": "e.g. warm, cold, mild, null",
+        "budgetPreference": "e.g. low, high, medium, null",
+        "mood": "e.g. romantic, peaceful, party, adventure, null",
+        "landscape": "e.g. beach, mountains, city, null",
+        "interests": ["list of activities/interests", "or empty array"]
+      }
+    `;
+
+    try {
+      const result = await chatSession.sendMessage(prompt);
+      const text = await result.response.text();
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) return null;
+      const data = JSON.parse(jsonMatch[0]);
+      aiCache.set(cacheKey, data);
+      return data;
+    } catch (e) {
+      console.error("Intent extraction failed:", e);
+      return null; // Graceful fallback
+    }
+  },
+
+  async discoverDestinations(context) {
+    const cacheKey = `discover_${JSON.stringify(context)}`;
+    if (aiCache.has(cacheKey)) return aiCache.get(cacheKey);
+
+    const prompt = `
+      Act as a master travel agent. The user wants to discover a destination.
+      Intent / Vibe: ${JSON.stringify(context.discoveryIntent)}
+      Dates: ${context.startDate ? context.startDate + ' to ' + context.endDate : 'Unknown'} (Duration: ${context.durationDays || 'Unknown'} days)
+      Travelers: ${context.travelers || 'Unknown'}
+      Budget: ${context.budget || 'Unknown'}
+      
+      Suggest 4 to 6 destination candidates that PERFECTLY MATCH this criteria.
+      Keep the season/dates in mind! If they want warm weather in December, don't suggest Paris.
+      
+      Return ONLY a valid JSON array of objects with exactly this structure:
+      [
+        {
+          "destination_name": "City/Region name",
+          "country": "Country name",
+          "match_explanation": "Short explanation of the vibe",
+          "why_it_fits": "Why this specifically fits their requested vibe, dates, and budget.",
+          "climate": "Expected weather during those dates",
+          "budget_positioning": "Rough cost indication (e.g. 'Highly affordable', 'Premium')",
+          "trip_characteristics": "e.g. 'Relaxing • Beach • Seafood'",
+          "caveat": "Optional: e.g. 'Can be crowded in December' or null"
+        }
+      ]
+    `;
+
+    try {
+      const result = await chatSession.sendMessage(prompt);
+      const text = await result.response.text();
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) throw new Error("Failed to generate candidates");
+      const candidates = JSON.parse(jsonMatch[0]);
+      aiCache.set(cacheKey, candidates);
+      return candidates;
+    } catch (e) {
+      console.error("Discovery failed:", e);
+      throw new Error("We couldn't find matching destinations right now. Please try again.");
+    }
   }
 };

@@ -1,6 +1,9 @@
 import { motion } from "framer-motion";
-import { PlaneTakeoff, MapPin, Calendar, Users, Wallet, Compass, Sparkles } from "lucide-react";
+import { PlaneTakeoff, MapPin, Calendar as CalendarIcon, Users, Wallet, Compass, Sparkles } from "lucide-react";
 import { SelectBudgetOptions, SelectTravelersList, SelectTravelStyleList } from "@/constants/options";
+import { DayPicker } from 'react-day-picker';
+import { format, differenceInDays } from 'date-fns';
+import 'react-day-picker/dist/style.css';
 
 export default function TripForm({
   step,
@@ -127,36 +130,47 @@ export default function TripForm({
         <motion.div key="step2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-10">
           <div>
             <div className="flex items-center gap-3 text-ink mb-2">
-              <div className="p-3 bg-coral/10 rounded-full"><Calendar className="w-6 h-6 text-coral" /></div>
+              <div className="p-3 bg-coral/10 rounded-full"><CalendarIcon className="w-6 h-6 text-coral" /></div>
               <h2 className="text-4xl font-serif font-bold">When are you going?</h2>
             </div>
-            <input
-              type="text"
-              value={formData.season}
-              onChange={(e) => setFormData(prev => ({ ...prev, season: e.target.value }))}
-              placeholder="e.g. Next Summer, Specific Dates, or 'Not sure'"
-              className="w-full text-3xl font-sans font-light bg-transparent border-b-2 border-gray-300 pb-4 focus:outline-none focus:border-coral transition-colors"
-              autoFocus
-            />
-          </div>
-          
-          <div>
-            <div className="flex items-center gap-3 text-ink mb-2">
-              <h2 className="text-4xl font-serif font-bold">How many days?</h2>
+            <p className="text-gray-500 font-sans text-lg mt-2 mb-6">Select your start and end dates.</p>
+            
+            <div className="bg-gray-50 border border-gray-100 rounded-[2rem] p-6 flex flex-col items-center">
+              <DayPicker
+                mode="range"
+                selected={{ from: formData.startDate, to: formData.endDate }}
+                onSelect={(range) => {
+                  if (range?.from && range?.to) {
+                    setFormData(prev => ({ 
+                      ...prev, 
+                      startDate: range.from, 
+                      endDate: range.to, 
+                      days: differenceInDays(range.to, range.from) || 1 
+                    }));
+                  } else {
+                    setFormData(prev => ({ ...prev, startDate: range?.from, endDate: range?.to, days: "" }));
+                  }
+                }}
+                disabled={{ before: new Date() }}
+                className="font-sans"
+                modifiersClassNames={{
+                  selected: 'bg-coral text-white',
+                  range_start: 'bg-coral text-white rounded-l-full',
+                  range_end: 'bg-coral text-white rounded-r-full',
+                  range_middle: 'bg-coral/20 text-ink'
+                }}
+              />
+              <div className="mt-4 text-center font-bold text-ink">
+                {formData.startDate && formData.endDate ? (
+                  <span className="bg-amber/20 px-4 py-2 rounded-xl text-amber-900 border border-amber/30">
+                    {format(formData.startDate, 'MMM d')} - {format(formData.endDate, 'MMM d')} 
+                    <span className="ml-2 font-black">({formData.days} days)</span>
+                  </span>
+                ) : (
+                  <span className="text-gray-400">Please select a date range</span>
+                )}
+              </div>
             </div>
-            <input
-              type="number"
-              min="1"
-              max="15"
-              value={formData.days}
-              onChange={(e) => {
-                let val = e.target.value.replace(/[^0-9]/g, '');
-                if (parseInt(val) > 15) val = "15";
-                setFormData(prev => ({ ...prev, days: val }));
-              }}
-              placeholder="e.g. 5"
-              className="w-full text-4xl font-sans font-light bg-transparent border-b-2 border-gray-300 pb-4 focus:outline-none focus:border-coral transition-colors"
-            />
           </div>
         </motion.div>
       );
