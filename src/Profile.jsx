@@ -4,6 +4,7 @@ import { collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, setD
 import { Link } from "react-router-dom";
 import { HeartPulse, Sparkles, LogOut, Plane, Globe2, MapPin, Calendar, Users, Trash2 } from "lucide-react";
 import { destinationService } from "@/service/destinationService";
+import { auth, db } from "@/firebase";
 import { motion } from "framer-motion";
 
 function TripCard({ trip, idx, formatDate, handleDelete }) {
