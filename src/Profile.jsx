@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { signOut } from "firebase/auth";
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { HeartPulse, Sparkles, LogOut, Plane, Globe2, MapPin, Calendar, Users, Trash2 } from "lucide-react";
 import { destinationService } from "@/service/destinationService";
 import { auth, db } from "@/firebase";
@@ -68,7 +68,14 @@ function Profile() {
   const [loading, setLoading] = useState(true);
   
   // Saved Places State
-  const [activeTab, setActiveTab] = useState('trips');
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'trips');
+
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state]);
   const [savedPlaces, setSavedPlaces] = useState([]);
   const [newPlaceQuery, setNewPlaceQuery] = useState('');
   const [placeResults, setPlaceResults] = useState([]);

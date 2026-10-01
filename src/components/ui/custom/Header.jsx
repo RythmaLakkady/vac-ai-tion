@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from "../../../firebase";  
 import { motion } from 'framer-motion';
+import { Sparkles } from 'lucide-react';
 
 function Header() {
   const [user, setUser] = useState(null);
@@ -49,9 +50,9 @@ function Header() {
         </Link>
 
         <div className='flex flex-row gap-8 items-center'>
-          <Link to={'/compare-prices'}>
-            <span className="text-sm font-bold text-muted-foreground hover:text-ink transition-colors cursor-pointer">
-              Compare Prices
+          <Link to={'/profile'} state={{ activeTab: 'notes' }}>
+            <span className="text-sm font-bold text-muted-foreground hover:text-amber transition-colors cursor-pointer flex items-center gap-1">
+              <Sparkles className="w-4 h-4" /> Wander Notes
             </span>
           </Link>
 
