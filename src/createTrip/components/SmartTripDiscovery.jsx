@@ -43,7 +43,7 @@ export default function SmartTripDiscovery({ onDestinationSelected }) {
     setLoading(true);
     
     try {
-      const durationDays = differenceInDays(dateRange.to, dateRange.from);
+      const durationDays = differenceInDays(dateRange.to, dateRange.from) + 1;
       
       const results = await journeyIntelligence.discoverDestinations({
         discoveryIntent: extractedIntent,
@@ -73,7 +73,7 @@ export default function SmartTripDiscovery({ onDestinationSelected }) {
       destination: candidate.destination_name + ", " + candidate.country,
       startDate: dateRange.from,
       endDate: dateRange.to,
-      days: differenceInDays(dateRange.to, dateRange.from),
+      days: differenceInDays(dateRange.to, dateRange.from) + 1,
       travelers,
       budget,
       discoveryIntent: extractedIntent
@@ -166,7 +166,7 @@ export default function SmartTripDiscovery({ onDestinationSelected }) {
                 />
                 <div className="mt-4 text-sm font-medium text-gray-500">
                   {dateRange?.from && dateRange?.to ? (
-                    <span>{format(dateRange.from, 'MMM d, yyyy')} - {format(dateRange.to, 'MMM d, yyyy')} ({differenceInDays(dateRange.to, dateRange.from)} days)</span>
+                    <span>{format(dateRange.from, 'MMM d, yyyy')} - {format(dateRange.to, 'MMM d, yyyy')} ({differenceInDays(dateRange.to, dateRange.from) + 1} days)</span>
                   ) : (
                     <span>Select a date range</span>
                   )}

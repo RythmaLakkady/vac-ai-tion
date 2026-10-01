@@ -145,7 +145,7 @@ export default function TripForm({
                       ...prev, 
                       startDate: range.from, 
                       endDate: range.to, 
-                      days: differenceInDays(range.to, range.from) || 1 
+                      days: (differenceInDays(range.to, range.from) + 1) || 1 
                     }));
                   } else {
                     setFormData(prev => ({ ...prev, startDate: range?.from, endDate: range?.to, days: "" }));
