@@ -72,6 +72,7 @@ function Profile() {
   const [newPlaceQuery, setNewPlaceQuery] = useState('');
   const [placeResults, setPlaceResults] = useState([]);
   const [loadingPlaces, setLoadingPlaces] = useState(false);
+  const [selectedForTrip, setSelectedForTrip] = useState([]);
   
   // Health Info State
   const [healthInfo, setHealthInfo] = useState('');
@@ -462,9 +463,20 @@ function Profile() {
         >
           <h2 className="text-3xl font-bold font-serif text-ink mb-2 tracking-tight flex items-center gap-3">
             <Sparkles className="text-amber w-8 h-8" />
-            Wander Notes
+            Want to Visit
           </h2>
-          <p className="text-gray-500 mb-8">Save places you want to visit. Our AI will try to include them when you plan a trip to that destination!</p>
+          <p className="text-gray-500 mb-8">Save places you want to visit. Select places below and click "Plan Trip" to build a journey around them.</p>
+          
+          {selectedForTrip.length > 0 && (
+            <div className="mb-6 p-4 bg-amber/10 border border-amber/30 rounded-2xl flex items-center justify-between">
+              <span className="font-bold text-amber">{selectedForTrip.length} place(s) selected</span>
+              <Link to="/createTrip" state={{ prefillDestination: selectedForTrip[0].destination, selectedPlaces: selectedForTrip }}>
+                 <button className="px-6 py-2 bg-ink text-primary-foreground font-bold rounded-xl hover:bg-amber transition-colors shadow-sm">
+                   Plan a Trip
+                 </button>
+              </Link>
+            </div>
+          )}
           
           <div className="flex flex-col gap-4 mb-8">
               <div className="relative flex-1">
@@ -503,25 +515,31 @@ function Profile() {
             ) : savedPlaces.length > 0 ? (
               savedPlaces.map(place => (
                 <div key={place.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100 hover:border-amber/30 transition-colors group">
-                  <div>
-                    <span className="block text-lg font-bold font-serif text-ink">{place.name}</span>
-                    {place.destination && (
-                      <span className="text-sm font-medium text-gray-500 flex items-center gap-1 mt-1">
-                        <MapPin className="w-3 h-3" /> {place.destination}
-                      </span>
-                    )}
-                    {place.coordinates && (
-                      <span className="text-xs font-medium text-amber mt-1 inline-block bg-amber/10 px-2 py-0.5 rounded-full">
-                        Saved Location
-                      </span>
-                    )}
+                  <div className="flex items-center gap-4">
+                    <input 
+                      type="checkbox"
+                      checked={selectedForTrip.some(p => p.id === place.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) setSelectedForTrip([...selectedForTrip, place]);
+                        else setSelectedForTrip(selectedForTrip.filter(p => p.id !== place.id));
+                      }}
+                      className="w-5 h-5 text-amber rounded border-gray-300 focus:ring-amber"
+                    />
+                    <div>
+                      <span className="block text-lg font-bold font-serif text-ink">{place.name}</span>
+                      {place.destination && (
+                        <span className="text-sm font-medium text-gray-500 flex items-center gap-1 mt-1">
+                          <MapPin className="w-3 h-3" /> {place.destination}
+                        </span>
+                      )}
+                      {place.coordinates && (
+                        <span className="text-xs font-medium text-amber mt-1 inline-block bg-amber/10 px-2 py-0.5 rounded-full">
+                          Saved Location
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Link to="/createTrip">
-                       <button className="px-4 py-2 bg-ink text-primary-foreground text-sm font-bold rounded-xl hover:bg-amber transition-colors opacity-0 group-hover:opacity-100 shadow-sm">
-                         Plan Trip Here
-                       </button>
-                    </Link>
                     <button 
                       onClick={() => handleDeletePlace(place.id)}
                       className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors opacity-0 group-hover:opacity-100"

@@ -5,9 +5,7 @@ import { chatSession } from '@/service/AImodel';
 import { useNavigate } from 'react-router-dom';
 import { db, auth } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import * as pdfjsLib from 'pdfjs-dist/build/pdf';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// pdfjsLib is dynamically imported to save bundle size
 
 export default function ImportTrip() {
   const [file, setFile] = useState(null);
@@ -30,6 +28,10 @@ export default function ImportTrip() {
     setParsing(true);
     try {
       const arrayBuffer = await pdfFile.arrayBuffer();
+      
+      const pdfjsLib = await import('pdfjs-dist/build/pdf');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      
       const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
       let fullText = "";
       for (let i = 1; i <= pdf.numPages; i++) {
@@ -58,12 +60,17 @@ export default function ImportTrip() {
           {
             "day": "Day 1",
             "theme": "string",
-            "plan": [
+            "activities": [
               {
-                "time": "string (e.g. 10:00 AM or 'Morning' or 'Time unspecified')",
-                "placeName": "string",
-                "placeDetails": "string",
-                "ticketPricing": "string",
+                "time_travel": "string (e.g. 10:00 AM or 'Morning' or 'Time unspecified')",
+                "place_name": "string",
+                "place_details": "string",
+                "ticket_pricing": "string",
+                "category": "string",
+                "geo_coordinates": {
+                  "lat": "number or null",
+                  "lng": "number or null"
+                },
                 "uncertain": boolean
               }
             ]
@@ -74,7 +81,56 @@ export default function ImportTrip() {
 
       const result = await chatSession.sendMessage(prompt);
       const jsonResponse = JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
-      setExtractedData(jsonResponse);
+      // Normalization and Geocoding
+      const normalizedData = {
+        trip_name: jsonResponse.trip_name || "Imported Trip",
+        location: jsonResponse.location || "Unknown",
+        duration: jsonResponse.duration || "Unknown",
+        travelers: jsonResponse.travelers || "Unknown",
+        itinerary: []
+      };
+
+      if (jsonResponse.itinerary && Array.isArray(jsonResponse.itinerary)) {
+        for (const dayObj of jsonResponse.itinerary) {
+          const normalizedDay = {
+            day: dayObj.day,
+            theme: dayObj.theme || "Activity",
+            activities: []
+          };
+          
+          if (dayObj.activities && Array.isArray(dayObj.activities)) {
+            for (const act of dayObj.activities) {
+              let lat = act.geo_coordinates?.lat || null;
+              let lng = act.geo_coordinates?.lng || null;
+              
+              if (!lat || !lng) {
+                try {
+                  const searchString = act.place_name.includes(normalizedData.location) 
+                    ? act.place_name 
+                    : `${act.place_name}, ${normalizedData.location}`;
+                  const { destinationService } = await import('@/service/destinationService');
+                  const results = await destinationService.searchDestinations(searchString);
+                  if (results && results.length > 0) {
+                    lat = parseFloat(results[0].lat);
+                    lng = parseFloat(results[0].lon);
+                  }
+                } catch (e) {
+                  console.warn("Geocoding failed for", act.place_name, e);
+                }
+              }
+
+              normalizedDay.activities.push({
+                ...act,
+                is_uncertain: act.uncertain || false,
+                geo_coordinates: lat && lng ? { lat, lng } : null
+              });
+            }
+          }
+          normalizedData.itinerary.push(normalizedDay);
+        }
+      }
+
+      setExtractedData(normalizedData);
 
     } catch (err) {
       console.error('PDF parsing error:', err);
@@ -163,16 +219,16 @@ export default function ImportTrip() {
                  <div key={idx}>
                     <h5 className="text-2xl font-bold text-ink mb-4 font-serif">{day.day} - {day.theme}</h5>
                     <div className="space-y-4 pl-4 border-l-2 border-gray-200">
-                       {day.plan?.map((plan, pIdx) => (
-                         <div key={pIdx} className="relative p-6 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col gap-2">
-                           {plan.uncertain && (
+                       {day.activities?.map((act, aIdx) => (
+                         <div key={aIdx} className="relative p-6 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col gap-2">
+                           {act.uncertain && (
                              <div className="absolute top-4 right-4 flex items-center gap-1 text-amber text-xs font-bold bg-amber/10 px-2 py-1 rounded-md">
                                 <AlertCircle className="w-3 h-3" /> Uncertain Extraction
                              </div>
                            )}
-                           <div className="font-bold text-coral text-sm uppercase tracking-wide">{plan.time}</div>
-                           <div className="text-xl font-bold text-ink">{plan.placeName}</div>
-                           <div className="text-gray-500 text-sm">{plan.placeDetails}</div>
+                           <div className="font-bold text-coral text-sm uppercase tracking-wide">{act.time_travel}</div>
+                           <div className="text-xl font-bold text-ink">{act.place_name}</div>
+                           <div className="text-gray-500 text-sm">{act.place_details}</div>
                          </div>
                        ))}
                     </div>

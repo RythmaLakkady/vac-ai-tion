@@ -30,7 +30,7 @@ function CreateTrip() {
   // Form State
   const [formData, setFormData] = useState({
     startLocation: "",
-    destination: location.state?.destination || "",
+    destination: location.state?.prefillDestination || location.state?.destination || "",
     days: "",
     budget: "",
     travelers: "",
@@ -41,10 +41,11 @@ function CreateTrip() {
     customFoodPreferenceText: "",
     prebookedFlights: "",
     prebookedHotels: "",
+    selectedPlaces: location.state?.selectedPlaces || [],
   });
   
   // Search State
-  const [query, setQuery] = useState(location.state?.destination || "");
+  const [query, setQuery] = useState(location.state?.prefillDestination || location.state?.destination || "");
   const [results, setResults] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
 
@@ -173,6 +174,10 @@ function CreateTrip() {
         }
       }
 
+      // Combine automatically fetched userNotes and explicitly selected places
+      const explicitPlaces = (formData.selectedPlaces || []).map(p => p.name);
+      const combinedNotes = [...new Set([...userNotes, ...explicitPlaces])];
+
       const data = await tripService.generateTripJob({
         ...formData,
         travelStyle: Array.isArray(formData.travelStyle) ? formData.travelStyle.map(s => s === 'Other' ? formData.customTravelStyleText : s).filter(Boolean).join(", ") : formData.travelStyle,
@@ -183,7 +188,7 @@ function CreateTrip() {
         days: Number(formData.days),
         userId: user?.uid || "anonymous",
         userEmail: user?.email || "anonymous",
-        savedNotes: userNotes,
+        savedNotes: combinedNotes,
         healthInfo: formData.healthInfo || "",
       });
       setJobId(data.jobId);

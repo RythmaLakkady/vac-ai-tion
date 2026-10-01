@@ -93,6 +93,33 @@ export default function TripForm({
               )}
             </div>
           </div>
+
+          {formData.selectedPlaces && formData.selectedPlaces.length > 0 && (
+            <div className="mt-8 bg-amber/5 border border-amber/20 rounded-3xl p-6">
+              <h3 className="text-xl font-bold font-serif text-ink mb-4 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-amber" /> Planned Stops
+              </h3>
+              <p className="text-sm text-gray-500 mb-4">You selected these places from your Wander Notes. We'll make sure to include them in your itinerary.</p>
+              <div className="flex flex-wrap gap-3">
+                {formData.selectedPlaces.map((place, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm">
+                    <MapPin className="w-4 h-4 text-amber" />
+                    <span className="font-bold text-sm text-ink">{place.name}</span>
+                    <button 
+                      onClick={() => setFormData(prev => ({
+                        ...prev,
+                        selectedPlaces: prev.selectedPlaces.filter((_, i) => i !== idx)
+                      }))}
+                      className="ml-2 text-red-400 hover:text-red-600 transition-colors"
+                      title="Remove"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
       );
     case 2:

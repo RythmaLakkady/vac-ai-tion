@@ -21,6 +21,7 @@ function estimateWalkingTime(meters) {
 }
 
 const nearbyCache = new Map();
+const aiCache = new Map();
 
 export const journeyIntelligence = {
   // Trustworthy Nearby Search using OpenStreetMap (Overpass API)
@@ -86,6 +87,9 @@ export const journeyIntelligence = {
 
   // LLM-based Alternatives with strict prompt
   async getAlternatives(context) {
+    const cacheKey = `alt_${context.currentStop.place_name}_${context.location}_${context.reason}`;
+    if (aiCache.has(cacheKey)) return aiCache.get(cacheKey);
+
     const prompt = `
       Act as a strict travel expert API. Find 2 REAL alternative places to replace this stop:
       Current Stop: ${context.currentStop.place_name}
@@ -119,11 +123,14 @@ export const journeyIntelligence = {
       const jsonMatch = text.match(/\[[\s\S]*\]/);
       if (!jsonMatch) throw new Error("Failed to parse alternatives");
       
+      
       const alternatives = JSON.parse(jsonMatch[0]);
-      return alternatives.map(alt => ({
+      const resultData = alternatives.map(alt => ({
         ...alt,
         costState: alt.ticket_pricing === 'Free' || alt.ticket_pricing === 'unknown' ? 'unknown' : 'estimated'
       }));
+      aiCache.set(cacheKey, resultData);
+      return resultData;
     } catch (e) {
       console.error("Alternatives failed:", e);
       throw new Error("Alternatives are temporarily unavailable.");
@@ -131,6 +138,9 @@ export const journeyIntelligence = {
   },
 
   async getLocalGems(context) {
+    const cacheKey = `gems_${context.currentStop?.place_name}_${context.location}_${context.season}`;
+    if (aiCache.has(cacheKey)) return aiCache.get(cacheKey);
+
     const prompt = `
       Act as a strict travel expert API finding local/hidden gems. Find 2-3 highly relevant hidden gems near this route.
       Current Stop: ${context.currentStop?.place_name || 'Start of day'}
@@ -167,10 +177,12 @@ export const journeyIntelligence = {
       if (!jsonMatch) throw new Error("Failed to parse local gems");
       
       const gems = JSON.parse(jsonMatch[0]);
-      return gems.map(gem => ({
+      const resultData = gems.map(gem => ({
         ...gem,
         costState: gem.ticket_pricing === 'Free' || gem.ticket_pricing === 'unknown' ? 'unknown' : 'estimated'
       }));
+      aiCache.set(cacheKey, resultData);
+      return resultData;
     } catch (e) {
       console.error("Local gems failed:", e);
       throw new Error("Local gems are temporarily unavailable.");
@@ -178,6 +190,9 @@ export const journeyIntelligence = {
   },
 
   async getStopIntelligence(context) {
+    const cacheKey = `intel_${context.currentStop?.place_name}_${context.location}_${context.season}`;
+    if (aiCache.has(cacheKey)) return aiCache.get(cacheKey);
+
     const prompt = `
       Act as an AI itinerary analyzer.
       Stop: ${context.currentStop?.place_name || 'Unknown'}
@@ -199,9 +214,48 @@ export const journeyIntelligence = {
       const text = await result.response.text();
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) return null;
-      return JSON.parse(jsonMatch[0]);
+      const resultData = JSON.parse(jsonMatch[0]);
+      aiCache.set(cacheKey, resultData);
+      return resultData;
     } catch (e) {
       console.error("Stop intelligence failed:", e);
+      return null;
+    }
+  },
+
+  async understandActivity(context) {
+    const cacheKey = `understand_${context.currentStop?.place_name}_${context.location}`;
+    if (aiCache.has(cacheKey)) return aiCache.get(cacheKey);
+
+    const prompt = `
+      Act as a strict travel expert API providing context for an imported itinerary activity.
+      Activity/Place: ${context.currentStop?.place_name || 'Unknown'}
+      Details from itinerary: ${context.currentStop?.place_details || 'Unknown'}
+      Destination: ${context.location}
+      Previous Stop: ${context.previousStop?.place_name || 'Start of day'}
+      Next Stop: ${context.nextStop?.place_name || 'End of day'}
+      
+      Explain what this activity is, why it might appear in their imported itinerary, what they actually do there, what to know before going, and whether it fits their journey.
+      Return ONLY a valid JSON object with exactly this structure:
+      {
+        "what_it_is": "What the place/activity actually is.",
+        "why_included": "Why it likely appears in their itinerary.",
+        "what_to_do": "What the traveler actually does there.",
+        "know_before_going": "Important practical tip.",
+        "journey_fit": "Analysis of how it fits between the previous and next stops."
+      }
+    `;
+
+    try {
+      const result = await chatSession.sendMessage(prompt);
+      const text = await result.response.text();
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) return null;
+      const resultData = JSON.parse(jsonMatch[0]);
+      aiCache.set(cacheKey, resultData);
+      return resultData;
+    } catch (e) {
+      console.error("Understand activity failed:", e);
       return null;
     }
   },
@@ -225,6 +279,9 @@ export const journeyIntelligence = {
   },
 
   async getDestinationContext(context) {
+    const cacheKey = `destCtx_${context.location}_${context.currentStop?.place_name}_${context.traveler}`;
+    if (aiCache.has(cacheKey)) return aiCache.get(cacheKey);
+
     const prompt = `
       Act as a contextual travel guide for a user currently planning their trip.
       Destination Area: ${context.location}
@@ -258,7 +315,9 @@ export const journeyIntelligence = {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error("Failed to parse guide context");
       
-      return JSON.parse(jsonMatch[0]);
+      const resultData = JSON.parse(jsonMatch[0]);
+      aiCache.set(cacheKey, resultData);
+      return resultData;
     } catch (e) {
       console.error("Destination context failed:", e);
       throw new Error("Destination guide is temporarily unavailable.");
