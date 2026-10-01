@@ -43,7 +43,9 @@
 - [x] Privacy: Accessible & Dietary Profiles
 
 ## Phase 8 — Performance
-- [ ] Measure bundle size and optimize images
+- [x] Bundle Splitting (PDF.js, Analyzer)
+- [x] AI Context & Geocoding Caching
+- [x] Measure bundle size and performance auditing
 
 ## Phase 9 — Final QA
 - [ ] Write and run E2E Tests
