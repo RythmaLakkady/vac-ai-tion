@@ -324,101 +324,6 @@ export default function TripForm({
       );
     case 6:
       return (
-        <motion.div key="step6" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-6">
-          <div className="flex flex-col gap-2 mb-6">
-            <div className="flex items-center gap-3 text-ink">
-              <div className="p-3 bg-coral/10 rounded-full"><Compass className="w-6 h-6 text-coral" /></div>
-              <h2 className="text-4xl font-serif font-bold">Any food preferences?</h2>
-            </div>
-            <p className="text-gray-500 font-sans text-lg mt-2">Select all that apply.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
-            {['No Restrictions', 'Vegetarian', 'Vegan', 'Halal', 'Kosher', 'Gluten-Free'].map((pref, idx) => (
-              <motion.div
-                key={idx}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setFormData(prev => {
-                  const current = prev.foodPreferences || [];
-                  if (pref === 'No Restrictions') {
-                     return { ...prev, foodPreferences: ['No Restrictions'] };
-                  }
-                  let updated = current.includes(pref) ? current.filter(i => i !== pref) : [...current, pref];
-                  updated = updated.filter(i => i !== 'No Restrictions');
-                  if (updated.length === 0) updated = ['No Restrictions'];
-                  return { ...prev, foodPreferences: updated };
-                })}
-                className={`p-6 cursor-pointer rounded-3xl border-2 text-center transition-all ${formData.foodPreferences?.includes(pref) ? "border-coral bg-coral/5 shadow-md shadow-coral/10" : "border-gray-200 hover:border-coral/50"}`}
-              >
-                <h3 className="font-bold text-xl text-ink text-center">{pref}</h3>
-              </motion.div>
-            ))}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setFormData(prev => {
-                const current = prev.foodPreferences || [];
-                let updated = current.includes('Other') ? current.filter(i => i !== 'Other') : [...current, 'Other'];
-                updated = updated.filter(i => i !== 'No Restrictions');
-                return { ...prev, foodPreferences: updated };
-              })}
-              className={`p-6 cursor-pointer rounded-3xl border-2 transition-all ${formData.foodPreferences?.includes('Other') ? "border-coral bg-coral/5 shadow-md shadow-coral/10" : "border-gray-200 hover:border-coral/50"}`}
-            >
-              <h3 className="font-bold text-xl text-ink text-center mb-2">Other</h3>
-              {formData.foodPreferences?.includes('Other') && (
-                <input
-                  type="text"
-                  value={formData.customFoodPreferenceText || ""}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    setFormData(prev => ({ ...prev, customFoodPreferenceText: e.target.value }));
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  placeholder="e.g. Carnivore, Nut Allergy"
-                  className="w-full mt-2 bg-transparent border-b-2 border-coral pb-1 focus:outline-none text-base font-sans"
-                  autoFocus
-                />
-              )}
-            </motion.div>
-          </div>
-
-          <div className="pt-8 border-t border-border/50 space-y-4">
-            <label className="flex items-center gap-4 cursor-pointer group bg-gray-50 hover:bg-coral/5 p-4 rounded-2xl border border-gray-200 transition-colors">
-              <div className="flex-1">
-                <h4 className="font-bold text-lg text-ink">Is this an Allergy?</h4>
-                <p className="text-gray-500 text-sm leading-snug">Check this if the above is a strict medical allergy, not just a preference.</p>
-              </div>
-              <div className="relative">
-                <input 
-                  type="checkbox" 
-                  className="sr-only peer" 
-                  checked={!!formData.isAllergy} 
-                  onChange={(e) => setFormData(prev => ({ ...prev, isAllergy: e.target.checked }))} 
-                />
-                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
-              </div>
-            </label>
-
-            <label className="flex items-center gap-4 cursor-pointer group bg-gray-50 hover:bg-coral/5 p-4 rounded-2xl border border-gray-200 transition-colors">
-              <div className="flex-1">
-                <h4 className="font-bold text-lg text-ink">Accessibility Needs</h4>
-                <p className="text-gray-500 text-sm leading-snug">Requires wheelchair access, minimal stairs, or reduced walking pace.</p>
-              </div>
-              <div className="relative">
-                <input 
-                  type="checkbox" 
-                  className="sr-only peer" 
-                  checked={!!formData.accessibilityMode} 
-                  onChange={(e) => setFormData(prev => ({ ...prev, accessibilityMode: e.target.checked }))} 
-                />
-                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </div>
-            </label>
-          </div>
-        </motion.div>
-      );
-    case 7:
-      return (
         <motion.div key="step7" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-6">
           <div className="flex flex-col gap-2 mb-6">
             <div className="flex items-center gap-3 text-ink">
@@ -471,7 +376,7 @@ export default function TripForm({
           </div>
         </motion.div>
       );
-    case 8:
+    case 7:
       return (
         <motion.div key="step8" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-10 py-10">
           <div className="inline-flex justify-center items-center w-24 h-24 bg-gradient-to-tr from-amber to-coral rounded-full shadow-2xl mb-4 animate-bounce">

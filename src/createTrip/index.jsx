@@ -36,9 +36,7 @@ function CreateTrip() {
     travelers: "",
     people: "",
     travelStyle: [],
-    foodPreferences: [],
     season: "",
-    customFoodPreferenceText: "",
     prebookedFlights: "",
     prebookedHotels: "",
     selectedPlaces: location.state?.selectedPlaces || [],
@@ -135,7 +133,6 @@ function CreateTrip() {
     }
     if (step === 4 && !formData.budget) return toast("Please select or enter a budget.");
     if (step === 5 && (!formData.travelStyle || formData.travelStyle.length === 0)) return toast("Please select at least one travel style.");
-    if (step === 6 && (!formData.foodPreferences || formData.foodPreferences.length === 0)) return toast("Please select your food preferences.");
     setStep((prev) => prev + 1);
   };
 
@@ -181,7 +178,6 @@ function CreateTrip() {
       const data = await tripService.generateTripJob({
         ...formData,
         travelStyle: Array.isArray(formData.travelStyle) ? formData.travelStyle.map(s => s === 'Other' ? formData.customTravelStyleText : s).filter(Boolean).join(", ") : formData.travelStyle,
-        foodPreferences: Array.isArray(formData.foodPreferences) ? formData.foodPreferences.map(s => s === 'Other' ? formData.customFoodPreferenceText : s).filter(Boolean).join(", ") : formData.foodPreferences,
         season: formData.season || "Not specified",
         prebookedFlights: formData.prebookedFlights && formData.prebookedFlights !== "I have booked my flights." ? formData.prebookedFlights : null,
         prebookedHotels: formData.prebookedHotels && formData.prebookedHotels !== "I have booked my hotel." ? formData.prebookedHotels : null,
@@ -213,14 +209,14 @@ function CreateTrip() {
       {/* Progress Bar */}
       <div className="mb-16">
         <div className="flex justify-between items-center mb-4">
-          <span className="text-sm font-bold text-amber tracking-widest uppercase">Step {step} of 8</span>
-          <span className="text-sm font-medium text-gray-400">{Math.round((step / 8) * 100)}%</span>
+          <span className="text-sm font-bold text-amber tracking-widest uppercase">Step {step} of 7</span>
+          <span className="text-sm font-medium text-gray-400">{Math.round((step / 7) * 100)}%</span>
         </div>
         <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
           <motion.div 
             className="h-full bg-gradient-to-r from-amber to-coral"
             initial={{ width: 0 }}
-            animate={{ width: `${(step / 8) * 100}%` }}
+            animate={{ width: `${(step / 7) * 100}%` }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
           />
         </div>
@@ -259,7 +255,7 @@ function CreateTrip() {
           </button>
         ) : <div />}
 
-        {step < 8 ? (
+        {step < 7 ? (
           <button onClick={handleNext} className="flex items-center gap-2 px-8 py-4 bg-ink text-primary-foreground rounded-full font-bold hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
             Continue <ChevronRight className="w-5 h-5" />
           </button>
