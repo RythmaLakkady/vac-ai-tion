@@ -495,10 +495,10 @@ Planned enhancements include:
 
 - [ ] Trip collaboration
 - [ ] Offline itinerary access
-- [ ] Calendar integration
-- [ ] Export to PDF
+- [x] Calendar integration
+- [x] Export to PDF / PDF Import
 - [ ] Multi-language support
-- [ ] Social Media Sharing Integration
+- [x] Social Media Sharing Integration (`/v/:id`)
 
 ---
 
@@ -507,8 +507,25 @@ Planned enhancements include:
 - [x] Background queue system (via agentJobs collection)
 - [x] Function-level monitoring (Real-time Firestore logs)
 - [ ] Docker support
-- [x] CI/CD pipeline (Vercel automatic deployments)
-- [ ] End-to-end testing
+- [x] CI/CD pipeline (GitHub Actions & Vercel automated deployments)
+- [x] End-to-end testing (Vitest E2E user journey & hook regression suite)
+
+---
+
+# 🧪 Testing & Quality Gates
+
+The project maintains strict quality gates with zero tolerance for lint errors or unhandled edge cases:
+
+```bash
+# Run linting check
+npm run lint
+
+# Run all unit, integration, and E2E regression tests
+npm test -- --run
+
+# Build production bundle with PostCSS stylesheet extraction
+npm run build
+```
 
 ---
 
