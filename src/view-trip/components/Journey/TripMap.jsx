@@ -94,20 +94,10 @@ export default function TripMap({ itinerary, selectedStopId, onStopSelected, sel
     return allStops;
   }, [itinerary, selectedDayIndex]);
 
-  if (!stops || stops.length === 0) {
-    return (
-      <div className="w-full h-full min-h-[400px] flex items-center justify-center bg-gray-50 border border-border rounded-3xl">
-        <div className="text-center">
-          <p className="text-gray-500 font-medium mb-1">Map unavailable</p>
-          <p className="text-sm text-gray-400">No trustworthy location data found for this itinerary.</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Group by day for Polylines
+  // Group by day for Polylines (computed unconditionally to preserve React hook ordering)
   const polylines = useMemo(() => {
     const lines = [];
+    if (!stops || stops.length === 0) return lines;
     itinerary?.forEach((day, dIdx) => {
       const dayStops = stops.filter(s => s.dayIndex === dIdx);
       if (dayStops.length > 1) {
@@ -121,6 +111,17 @@ export default function TripMap({ itinerary, selectedStopId, onStopSelected, sel
     });
     return lines;
   }, [stops, itinerary, selectedDayIndex]);
+
+  if (!stops || stops.length === 0) {
+    return (
+      <div className="w-full h-full min-h-[400px] flex items-center justify-center bg-gray-50 border border-border rounded-3xl">
+        <div className="text-center">
+          <p className="text-gray-500 font-medium mb-1">Map unavailable</p>
+          <p className="text-sm text-gray-400">No trustworthy location data found for this itinerary.</p>
+        </div>
+      </div>
+    );
+  }
 
   const defaultCenter = [stops[0].lat, stops[0].lng];
 

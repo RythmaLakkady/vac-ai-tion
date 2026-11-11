@@ -8,7 +8,18 @@ import { feasibilityEngine } from '../../../service/feasibilityEngine';
 import { analytics } from '../../../service/analyticsService';
 
 export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAddStop, onEditStop, onInsertStop, onReplaceStop, onSelectStop, onExploreArea, selectedStopId, currency, exchangeRates, isReadOnly = false }) {
-  if (!day || !day.activities || day.activities.length === 0) return null;
+  const hasActivities = Boolean(day?.activities && day.activities.length > 0);
+  const warnings = (!isReadOnly && hasActivities) ? feasibilityEngine.analyzeDay(day, dayIndex) : [];
+  
+  useEffect(() => {
+    if (warnings.length > 0) {
+      warnings.forEach(warn => {
+        analytics.trackEvent('journey_feasibility_viewed', { type: warn.type, severity: warn.severity, dayIndex });
+      });
+    }
+  }, [warnings.length, dayIndex]);
+
+  if (!hasActivities) return null;
 
   const extractCost = (pricingStr, costState) => {
     if (!pricingStr || pricingStr === 'unknown' || pricingStr === 'N/A') return { amount: 0, state: 'unknown' };
@@ -28,16 +39,6 @@ export default function JourneyChapter({ trip, day, dayIndex, onDeleteStop, onAd
     if (cost.state === 'unknown') hasUnknown = true;
     if (cost.state === 'estimated') hasEstimated = true;
   });
-
-  const warnings = isReadOnly ? [] : feasibilityEngine.analyzeDay(day, dayIndex);
-  
-  useEffect(() => {
-    if (warnings.length > 0) {
-      warnings.forEach(warn => {
-        analytics.trackEvent('journey_feasibility_viewed', { type: warn.type, severity: warn.severity, dayIndex });
-      });
-    }
-  }, [warnings.length, dayIndex]);
 
   return (
     <div className="relative mb-16 last:mb-0 pt-8 font-sans">

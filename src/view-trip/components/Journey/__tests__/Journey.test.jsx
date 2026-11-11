@@ -11,6 +11,16 @@ vi.mock('@/service/analyticsService', () => ({
   analytics: { trackEvent: vi.fn() }
 }));
 
+vi.mock('@/service/journeyIntelligence', () => ({
+  journeyIntelligence: {
+    getStopIntelligence: vi.fn().mockResolvedValue({ priority: 'RECOMMENDED', seasonality: 'GOOD FOR THIS SEASON' }),
+    analyzeStop: vi.fn().mockResolvedValue({ priority: 'RECOMMENDED', seasonality: 'GOOD FOR THIS SEASON' }),
+    getTravelContext: vi.fn().mockResolvedValue({ alternatives: [] }),
+    discoverDestinations: vi.fn().mockResolvedValue([]),
+    extractDiscoveryIntent: vi.fn().mockResolvedValue({}),
+  },
+}));
+
 const mockActivity = {
   place_name: 'Eiffel Tower',
   category: 'Attraction',
