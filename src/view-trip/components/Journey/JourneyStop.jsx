@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Wallet, MoreVertical, MapPin, Edit2, Replace, Trash2, GripVertical, Compass, CheckCircle2, X, Clock, Navigation } from 'lucide-react';
+import { Wallet, MoreVertical, MapPin, Edit2, Replace, Trash2, GripVertical, Compass, CheckCircle2, X, Clock, Navigation, Info, Sparkles } from 'lucide-react';
 import { analytics } from '@/service/analyticsService';
 import { Draggable } from '@hello-pangea/dnd';
 import { journeyIntelligence } from '@/service/journeyIntelligence';
@@ -264,6 +264,24 @@ export default function JourneyStop({
     analytics.trackEvent('journey_alternative_selected', { old: placeName, new: compareStop.place_name });
     onReplace?.(compareStop);
     setCompareStop(null);
+    setActiveTab(null);
+  };
+
+  const handleSelectNearby = (e, res) => {
+    e.stopPropagation();
+    analytics.trackEvent('journey_nearby_selected_preview', { placeName: res.place_name });
+    setInsertPreviewStop(res);
+  };
+
+  const handleConfirmInsert = (e) => {
+    e?.stopPropagation?.();
+    if (!insertPreviewStop) return;
+    analytics.trackEvent('journey_stop_inserted', {
+      placeName: insertPreviewStop.place_name,
+      after: placeName,
+    });
+    onInsert?.(insertPreviewStop);
+    setInsertPreviewStop(null);
     setActiveTab(null);
   };
 

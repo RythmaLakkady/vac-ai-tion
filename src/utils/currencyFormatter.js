@@ -1,3 +1,10 @@
+export const formatCurrency = (amount, currency = 'USD') => {
+  const symbols = { USD: '$', EUR: '€', GBP: '£', INR: '₹', JPY: '¥', AUD: 'A$', CAD: 'C$' };
+  const sym = symbols[currency] || currency + ' ';
+  const numeric = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
+  return sym + Math.round(numeric).toLocaleString();
+};
+
 export const convertPrice = (priceString, targetCurrency, rates) => {
   if (!priceString || !rates || priceString.toLowerCase() === 'free' || priceString.toLowerCase() === 'n/a') return priceString;
   
