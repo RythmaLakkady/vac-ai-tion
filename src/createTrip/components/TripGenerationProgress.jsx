@@ -22,7 +22,7 @@ export default function TripGenerationProgress({ destination, agentLogs, agentSt
 
           {/* Right Column: Agents */}
           <div className="w-full flex flex-col gap-6">
-            <div className="bg-white/40 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl p-8 flex items-center justify-center relative overflow-hidden h-[280px]">
+            <div className="bg-white/40 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl p-6 flex items-center justify-center relative overflow-hidden min-h-[380px] h-[380px]">
                <AgentOrbs logs={agentLogs} status={agentStatus} />
             </div>
             

@@ -1,13 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { PlaneTakeoff, Star, Sun, Sparkles, Compass, Quote, Sliders, MapPinned, Route } from 'lucide-react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { PlaneTakeoff, Sun, Sparkles, Sliders, MapPinned, Route, ArrowRight, Clock, Wallet } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { auth } from '@/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import AuthModal from '@/components/ui/custom/AuthModal';
 import InteractiveGlobe from './InteractiveGlobe';
 import { HoverLetters, RotatingWord } from './InteractiveHeadline';
 import '/src/index.css';
+
+const featuredTrips = [
+  {
+    destination: "Kyoto, Japan",
+    subtitle: "Ancient Temples, Bamboo Groves & Zen Sanctuaries",
+    duration: "7 Days",
+    vibe: "Cultural Heritage",
+    estimatedCost: "$1,450",
+    image: "/japan.jpg",
+    tags: ["Temples", "Bullet Train", "Gardens"]
+  },
+  {
+    destination: "Paris, France",
+    subtitle: "Artistry, River Bistros & Iconic Architecture",
+    duration: "5 Days",
+    vibe: "Art & Romance",
+    estimatedCost: "$1,200",
+    image: "/paris.jpg",
+    tags: ["Louvre", "Café Culture", "Seine"]
+  },
+  {
+    destination: "Maldives",
+    subtitle: "Overwater Villas, Sunset Lagoons & Coral Reefs",
+    duration: "4 Days",
+    vibe: "Island Leisure",
+    estimatedCost: "$2,100",
+    image: "/maldives.jpg",
+    tags: ["Marine Life", "Villas", "Reefs"]
+  },
+  {
+    destination: "Interlaken, Switzerland",
+    subtitle: "Glacial Valleys, Alpine Passes & Mountain Railways",
+    duration: "6 Days",
+    vibe: "Alpine Escapes",
+    estimatedCost: "$1,850",
+    image: "/nature.jpg",
+    tags: ["Scenic Rail", "Alps", "Hiking"]
+  }
+];
 
 const features = [
   {
@@ -30,19 +69,19 @@ const features = [
 function FeatureCard({ feature, i }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.7, delay: i * 0.15, ease: "easeOut" }}
-      className="group relative rounded-3xl p-8 text-left border border-border/60 bg-card shadow-sm transition-all duration-300 hover:border-amber/40 hover:shadow-md cursor-default"
+      transition={{ duration: 0.5, delay: i * 0.12, ease: "easeOut" }}
+      className="group rounded-3xl p-8 text-left border border-border/70 bg-card shadow-sm transition-all duration-300 hover:border-amber/50 hover:shadow-md cursor-default"
     >
       <div 
-        className="mb-8 inline-flex size-14 items-center justify-center rounded-xl bg-amber/10 text-orange-600 transition-transform duration-300 group-hover:scale-110"
+        className="mb-8 inline-flex size-14 items-center justify-center rounded-2xl bg-amber/10 text-orange-600 transition-transform duration-300 group-hover:scale-105"
       >
         {feature.icon}
       </div>
       <h3 
-        className="mb-4 text-xl font-bold text-ink tracking-tight"
+        className="mb-3 text-xl font-bold text-ink tracking-tight"
       >
         {feature.title}
       </h3>
@@ -57,12 +96,12 @@ function FeatureCard({ feature, i }) {
 
 function FeaturesSection() {
   return (
-    <section className="mx-auto max-w-7xl px-6 py-20 md:py-32 relative">
-      <div className="mb-20 text-center">
+    <section className="mx-auto max-w-7xl px-6 py-20 md:py-28 relative">
+      <div className="mb-16 text-center">
         <h2 className="font-serif text-4xl md:text-5xl font-bold text-ink tracking-tight">Why use an AI Architect?</h2>
-        <p className="mt-5 text-xl text-muted-foreground font-medium max-w-2xl mx-auto">We handle the heavy lifting, you handle the packing.</p>
+        <p className="mt-4 text-xl text-muted-foreground font-medium max-w-2xl mx-auto">We handle the heavy lifting, you handle the packing.</p>
       </div>
-      <div className="grid gap-8 md:grid-cols-3" style={{ perspective: "1000px" }}>
+      <div className="grid gap-8 md:grid-cols-3">
         {features.map((feature, i) => (
           <FeatureCard key={i} feature={feature} i={i} />
         ))}
@@ -75,26 +114,33 @@ function Dashboard() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
+  const [pendingDestination, setPendingDestination] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsLoggedIn(!!user);
       if (user && pendingAction === 'createTrip') {
-        navigate('/createTrip');
+        navigate('/createTrip', {
+          state: pendingDestination ? { prefillDestination: pendingDestination } : undefined
+        });
         setPendingAction(null);
+        setPendingDestination(null);
       }
     });
     return () => unsubscribe();
-  }, [pendingAction, navigate]);
+  }, [pendingAction, pendingDestination, navigate]);
 
-  const handleStartExploring = (e) => {
-    e.preventDefault();
+  const handleStartExploring = (e, targetDestination = null) => {
+    if (e) e.preventDefault();
     if (!isLoggedIn) {
       setPendingAction('createTrip');
+      if (targetDestination) setPendingDestination(targetDestination);
       setIsModalOpen(true);
     } else {
-      navigate('/createTrip');
+      navigate('/createTrip', {
+        state: targetDestination ? { prefillDestination: targetDestination } : undefined
+      });
     }
   };
 
@@ -127,7 +173,7 @@ function Dashboard() {
             <div className="mt-9 flex flex-wrap gap-4">
               <a
                 href="/createTrip"
-                onClick={handleStartExploring}
+                onClick={(e) => handleStartExploring(e)}
                 className="bg-sunset group inline-flex items-center gap-2 rounded-full px-9 py-4 text-lg font-bold text-primary-foreground shadow-warm transition-transform hover:-translate-y-1"
               >
                 Start exploring
@@ -141,22 +187,97 @@ function Dashboard() {
           </div>
         </section>
 
+        {/* FEATURED DESTINATIONS */}
+        <section className="mx-auto max-w-7xl px-6 py-16 md:py-24 text-left">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-widest text-amber">Inspiration</span>
+              <h2 className="font-serif text-3xl md:text-5xl font-bold text-ink mt-2">Curated Escapes</h2>
+              <p className="text-muted-foreground mt-2 max-w-xl">
+                Ready-to-generate trip archetypes calibrated by our AI agents for optimal flow and memorable pacing.
+              </p>
+            </div>
+            <button
+              onClick={(e) => handleStartExploring(e)}
+              className="inline-flex items-center gap-2 font-bold text-amber hover:text-orange-600 transition-colors self-start md:self-auto"
+            >
+              Explore all destinations <ArrowRight className="size-4" />
+            </button>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {featuredTrips.map((trip, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: idx * 0.1 }}
+                className="group relative rounded-3xl overflow-hidden border border-border/80 bg-card shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col"
+              >
+                <div className="relative h-48 w-full overflow-hidden bg-gray-100">
+                  <img
+                    src={trip.image}
+                    alt={trip.destination}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-bold text-ink shadow-sm flex items-center gap-1">
+                    <Clock className="size-3 text-amber" /> {trip.duration}
+                  </div>
+                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                    <h3 className="font-serif text-xl font-bold leading-snug">{trip.destination}</h3>
+                  </div>
+                </div>
+
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                      {trip.subtitle}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mt-3">
+                      {trip.tags.map((tag, tIdx) => (
+                        <span key={tIdx} className="text-[10px] font-semibold bg-amber/10 text-orange-700 px-2 py-0.5 rounded-full">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-5 pt-4 border-t border-border/60 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Wallet className="size-3.5 text-gray-400" />
+                      <span className="font-semibold text-ink">{trip.estimatedCost}</span>
+                    </div>
+                    <button
+                      onClick={(e) => handleStartExploring(e, trip.destination)}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-amber group-hover:text-orange-600 transition-colors"
+                    >
+                      Plan this trip <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
         <FeaturesSection />
 
         {/* CTA */}
-        <section className="mx-auto max-w-5xl px-6 pt-24 pb-32">
+        <section className="mx-auto max-w-5xl px-6 pt-16 pb-28">
           <div className="bg-dawn relative overflow-hidden rounded-4xl px-8 py-16 text-center shadow-warm">
             <Sparkles className="mx-auto size-8 text-primary-foreground" />
             <h2 className="mt-4 font-serif text-4xl font-semibold text-primary-foreground md:text-5xl">
               Your next adventure is waiting.
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-primary-foreground/90">
-              Tell us what you're looking for, and we'll craft the perfect itinerary.
+              Tell us what you're looking for, and our AI agents will craft the perfect itinerary.
             </p>
             <a
               href="/createTrip"
-              onClick={handleStartExploring}
-              className="mt-8 inline-flex rounded-full bg-card px-9 py-4 text-lg font-bold text-foreground transition-transform hover:-translate-y-1"
+              onClick={(e) => handleStartExploring(e)}
+              className="mt-8 inline-flex rounded-full bg-card px-9 py-4 text-lg font-bold text-foreground transition-transform hover:-translate-y-1 shadow-sm"
             >
               Plan my escape
             </a>

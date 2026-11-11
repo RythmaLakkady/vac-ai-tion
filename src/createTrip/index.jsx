@@ -25,9 +25,20 @@ function CreateTrip() {
   const navigate = useNavigate();
   const location = useLocation();
   const [step, setStep] = useState(1);
-  const [entryMode, setEntryMode] = useState(null); // null, 'KNOWN', 'DISCOVERY'
+  const [entryMode, setEntryMode] = useState(
+    location.state?.prefillDestination || location.state?.destination ? 'KNOWN' : null
+  );
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Sync prefillDestination if routed dynamically
+  useEffect(() => {
+    if (location.state?.prefillDestination) {
+      setQuery(location.state.prefillDestination);
+      setFormData(prev => ({ ...prev, destination: location.state.prefillDestination }));
+      setEntryMode('KNOWN');
+    }
+  }, [location.state]);
   
   // Form State
   const [formData, setFormData] = useState({
