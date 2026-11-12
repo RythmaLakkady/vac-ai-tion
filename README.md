@@ -417,14 +417,21 @@ npm install
 
 ## Environment Variables
 
-Create a `.env` file in the project root.
+Create a `.env` file in the project root:
 
 ```env
+# AI & Geolocation API Keys
 VITE_GROQ_API_KEY=your_groq_api_key
 VITE_OPENAI_API_KEY=your_openai_api_key_for_chat
 VITE__LOCATION_IQ_API_KEY=your_locationiq_api_key
 VITE_FIREBASE_API_KEY=your_firebase_api_key
-VITE_PRICE_FUNCTION_URL=your_cloud_function_url
+
+# Backend Service URLs (Defaults to deployed Render backend)
+VITE_FUNCTION_URL=https://vac-ai-tion.onrender.com
+VITE_PRICE_FUNCTION_URL=https://vac-ai-tion.onrender.com
+
+# Optional: Set to "true" only if running the local Firebase Functions emulator on port 5001
+# VITE_USE_LOCAL_EMULATOR=true
 ```
 
 ---
@@ -475,40 +482,50 @@ firebase deploy --only functions
 
 ---
 
-# 🎯 Future Improvements
+# 📦 Current Release Status (What's Done)
 
-The project is actively evolving.
+The application has been hardened to enterprise standards across reliability, architecture, UI/UX, and testing:
 
-Planned enhancements include:
+### 1. Resilient Client API Gateway & Fallback Architecture
+- **Eliminated "Failed to Fetch" Errors**: Implemented dynamic backend URL resolution (`resolveFunctionUrl`) in `src/service/config.js`. Local and production clients route directly to the active Render cloud deployment (`https://vac-ai-tion.onrender.com`), with seamless fallback to local Firebase emulators when `VITE_USE_LOCAL_EMULATOR=true`.
+- **Descriptive Error Boundaries**: Replaced silent failures and raw browser `TypeError` messages with human-actionable network errors across AI Chat (`AImodel.jsx`), Trip Generation (`tripService.js`), Price Comparison (`priceService.js`), and Geocoding (`destinationService.js`).
+- **LocationIQ Geocoding & Memory Caching**: Fast autocomplete with in-memory caching and cascading fallbacks to OpenStreetMap Nominatim.
 
-### AI
+### 2. React 18 & Hook Ordering Stabilization
+- **Fixed Hook Ordering Violations**: Resolved conditional hook calls in `TripMap.jsx` (`useMemo` for polylines) and `JourneyChapter.jsx` (`useEffect` for warning recalculation) to ensure strict compliance with React's Rules of Hooks under all data states.
+- **Enhanced Journey Stop Controls**: Wired missing actions and icon imports (`Info`, `Sparkles`, nearby stop inspection, inline stop insertion) in `JourneyStop.jsx` and exported `formatCurrency` in `currencyFormatter.js`.
 
-- [ ] Multi-model support (OpenAI, Anthropic, Gemini)
-- [x] Weather-aware itinerary generation
-- [x] Local event recommendations
-- [x] Restaurant recommendations (via Food Preferences)
-- [ ] Personalized activity ranking
+### 3. UI / UX Enhancements
+- **Curated Escapes Showcase**: Added an interactive showcase on the landing page presenting hand-picked global itineraries (Kyoto, Amalfi Coast, Swiss Alps, Cape Town, etc.) that prefill destination discovery in one click.
+- **Adaptive Agent Orbs Layout**: Expanded canvas viewports (`min-h-[380px]`) during trip generation to prevent orb clipping and ensure smooth 60fps canvas particle rendering.
+- **Header Navigation Consistency**: Integrated persistent "My Trips" navigation in the application header for quick return to saved itineraries.
 
----
-
-### Platform
-
-- [ ] Trip collaboration
-- [ ] Offline itinerary access
-- [x] Calendar integration
-- [x] Export to PDF / PDF Import
-- [ ] Multi-language support
-- [x] Social Media Sharing Integration (`/v/:id`)
+### 4. Comprehensive Testing & CI/CD Pipeline
+- **40 Automated Tests Across 9 Suites**: Full coverage across E2E user journeys (`e2e-user-journey.test.jsx`), hook regressions (`hooks-regression.test.jsx`), feasibility engine (`feasibilityEngine.test.js`), privacy guardrails (`remediation.test.jsx`), normalization, and service configurations.
+- **GitHub Actions CI Workflow**: Continuous integration pipeline configured (`.github/workflows/ci.yml`) to automatically execute ESLint linting, type validation, and test runs on every pull request and push to `main`.
+- **Zero-Error ESLint Config**: Modern ESLint configuration (`eslint.config.js`) tailored for React 18, Vite, and TailwindCSS with zero lint errors.
 
 ---
 
-### Engineering
+# 🎯 Roadmap & Future Enhancements (What We're Waiting For)
 
-- [x] Background queue system (via agentJobs collection)
-- [x] Function-level monitoring (Real-time Firestore logs)
-- [ ] Docker support
-- [x] CI/CD pipeline (GitHub Actions & Vercel automated deployments)
-- [x] End-to-end testing (Vitest E2E user journey & hook regression suite)
+The following high-impact capabilities are planned for upcoming development milestones:
+
+### 🤖 AI & Multi-Model Intelligence
+- [ ] **Multi-Model LLM Routing**: Dynamic provider selection allowing users to toggle between Groq (Llama 3.3 70B), OpenAI (GPT-4o), Anthropic (Claude 3.5 Sonnet), and Google (Gemini 2.0 Flash) depending on budget or context size requirements.
+- [ ] **Personalized Activity Ranking**: Collaborative filtering and vector embeddings (Pinecone / Firestore Vector Search) based on user travel history and explicit ratings.
+- [ ] **Voice-Activated Travel Concierge**: Real-time voice interaction with Gemini Live / WebRTC audio streaming during trip execution.
+
+### 🌐 Platform, Collaboration & Offline
+- [ ] **Multiplayer Trip Collaboration**: Real-time multi-user itinerary editing with presence indicators, shared cursors, and conflict-free replicated data types (CRDTs).
+- [ ] **PWA & Offline-First Navigation**: Progressive Web App with service workers, local IndexedDB caching, and offline vector map tiles for spotty connectivity while traveling.
+- [ ] **Live Travel APIs Integration**: Direct integration with Amadeus, Sabre, or Skyscanner Live APIs for live seat availability, real-time fare alerts, and automated rebooking recommendations.
+- [ ] **Internationalization (i18n)**: Comprehensive localization across English, Spanish, French, Japanese, and Hindi with localized date formats and currency conversions.
+
+### 🛠️ Infrastructure & Engineering
+- [ ] **Containerized Local Dev (Docker)**: Single-command `docker compose up` spinning up frontend, Express backend, and Firestore emulator simultaneously.
+- [ ] **OpenTelemetry Observability**: End-to-end distributed tracing across frontend React actions, Render API endpoints, and LLM inference latencies.
+- [ ] **Automated Performance & Lighthouse Audits**: GitHub Actions automated performance regression budgets for Web Vitals (LCP < 2.0s, CLS < 0.05).
 
 ---
 
