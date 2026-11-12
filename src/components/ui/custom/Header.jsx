@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Button } from '../button';
 import { Link, useNavigate } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from "../../../firebase";  
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Compass } from 'lucide-react';
 
 function Header() {
   const [user, setUser] = useState(null);
@@ -49,9 +48,15 @@ function Header() {
           </motion.div>
         </Link>
 
-        <div className='flex flex-row gap-8 items-center'>
+        <div className='flex flex-row gap-6 sm:gap-8 items-center'>
+          <Link to={'/profile'} state={{ activeTab: 'trips' }}>
+            <span className="text-sm font-bold text-muted-foreground hover:text-amber transition-colors cursor-pointer flex items-center gap-1.5">
+              <Compass className="w-4 h-4" /> My Trips
+            </span>
+          </Link>
+
           <Link to={'/profile'} state={{ activeTab: 'notes' }}>
-            <span className="text-sm font-bold text-muted-foreground hover:text-amber transition-colors cursor-pointer flex items-center gap-1">
+            <span className="text-sm font-bold text-muted-foreground hover:text-amber transition-colors cursor-pointer flex items-center gap-1.5">
               <Sparkles className="w-4 h-4" /> Wander Notes
             </span>
           </Link>
