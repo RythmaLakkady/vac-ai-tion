@@ -1,6 +1,6 @@
 import { FUNCTION_URL } from './config';
 import { db } from '@/firebase';
-import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 
 const memoryCache = new Map();
 
@@ -38,19 +38,33 @@ export const priceService = {
       console.warn("Firestore cache check failed", e);
     }
 
-    const res = await fetch(`${FUNCTION_URL}/compare`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    
-    if (!res.ok) {
-      if (res.status === 429) throw new Error("Rate limit exceeded.");
-      throw new Error(`Server returned ${res.status}`);
+    try {
+      const res = await fetch(`${FUNCTION_URL}/compare`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!res.ok) {
+        if (res.status === 429) throw new Error("Rate limit exceeded.");
+        let errorMessage = `Server returned ${res.status}`;
+        try {
+          const errData = await res.json();
+          if (errData?.error) errorMessage = errData.error;
+        } catch {
+          // Ignore json parse error
+        }
+        throw new Error(errorMessage);
+      }
+      
+      const data = await res.json();
+      memoryCache.set(cacheKey, data);
+      return data;
+    } catch (err) {
+      if (err.name === 'TypeError' && err.message?.toLowerCase().includes('fetch')) {
+        throw new Error(`Unable to reach pricing service (${FUNCTION_URL}). Please check your connection.`);
+      }
+      throw err;
     }
-    
-    const data = await res.json();
-    memoryCache.set(cacheKey, data);
-    return data;
   }
 };

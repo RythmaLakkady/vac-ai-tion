@@ -10,13 +10,23 @@ export const chatSession = {
       });
       
       if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
+        let errorMessage = `Server returned ${response.status}`;
+        try {
+          const errData = await response.json();
+          if (errData?.error) errorMessage = errData.error;
+        } catch {
+          // Ignore json parse error
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       return { response: { text: () => data.text } };
     } catch (error) {
       console.error("Chat Session Error:", error);
+      if (error.name === 'TypeError' && error.message?.toLowerCase().includes('fetch')) {
+        throw new Error(`Unable to reach AI chat service (${FUNCTION_URL}). Please check your connection.`);
+      }
       throw error;
     }
   }
