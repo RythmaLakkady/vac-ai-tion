@@ -1,579 +1,127 @@
-<h1 align="center">✈️ vac-ai-tion</h1>
+# vac-ai-tion
 
-<p align="center">
-<b>AI-Powered Travel Planning Platform with Asynchronous LLM Orchestration</b>
-</p>
+Plan a personalized trip, follow its generation, and edit the itinerary in one place.
 
-<p align="center">
-Generate personalized travel itineraries through an asynchronous AI orchestration pipeline with real-time execution tracking, intelligent caching, and iterative itinerary refinement.
-</p>
+> **Screenshot placeholder:** The image below is a temporary destination photo, not an app screenshot. Replace it with a screenshot of the landing page or generated itinerary. Capture a desktop view that shows the trip form or daily itinerary cards, then save it as `docs/images/app-screenshot.png` and update this image link.
 
-<p align="center">
+![Screenshot placeholder: replace with a screenshot of the vac-ai-tion interface](public/japan.jpg)
 
-<a href="https://vac-ai-tion.vercel.app">
-<img src="https://img.shields.io/badge/🚀_Live_Demo-7C5CFC?style=for-the-badge&logo=vercel&logoColor=white"/>
-</a>
+[Live demo](https://vac-ai-tion.vercel.app) · [Source code](https://github.com/RythmaLakkady/vac-ai-tion)
 
-<a href="https://github.com/RythmaLakkady/vac-ai-tion">
-<img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white"/>
-</a>
+[![CI](https://github.com/RythmaLakkady/vac-ai-tion/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/RythmaLakkady/vac-ai-tion/actions/workflows/ci.yml)
 
-</p>
+## Why it exists
 
-<p align="center">
+Trip planning often means gathering ideas across maps, travel sites, and notes, then arranging them into a workable daily plan. vac-ai-tion brings those steps into a single app and lets travelers review and adjust an AI-generated itinerary.
 
-<img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black"/>
+## Features
 
-<img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white"/>
+- **Generate a tailored itinerary:** Set a destination, trip length, budget, party size, travel style, and other preferences to receive a structured plan.
+- **See generation progress:** Follow job status and orchestration logs as they update in Firestore, rather than waiting on a single long browser request.
+- **Review and edit a trip:** View stops by day, reorder activities, and use map and itinerary feasibility views to assess the plan.
+- **Keep trips and share them:** Save trips to a profile and create a public sharing link for an itinerary.
+- **Explore destinations:** Search for places with autocomplete and view destination information alongside trip planning.
+- **Compare estimated options:** Review ranked flight, hotel, and ticket results. The current backend comparison endpoint returns mock vendor data; these are not live quotes.
 
-<img src="https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black"/>
+## Tech stack
 
-<img src="https://img.shields.io/badge/Firestore-DD2C00?style=flat-square&logo=firebase&logoColor=white"/>
+| Area | Technologies and role |
+| --- | --- |
+| Frontend | React 18 and Vite for the single-page app; React Router for routes; Tailwind CSS and Framer Motion for styling and transitions. |
+| Backend | Node.js, Express, and Firebase Cloud Functions expose API endpoints. Groq handles itinerary planning and chat requests. |
+| Data and identity | Firebase Authentication manages sign-in; Cloud Firestore stores trips, jobs, progress logs, and itinerary cache entries. |
+| Maps and place search | Leaflet/React Leaflet renders maps. LocationIQ provides place autocomplete, with OpenStreetMap Nominatim as a fallback. |
+| Hosting and tooling | Vercel configuration serves the frontend; Firebase configuration supports functions and Firestore rules. ESLint, Vitest, Testing Library, and Jest are present in the repository. |
 
-<img src="https://img.shields.io/badge/Groq-Llama_3.3_70B-7B61FF?style=flat-square"/>
+## Architecture
 
-<img src="https://img.shields.io/badge/Cloud_Functions-4285F4?style=flat-square"/>
-
-<img src="https://img.shields.io/badge/Tailwind_CSS-38BDF8?style=flat-square&logo=tailwind-css&logoColor=white"/>
-
-</p>
-
----
-
-# Overview
-
-vac-ai-tion is an AI-powered travel planning platform that generates personalized itineraries through an asynchronous multi-stage orchestration pipeline.
-
-Rather than waiting for a single long-running AI request to complete, itinerary generation is executed as a background workflow using Firebase Cloud Functions. The frontend streams progress updates in real time while separate planning and validation phases iteratively refine the itinerary before it is saved.
-
-To reduce unnecessary inference costs and improve responsiveness, identical requests are detected using SHA-256 hashing and served directly from a Firestore-backed cache whenever possible.
-
----
-
-# Why vac-ai-tion?
-
-Planning a trip often involves repeatedly switching between travel websites, maps, hotel listings, and conversational AI tools while manually organizing an itinerary.
-
-vac-ai-tion brings these tasks into a single application by combining AI-powered itinerary generation, conversational travel assistance, secure authentication, persistent trip history, and real-time generation tracking.
-
-Instead of treating AI as a single prompt, the project explores how multi-stage orchestration, validation, caching, and asynchronous processing can improve the reliability and usability of AI-assisted travel planning.
-
----
-
-# Key Features
-
-| Feature | Description |
-|----------|-------------|
-| 🤖 **Multi-Stage AI Planning** | Generates itineraries through separate planning and validation phases. |
-| 🌍 **Location Search** | Uses the LocationIQ API for destination search and geolocation support. |
-| ⚡ **Asynchronous Job Processing** | Uses Firebase Cloud Functions to execute itinerary generation without blocking the frontend. |
-| 📡 **Real-Time Progress Updates** | Streams backend orchestration logs using Firestore listeners. |
-| 🔄 **Iterative Refinement Loop** | Regenerates itineraries when validation detects unmet constraints. |
-| 📦 **Intelligent Request Caching** | Prevents redundant LLM calls through SHA-256 request hashing. |
-| 💬 **AI Travel Assistant** | Conversational interface for travel-related guidance. |
-| 🧳 **Interactive Itinerary Editing** | Drag-and-drop itinerary management for generated activities. |
-| 🔐 **Authentication** | Firebase Email/Password and Google OAuth authentication. |
-| ☁️ **Cloud-Native Architecture** | Built using Firebase Cloud Functions, Firestore, and Vercel. |
-| ✈️ **Flight Origin Enforcement** | Automatically generates optimized flight options tailored to the user's starting location. |
-| 🌦️ **Season & Weather Intelligence** | Provides AI-driven season recommendations and weather insights for the chosen travel dates. |
-| 💱 **Dynamic Currency Conversion** | Instantly converts all flight, hotel, and activity prices to the user's preferred currency. |
-| 🎛️ **Advanced Customization** | Supports open-ended text inputs for unique travel styles and niche food preferences. |
-| 🛡️ **Robust API Handling** | Implements fixed-backoff retry mechanisms to gracefully handle LLM rate limits and token windows. |
-| 🎨 **Interactive Loading Dashboard** | A stunning glassmorphism generation screen featuring a live AI terminal and rotating travel facts. |
-| 🌐 **3D Interactive Globe** | Features an interactive, draggable golden-hour 3D globe visualization on the landing page. |
-| ⚕️ **Health & Safety Intelligence** | AI-generated health protocols, emergency contacts, and local safety guidelines for the destination. |
-| 📝 **Wanderer Notes** | Hyper-personalized travel tips, cultural nuances, and packing recommendations tailored to the specific trip vibe. |
-
-
----
-
-# 🏗️ System Architecture
+The React client submits trip inputs to the API. On a cache miss, the API creates a Firestore job and starts the manager → planner → critic workflow. The client listens to that job document for progress and reads the saved trip when generation finishes. A matching cache entry can return an existing itinerary instead.
 
 ```mermaid
 flowchart LR
-
-A["User Input"] --> B["React Frontend"]
-
-B --> C["Firebase Cloud Function (Orchestrator)"]
-
-C --> D{"Cache Found"}
-
-D -- Yes --> E["Return Cached Itinerary"]
-
-D -- No --> F["Create Background Job"]
-
-F --> G["agentJobs Collection"]
-
-G --> H["1. Vibe Matcher Agent"]
-
-H --> I["2. Manager Agent"]
-
-I --> J["3. Planner Agent"]
-
-J --> K["4. Critic Agent (Validation)"]
-
-K --> L{"Critic Passed?"}
-
-L -- No --> J
-
-L -- Yes --> M["Store Itinerary"]
-
-M --> N["UserTrips Collection"]
-
-N --> O["Realtime Firestore Listener"]
-
-O --> P["Generated Trip"]
-```
----
-
-# ⚙️ How It Works
-
-## Step 1 — Trip Request
-
-The user provides:
-
-- Destination
-- Number of travel days (max 15)
-- Budget
-- Number of travelers
-- Season / Specific Travel Dates
-- Travel Style (Cultural, Adventure, Party, Relaxing, or Custom)
-- Food Preferences (Local Cuisine, Vegan, Fast Food, or Custom)
-
-The frontend submits these details to a Firebase Cloud Function instead of directly calling the LLM.
-
----
-
-## Step 2 — Intelligent Request Caching
-
-To reduce unnecessary LLM inference, the backend computes a SHA-256 hash from the request parameters.
-
-If an identical itinerary already exists in the cache, the cached result is immediately returned.
-
-Otherwise, a new background generation job is created.
-
----
-
-## Step 3 — Background Orchestration
-
-The backend creates a new job document inside the **agentJobs** Firestore collection and immediately returns a **202 Accepted** response.
-
-This allows the frontend to remain responsive while itinerary generation continues asynchronously.
-
----
-
-## Step 4 — Planning Phase
-
-The orchestration pipeline requests an itinerary from Groq's Llama 3.3 70B model.
-
-The model is instructed to generate structured JSON containing:
-
-- Hotel recommendations
-- Daily itinerary (including final day departure)
-- Health & Safety protocols
-- Wanderer Notes (packing, culture, local tips)
-- Estimated costs
-- Geographic coordinates
-- Booking links
-
----
-
-## Step 5 — Validation Phase
-
-Instead of accepting the first generated itinerary, a second LLM prompt evaluates whether the response satisfies the requested constraints.
-
-Examples include:
-
-- Requested number of days (hard limit of 15 days)
-- Budget limits
-- JSON structure validity
-- Explicit airport departure routing on the final day
-- Overall itinerary consistency
-
-If validation fails, the planner receives feedback and generates a revised itinerary.
-
-The process repeats for a maximum of **three iterations**.
-
----
-
-## Step 6 — Real-Time Progress Updates
-
-While the orchestration pipeline is running, backend logs are continuously written to Firestore.
-
-The frontend subscribes to these updates using Firestore's real-time listener (`onSnapshot`), allowing users to follow itinerary generation through a live terminal interface.
-
----
-
-## Step 7 — Trip Persistence
-
-Once generation completes successfully:
-
-- The itinerary is stored in the **UserTrips** collection.
-- The background job status is marked as **Completed**.
-- The frontend automatically redirects the user to the generated itinerary.
-
----
-
-# 📂 Project Structure
-
-```text
-vac-ai-tion
-
-├── src/
-│   ├── components/
-│   ├── pages/
-│   ├── service/
-│   ├── firebase/
-│   ├── assets/
-│   └── hooks/
-│
-├── functions/
-│   ├── agentOrchestrator.js
-│   ├── index.js
-│   └── utils/
-│
-├── public/
-│
-├── package.json
-│
-└── README.md
+    U[Traveler] --> W[React app on Vite]
+    W -->|create job / chat / place search| API[Express API in functions]
+    API -->|hash and lookup| Cache[(Firestore itinerary cache)]
+    Cache -->|miss| Job[(Firestore agent job)]
+    Job --> AI[Groq manager, planner, critic]
+    AI -->|logs and final trip| Job
+    AI --> Trips[(Firestore user trips)]
+    W <-->|live job updates| Job
+    W -->|read trip| Trips
 ```
 
----
+The client defaults to the API URL in `src/service/config.js` (`https://vac-ai-tion.onrender.com`). The repository also contains a Firebase HTTPS-function export and a local Express entry point. A deployed backend URL and its credentials are required for API-backed features.
 
-# 🛠️ Technology Stack
+## Getting started
 
-| Layer | Technology |
-|--------|------------|
-| **Frontend** | React 18 + Vite |
-| **Styling** | Tailwind CSS, Framer Motion |
-| **Routing** | React Router DOM |
-| **Authentication** | Firebase Authentication |
-| **Database** | Firestore |
-| **Backend** | Firebase Cloud Functions |
-| **AI Models** | Groq (Llama 3.3 70B) |
-| **Location Services** | LocationIQ API |
-| **Hosting** | Vercel |
-| **3D Rendering** | Cobe (Globe) |
-| **Drag & Drop** | @hello-pangea/dnd |
+### Prerequisites
 
----
-
-# 💡 Engineering Decisions
-
-The project intentionally separates itinerary generation into multiple stages instead of relying on a single long-running LLM request.
-
-This architecture was chosen to improve responsiveness, simplify failure recovery, and create a more transparent user experience during AI generation.
-
----
-
-## Asynchronous Backend Processing
-
-Instead of waiting for itinerary generation to complete before responding, the backend immediately creates a background job and returns a **202 Accepted** response.
-
-This allows the frontend to remain interactive while the itinerary is generated independently.
-
-**Benefits**
-
-- Responsive user interface
-- Non-blocking request handling
-- Easier orchestration of long-running AI tasks
-
----
-
-## Intelligent Request Caching
-
-Generating identical itineraries repeatedly results in unnecessary LLM inference and increased latency.
-
-To reduce duplicate work, the backend computes a SHA-256 hash from the request parameters.
-
-If an identical request has already been processed, the cached itinerary is returned immediately without invoking the LLM.
-
-**Benefits**
-
-- Lower inference cost
-- Faster response time
-- Reduced backend workload
-
----
-
-## Iterative AI Validation
-
-Instead of assuming the first generated response is correct, itinerary generation includes a validation stage.
-
-A second LLM prompt evaluates whether the generated itinerary satisfies the requested constraints such as travel duration, budget, and output structure.
-
-If validation fails, the planner receives structured feedback and generates a revised itinerary.
-
-The process repeats for a limited number of iterations.
-
-**Benefits**
-
-- More reliable outputs
-- Better adherence to user constraints
-- Reduced malformed responses
-
----
-
-## Real-Time Progress Streaming
-
-Rather than displaying a loading spinner, the frontend streams orchestration logs from Firestore using real-time listeners.
-
-This provides users with visibility into each stage of itinerary generation while the backend continues processing.
-
-**Benefits**
-
-- Improved transparency
-- Better user experience
-- Continuous feedback during long-running operations
-
----
-
-# 📊 Firestore Data Model
-
-The application uses three primary Firestore collections.
-
-| Collection | Purpose |
-|------------|---------|
-| **UserTrips** | Stores completed itineraries and trip metadata. |
-| **agentJobs** | Tracks background itinerary generation jobs and execution logs. |
-| **itineraryCache** | Stores cached itinerary responses using SHA-256 request hashes. |
-
----
-
-# 🔄 Generation Pipeline
-
-```text
-User Request
-      │
-      ▼
-Cloud Function
-      │
-      ▼
-Generate Request Hash
-      │
-      ▼
-Cache Lookup
-      │
- ┌────┴────┐
- │         │
-Hit       Miss
- │         │
- ▼         ▼
-Return   Create Job
-Cached       │
-Trip         ▼
-        Planning Phase
-              │
-              ▼
-       Validation Phase
-              │
-      ┌───────┴────────┐
-      │                │
-   Retry          Validation Passed
-      │                │
-      ▼                ▼
- Planning       Save to Firestore
-      │                │
-      └───────┬────────┘
-              ▼
-     Stream Progress Logs
-              │
-              ▼
-     Display Generated Trip
-```
-
----
-# ⚙️ Installation
-
-## Prerequisites
-
-Before running the project, ensure you have:
-
-- Node.js 18+
+- Node.js 20 (the CI workflow uses Node 20; the functions package requires Node 18 or newer)
 - npm
-- Firebase Project
-- Groq API Key
+- A Firebase project and its web API key
+- Access to a running vac-ai-tion API for trip generation, chat, and place search
 
----
+No `.env.example` or dependency lockfile is checked in. Create a root `.env` file and set the values your setup needs:
 
-## Clone the Repository
+```env
+VITE_FIREBASE_API_KEY=your_firebase_web_api_key
+
+# Optional: point the client at a different API. Defaults to the URL in src/service/config.js.
+VITE_FUNCTION_URL=https://your-api.example.com
+
+# Optional: use the configured Firebase Functions emulator instead.
+# VITE_USE_LOCAL_EMULATOR=true
+
+# Optional: enables a direct LocationIQ autocomplete fallback in the browser.
+# VITE__LOCATION_IQ_API_KEY=your_locationiq_api_key
+```
+
+Keep server credentials such as `GROQ_API_KEY`, `LOCATION_IQ_API_KEY`, and Firebase Admin credentials on the backend; do not put them in `VITE_` variables. The Firebase web key is used by the client SDK. Configure authentication and Firestore for the Firebase project before signing in.
 
 ```bash
 git clone https://github.com/RythmaLakkady/vac-ai-tion.git
-
 cd vac-ai-tion
-```
-
----
-
-## Install Dependencies
-
-```bash
 npm install
-```
-
----
-
-## Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-# AI & Geolocation API Keys
-VITE_GROQ_API_KEY=your_groq_api_key
-VITE_OPENAI_API_KEY=your_openai_api_key_for_chat
-VITE__LOCATION_IQ_API_KEY=your_locationiq_api_key
-VITE_FIREBASE_API_KEY=your_firebase_api_key
-
-# Backend Service URLs (Defaults to deployed Render backend)
-VITE_FUNCTION_URL=https://vac-ai-tion.onrender.com
-VITE_PRICE_FUNCTION_URL=https://vac-ai-tion.onrender.com
-
-# Optional: Set to "true" only if running the local Firebase Functions emulator on port 5001
-# VITE_USE_LOCAL_EMULATOR=true
-```
-
----
-
-## Start Development Server
-
-```bash
 npm run dev
 ```
 
----
-
-## Deploy Firebase Functions
+Vite prints the local development URL. In another terminal, run the available checks and production build:
 
 ```bash
-cd functions
-
-npm install
-
-firebase deploy --only functions
-```
-
----
-
-# 🚀 Getting Started
-
-1. Sign in using Email/Password or Google Authentication.
-
-2. Create a new trip by selecting:
-
-   - Destination
-   - Budget
-   - Number of Days
-   - Number of Travelers
-   - Season or Dates
-   - Travel Style
-   - Food Preferences
-
-3. Submit the request.
-
-4. Monitor itinerary generation through the real-time Generation Console.
-
-5. Review the generated itinerary.
-
-6. Rearrange activities using drag-and-drop.
-
-7. Access previous trips anytime from your profile.
-
----
-
-# 📦 Current Release Status (What's Done)
-
-The application has been hardened to enterprise standards across reliability, architecture, UI/UX, and testing:
-
-### 1. Resilient Client API Gateway & Fallback Architecture
-- **Eliminated "Failed to Fetch" Errors**: Implemented dynamic backend URL resolution (`resolveFunctionUrl`) in `src/service/config.js`. Local and production clients route directly to the active Render cloud deployment (`https://vac-ai-tion.onrender.com`), with seamless fallback to local Firebase emulators when `VITE_USE_LOCAL_EMULATOR=true`.
-- **Descriptive Error Boundaries**: Replaced silent failures and raw browser `TypeError` messages with human-actionable network errors across AI Chat (`AImodel.jsx`), Trip Generation (`tripService.js`), Price Comparison (`priceService.js`), and Geocoding (`destinationService.js`).
-- **LocationIQ Geocoding & Memory Caching**: Fast autocomplete with in-memory caching and cascading fallbacks to OpenStreetMap Nominatim.
-
-### 2. React 18 & Hook Ordering Stabilization
-- **Fixed Hook Ordering Violations**: Resolved conditional hook calls in `TripMap.jsx` (`useMemo` for polylines) and `JourneyChapter.jsx` (`useEffect` for warning recalculation) to ensure strict compliance with React's Rules of Hooks under all data states.
-- **Enhanced Journey Stop Controls**: Wired missing actions and icon imports (`Info`, `Sparkles`, nearby stop inspection, inline stop insertion) in `JourneyStop.jsx` and exported `formatCurrency` in `currencyFormatter.js`.
-
-### 3. UI / UX Enhancements
-- **Curated Escapes Showcase**: Added an interactive showcase on the landing page presenting hand-picked global itineraries (Kyoto, Amalfi Coast, Swiss Alps, Cape Town, etc.) that prefill destination discovery in one click.
-- **Adaptive Agent Orbs Layout**: Expanded canvas viewports (`min-h-[380px]`) during trip generation to prevent orb clipping and ensure smooth 60fps canvas particle rendering.
-- **Header Navigation Consistency**: Integrated persistent "My Trips" navigation in the application header for quick return to saved itineraries.
-
-### 4. Comprehensive Testing & CI/CD Pipeline
-- **40 Automated Tests Across 9 Suites**: Full coverage across E2E user journeys (`e2e-user-journey.test.jsx`), hook regressions (`hooks-regression.test.jsx`), feasibility engine (`feasibilityEngine.test.js`), privacy guardrails (`remediation.test.jsx`), normalization, and service configurations.
-- **GitHub Actions CI Workflow**: Continuous integration pipeline configured (`.github/workflows/ci.yml`) to automatically execute ESLint linting, type validation, and test runs on every pull request and push to `main`.
-- **Zero-Error ESLint Config**: Modern ESLint configuration (`eslint.config.js`) tailored for React 18, Vite, and TailwindCSS with zero lint errors.
-
----
-
-# 🎯 Roadmap & Future Enhancements (What We're Waiting For)
-
-The following high-impact capabilities are planned for upcoming development milestones:
-
-### 🤖 AI & Multi-Model Intelligence
-- [ ] **Multi-Model LLM Routing**: Dynamic provider selection allowing users to toggle between Groq (Llama 3.3 70B), OpenAI (GPT-4o), Anthropic (Claude 3.5 Sonnet), and Google (Gemini 2.0 Flash) depending on budget or context size requirements.
-- [ ] **Personalized Activity Ranking**: Collaborative filtering and vector embeddings (Pinecone / Firestore Vector Search) based on user travel history and explicit ratings.
-- [ ] **Voice-Activated Travel Concierge**: Real-time voice interaction with Gemini Live / WebRTC audio streaming during trip execution.
-
-### 🌐 Platform, Collaboration & Offline
-- [ ] **Multiplayer Trip Collaboration**: Real-time multi-user itinerary editing with presence indicators, shared cursors, and conflict-free replicated data types (CRDTs).
-- [ ] **PWA & Offline-First Navigation**: Progressive Web App with service workers, local IndexedDB caching, and offline vector map tiles for spotty connectivity while traveling.
-- [ ] **Live Travel APIs Integration**: Direct integration with Amadeus, Sabre, or Skyscanner Live APIs for live seat availability, real-time fare alerts, and automated rebooking recommendations.
-- [ ] **Internationalization (i18n)**: Comprehensive localization across English, Spanish, French, Japanese, and Hindi with localized date formats and currency conversions.
-
-### 🛠️ Infrastructure & Engineering
-- [ ] **Containerized Local Dev (Docker)**: Single-command `docker compose up` spinning up frontend, Express backend, and Firestore emulator simultaneously.
-- [ ] **OpenTelemetry Observability**: End-to-end distributed tracing across frontend React actions, Render API endpoints, and LLM inference latencies.
-- [ ] **Automated Performance & Lighthouse Audits**: GitHub Actions automated performance regression budgets for Web Vitals (LCP < 2.0s, CLS < 0.05).
-
----
-
-# 🧪 Testing & Quality Gates
-
-The project maintains strict quality gates with zero tolerance for lint errors or unhandled edge cases:
-
-```bash
-# Run linting check
-npm run lint
-
-# Run all unit, integration, and E2E regression tests
 npm test -- --run
-
-# Build production bundle with PostCSS stylesheet extraction
+npm run lint
 npm run build
 ```
 
----
+To install the backend dependencies separately, run `npm --prefix functions install`. The functions package has a Jest test script (`npm --prefix functions test`); the GitHub Actions workflow currently runs the root lint, test, and build scripts only.
 
-# 🤝 Contributing
+## Engineering highlights
 
-Contributions are welcome.
+- **Asynchronous workflow:** The `/create-job` endpoint records a job and returns a job ID; the client subscribes to Firestore updates. This separates the long-running model workflow from the initial request.
+- **Bounded validation loop:** A manager drafts a strategy, a planner formats an itinerary, and a critic checks it against constraints. The planner can retry up to three times with critic feedback.
+- **Request reuse:** The backend normalizes selected request fields, hashes them with SHA-256, and checks Firestore before starting a new generation.
+- **Data access rules:** `firestore.rules` restricts several user-owned collections to their authenticated owner and makes job/cache writes server-only. Public shared-trip reads are separately allowed by the rules.
+- **Automated checks:** The repository includes Vitest/Testing Library tests, a Jest backend test, and a GitHub Actions workflow configured to lint, test, and build on pushes and pull requests to `main`. The latest recorded CI run did not reach these checks: it stopped because the repository has no npm lockfile for `npm ci`.
 
-If you'd like to improve the project:
+## Challenges and decisions
 
-1. Fork the repository.
+- **Long model calls:** The API creates a job before generation and stores status/log updates in Firestore. This keeps the interface responsive and gives it a progress source while work continues.
+- **Model output can miss constraints:** The workflow separates strategy, structured generation, and critic review, and limits retries to three. If the critic itself errors, the current implementation accepts the parsed itinerary rather than failing the whole job.
+- **Avoiding repeated inference:** The Firestore cache reuses generated trips for requests with the same hash. The current hash includes destination, days, budget, and travelers only; it does not include every trip preference, such as origin or travel style, so those requests can collide. Treat cache matching as a known limitation, not a guarantee of identical trip inputs.
 
-2. Create a feature branch.
+## Known limitations
 
-3. Commit your changes.
+- The price comparison endpoint currently creates mock vendor results from destination text. It does not retrieve live prices or availability.
+- Cache identity omits some generation inputs, including origin and travel style. Review `functions/src/cacheUtils.js` before relying on cache results.
+- The README's local setup has not been validated in a fresh environment. The repository has no lockfile, and the latest CI run fails during `npm ci` before lint, tests, or build can run. Install and verify dependencies after adding a lockfile.
+- There is no `LICENSE` file in the repository, so reuse terms are not specified.
 
-4. Submit a Pull Request.
+## Author
 
-For larger changes, please open an Issue first to discuss the proposed design.
+- **Name:** Rythma Lakkady (GitHub account: [@RythmaLakkady](https://github.com/RythmaLakkady))
+- **Role:** Not specified in the repository
+- **Portfolio / LinkedIn:** Not provided
 
----
+## License
 
-# 📄 License
-
-This project is licensed under the **MIT License**.
-
----
-
-<p align="center">
-
-Built with ❤️ using React, Firebase, Firestore, Groq, and Vercel.
-
-If you found this project useful, consider giving it a ⭐.
-
-</p>
+No license file is present. The project does not currently specify a license.
