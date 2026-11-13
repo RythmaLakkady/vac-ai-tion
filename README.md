@@ -1,198 +1,122 @@
-# vac-ai-tion
+# vac-AI-tion
 
-Full-stack travel planning platform that generates structured, validated multi-day itineraries through an asynchronous background orchestration pipeline.
+<p align="center">
+  <img src="public/logo.svg" alt="vac-AI-tion logo" width="108" />
+</p>
 
-[![CI](https://github.com/RythmaLakkady/vac-ai-tion/actions/workflows/ci.yml/badge.svg)](https://github.com/RythmaLakkady/vac-ai-tion/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+<h3 align="center">Plan less. Explore more.</h3>
+<p align="center">
+  An AI-powered travel planner that turns trip preferences into editable, day-by-day itineraries — with live generation progress, route maps, and budget-aware planning.
+</p>
 
-<!-- SCREENSHOT / DEMO GIF PLACEHOLDER -->
-> Screenshot placeholder: Capture a desktop view of an opened itinerary (e.g. Kyoto) showing the daily timeline cards, interactive Leaflet route map, and daily budget summary. Save the image to `docs/images/app-screenshot.png` and replace this placeholder with:
-> `![vac-ai-tion Itinerary View](docs/images/app-screenshot.png)`
+<p align="center">
+  <a href="https://vac-ai-tion.vercel.app"><strong>Open the app ↗</strong></a>
+  &nbsp; · &nbsp;
+  <a href="https://github.com/RythmaLakkady/vac-ai-tion">View source</a>
+</p>
 
-[Live Demo](https://vac-ai-tion.vercel.app) | [Source Code](https://github.com/RythmaLakkady/vac-ai-tion)
-
----
-
-## The Problem
-
-Travel planning forces travelers to switch between disjointed tools: conversational LLMs that lack routing constraints, static booking sites that ignore daily schedules, and map tools without budget logic. Single-turn LLM generation frequently returns missing days, coordinate errors, or invalid JSON. vac-ai-tion treats trip generation as an asynchronous background workflow that validates schema structure, day limits, and budget constraints before persisting the itinerary.
-
----
-
-## Key Features
-
-- Multi-stage background generation: Travelers configure destination, party size, budget, and travel style, then watch step-by-step progress streamed live via Cloud Firestore rather than waiting on a blocking browser request.
-- Bounded validation loop: An automated Critic agent evaluates day counts (1 to 15 days), budget ceilings, and final-day departure routing, retrying revision prompts up to 3 times before saving.
-- Deterministic request caching: Hashes normalized trip inputs with SHA-256 to serve repeat queries from Firestore instantly, reducing latency and avoiding redundant LLM inference costs.
-- Interactive drag-and-drop itinerary editing: Travelers reorder activities within or across days using accessible drag-and-drop, with automatic recalculation of daily budgets, route timings, and map polylines.
-- Location autocomplete with fallback cascade: Travelers search destinations with real-time LocationIQ autocomplete, which automatically cascades to OpenStreetMap Nominatim if the primary geocoder is unavailable.
-- Sanitized public trip sharing: Travelers can share a read-only itinerary link (`/v/:tripId`) that strips private personal profile notes and health info before display.
+<p align="center">
+  <img src="https://github.com/RythmaLakkady/vac-ai-tion/actions/workflows/ci.yml/badge.svg" alt="CI" />
+  <img src="https://img.shields.io/badge/license-MIT-64748b.svg" alt="MIT License" />
+  <img src="https://img.shields.io/badge/React-18-149eca?logo=react&logoColor=white" alt="React 18" />
+  <img src="https://img.shields.io/badge/Node.js-20+-339933?logo=nodedotjs&logoColor=white" alt="Node.js" />
+</p>
 
 ---
 
-## Tech Stack
+## The experience
 
-### Frontend
-- React 18: Component-based UI rendering with client-side routing via React Router DOM 7.
-- Vite 6: Development server and production bundler with Rollup chunking.
-- Tailwind CSS: Utility-first styling with PostCSS compilation.
-- @hello-pangea/dnd: Maintained, accessible drag-and-drop activity reordering without DOM layout thrashing.
-- Leaflet and React-Leaflet: Interactive map rendering and coordinate plotting without third-party vendor lock-in.
-- Framer Motion: Coordinated status transitions during generation and chapter expansion.
+Start with the details that shape a trip — destination, duration, travelers, budget, and travel style. vac-AI-tion generates a structured itinerary in the background, shows the work as it happens, and lets travelers refine the plan.
 
-### Backend
-- Node.js and Express: REST API runtime handling geocoding proxying, price comparison aggregation, and job creation.
-- Firebase Cloud Functions v2: Serverless invocation endpoints for asynchronous agent workflows.
-- Groq SDK: High-throughput Llama 3.3 70B inference engine for fast structured JSON generation.
+<!-- Replace these with real product captures when available. -->
+<p align="center">
+  <img src="docs/images/app-screenshot.png" alt="vac-AI-tion itinerary screen" width="92%" />
+</p>
 
-### Data and Authentication
-- Firebase Authentication: Session management supporting Email/Password and Google OAuth.
-- Cloud Firestore: Document database storing user itineraries, user profiles, and real-time agent execution logs (`agentJobs`).
+## What it does
 
-### Infrastructure and Tooling
-- LocationIQ API: Geocoding and destination autocomplete service with OpenStreetMap Nominatim fallback.
-- Vitest and React Testing Library: Unit and integration test runner executing with JSDOM.
-- ESLint 9: Flat-configuration linter for static code analysis.
-- GitHub Actions: Continuous integration pipeline running lint, test, and build checks on pull requests and pushes to `main`.
-- Vercel: Edge hosting for the React single-page application.
-- Render: Cloud hosting for the Node.js / Express API service.
+| Plan | Explore | Make it yours |
+|---|---|---|
+| Generate multi-day trips from traveler preferences | View places and routes on an interactive map | Reorder activities across days with drag-and-drop |
+| Account for budget, travel style, saved places, and trip details | Follow agent progress as the itinerary is generated | Recalculate day-level totals and route details after edits |
 
----
+**More than a prompt and a response.** The generation flow uses a Manager → Planner → Critic sequence. The Manager outlines the trip strategy, the Planner structures the itinerary as JSON, and the Critic checks key constraints. Failed validations can feed back into the Planner for another attempt, with a bounded retry limit.
 
-## Architecture
-
-The system decouples client interactions from inference execution through a job queue pattern.
+## How generation works
 
 ```mermaid
 flowchart TD
-    User["Traveler (Browser)"] -->|1. Submit parameters| Client["React 18 SPA"]
-    Client -->|2. POST /create-job| API["Express API / Cloud Function"]
-    
-    API -->|3. Compute SHA-256| CacheCheck{"Cache Hit?"}
-    CacheCheck -- Yes -->|Return existing itinerary| Client
-    CacheCheck -- No -->|4. Create Job Record| Firestore["Cloud Firestore (agentJobs)"]
-    
-    API -->|5. HTTP 202 Accepted| Client
-    Client -->|6. onSnapshot listener| Firestore
-    
-    Firestore -->|7. Background trigger| Orchestrator["Agent Orchestrator"]
-    Orchestrator -->|8. Generate itinerary| LLM["Groq Llama 3.3 70B"]
-    LLM -->|9. Verify constraints| Critic{"Critic Passed?"}
-    Critic -- No (max 3)| LLM
-    Critic -- Yes -->|10. Persist Trip| Trips["Cloud Firestore (UserTrips)"]
-    Trips -->|11. Real-time update| Client
+    A[Trip preferences] --> B[Create generation job]
+    B --> C[(Firestore: agentJobs)]
+    C --> D[Manager agent]
+    D --> E[Planner agent]
+    E --> F[Critic validation]
+    F -->|Needs revision| E
+    F -->|Accepted or retry limit reached| G[(Firestore: UserTrips)]
+    C -. live job updates .-> H[React app]
+    G --> H
 ```
 
----
+The API creates a job and returns a response while the client listens to Firestore for status and progress updates. Repeated requests can be served from a Firestore cache using a SHA-256 hash of normalized trip inputs.
 
-## Getting Started
+## Built with
 
-### Prerequisites
-- Node.js 20.x or higher
-- npm 10.x or higher
-- A Firebase project with Firestore and Authentication enabled
+| Layer | Technologies |
+|---|---|
+| Frontend | React 18, Vite, Tailwind CSS, React Router |
+| Interaction & maps | @hello-pangea/dnd, Leaflet, React-Leaflet, Framer Motion |
+| Backend | Node.js, Express, Firebase Cloud Functions |
+| AI | Groq API — agent orchestration and structured itinerary generation |
+| Data & auth | Cloud Firestore, Firebase Authentication |
+| Testing & delivery | Vitest, React Testing Library, ESLint, GitHub Actions |
+| Hosting | Vercel (frontend), Render / Firebase Functions (API deployment paths) |
 
-### Installation
+## Engineering decisions
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/RythmaLakkady/vac-ai-tion.git
-   cd vac-ai-tion
-   ```
+- **Asynchronous generation:** Long-running itinerary generation is separated from the browser request. A job document tracks status and logs, and the UI receives updates through Firestore listeners.
+- **Bounded planner–critic loop:** The orchestrator allows up to three planner attempts. The Critic checks duration, activity count, hotel/flight constraints, and JSON completeness; on a failed check, its feedback is included in the next planning prompt.
+- **Deterministic caching:** Normalized destination, duration, budget, and traveler count are hashed with SHA-256. A matching cache entry avoids another generation run.
+- **Graceful location fallback:** Location search is designed to use LocationIQ and fall back to OpenStreetMap Nominatim where supported.
+- **Public-trip privacy:** Shared itinerary views are intended to expose a read-only, sanitized representation rather than private profile information.
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+## Run locally
 
-3. Configure environment variables:
-   Create a `.env` file in the project root:
-   ```env
-   # API Keys
-   VITE_GROQ_API_KEY=your_groq_api_key
-   VITE_OPENAI_API_KEY=your_openai_api_key_for_chat
-   VITE__LOCATION_IQ_API_KEY=your_locationiq_api_key
-   VITE_FIREBASE_API_KEY=your_firebase_api_key
+### Requirements
 
-   # Backend API Service URL
-   VITE_FUNCTION_URL=https://vac-ai-tion.onrender.com
-   VITE_PRICE_FUNCTION_URL=https://vac-ai-tion.onrender.com
+- Node.js 20+
+- npm
+- A Firebase project with Authentication and Firestore configured
 
-   # Set to true only if running local Firebase Functions emulator on port 5001
-   VITE_USE_LOCAL_EMULATOR=false
-   ```
-
-4. Start the local development server:
-   ```bash
-   npm run dev
-   ```
-   The application will be accessible at `http://localhost:5173/`.
-
----
-
-## Verification and Testing
-
-All code changes must pass the test suite, linting rules, and production build checks before merging:
+### Setup
 
 ```bash
-# Run ESLint across all files
+git clone https://github.com/RythmaLakkady/vac-ai-tion.git
+cd vac-ai-tion
+npm install
+npm run dev
+```
+
+Configure the required Firebase client settings and backend service URL in your local environment. Keep private API credentials on the server: **do not put Groq or other secret keys in `VITE_*` variables**, because Vite embeds those values in browser-facing assets.
+
+### Checks
+
+```bash
 npm run lint
-
-# Run all 40 automated tests via Vitest
 npm test -- --run
-
-# Build production assets and verify PostCSS compilation
 npm run build
 ```
 
----
+## Current limitations
 
-## Engineering Highlights
+- Flight, hotel, and activity price comparisons use heuristic mock vendor estimates, not live booking-provider inventory.
+- The cache key currently omits travel style and some personalization fields; equivalent cache hits can therefore ignore those differences.
+- Public shared trips are read-only; collaborative multi-user editing and conflict resolution are not implemented.
+- Map tiles and trip retrieval require an internet connection.
 
-- Testing approach: 40 automated tests across 9 suites in Vitest. Coverage includes end-to-end user journeys (`tests/e2e-user-journey.test.jsx`), React hook ordering regression tests (`tests/hooks-regression.test.jsx`), feasibility calculation checks (`src/service/__tests__/feasibilityEngine.test.js`), and privacy sanitization tests (`src/__tests__/remediation.test.jsx`).
-- Reliability and fallback design: The destination service implements a cascading fallback from LocationIQ to OpenStreetMap Nominatim. If an external geocoding provider fails, the search input falls back gracefully to custom freeform location entry rather than breaking the form.
-- Environment URL resolver: `resolveFunctionUrl` in `src/service/config.js` validates hostnames and environment variables to route requests to the deployed backend during development, preventing unhandled connection exceptions when local emulators are offline.
-- Data privacy guardrails: Public itinerary sharing via `/v/:tripId` explicitly sanitizes user health details, notes, and profile identifiers before saving to prevent unintended data exposure.
-- Continuous integration: GitHub Actions runs on every push and pull request to `main`, validating that linting passes with zero errors, all tests pass, and the Vite production bundle builds successfully.
+## Project
 
----
+Built by **Rythma Lakkady**.
 
-## Challenges and Decisions
+[GitHub](https://github.com/RythmaLakkady) · [LinkedIn](https://www.linkedin.com/in/rythma-lakkady-1725852a2/) · [Portfolio](https://rythmalakkady.vercel.app/)
 
-### Challenge 1: Single-Turn LLM Generation Failures
-- Problem: Prompting an LLM in a single turn to generate a complete 7-day schedule frequently resulted in malformed JSON, missing latitude/longitude coordinates, or trips exceeding the requested budget.
-- Solution: Structured the generation as a Planner-Critic loop in `functions/src/agentOrchestrator.js`. The Planner generates candidate itineraries, while the Critic validates budget thresholds, day limits, and schema completeness. If validation fails, the Critic feeds structured failure reasons back to the Planner for revision up to 3 cycles.
-
-### Challenge 2: Long-Running Request Timeouts
-- Problem: Generating 5 to 15 days of structured travel plans with coordinates takes 10 to 25 seconds of inference time. Synchronous HTTP requests timed out on client connections and created poor user experiences.
-- Solution: Decoupled submission from generation. The backend writes a pending record to `agentJobs` in Firestore and returns an HTTP 202 Accepted with a `jobId`. The frontend attaches a Firestore `onSnapshot` listener to the document, streaming step-by-step progress updates to the UI in real time.
-
-### Challenge 3: Local Development vs. Production Service Routing
-- Problem: Hardcoding localhost URLs in client code caused `TypeError: Failed to fetch` errors whenever the app was opened on `localhost:5173` without local Firebase emulators running on port 5001.
-- Solution: Replaced binary `isLocal` toggles with an environment resolver (`resolveFunctionUrl`) in `src/service/config.js`. The resolver prioritizes explicit environment variables, falls back to the production Render cloud backend, and only targets local emulators when `VITE_USE_LOCAL_EMULATOR=true` is set.
-
----
-
-## Known Limitations and Roadmap
-
-- Pricing data: Flight, hotel, and ticket pricing endpoints currently return heuristic mock vendor estimates (`functions/src/index.js`), not live GDS (Amadeus/Sabre) booking feeds. Integration with live booking APIs is planned for future milestones.
-- Cache key parameter coverage: Cache hashing includes destination, duration, budget, and travelers, but omits travel style and health preferences (`functions/src/cacheUtils.js`).
-- Single-user editing: While itineraries can be shared via public read-only URLs, concurrent multi-user editing with conflict resolution is not yet implemented.
-- Offline support: The application currently requires an active network connection for map tiles and trip retrieval. Adding Service Worker caching and IndexedDB offline persistence is slated for future releases.
-
----
-
-## Author
-
-**Rythma Lakkady**  
-Full-Stack Engineer  
-- GitHub: [https://github.com/RythmaLakkady](https://github.com/RythmaLakkady)  
-- Email: [rythma.pramod@gmail.com](mailto:rythma.pramod@gmail.com)  
-- LinkedIn: [Add LinkedIn Profile URL]  
-- Portfolio: [Add Portfolio URL]  
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
+[MIT License](LICENSE)
