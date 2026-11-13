@@ -18,5 +18,10 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.js',
     css: true,
+    env: {
+      VITE_FIREBASE_API_KEY: 'AIzaSyMockKeyForEnvironmentSafety00',
+      VITE_FUNCTION_URL: 'https://vac-ai-tion.onrender.com',
+      VITE_PRICE_FUNCTION_URL: 'https://vac-ai-tion.onrender.com',
+    },
   }
 })

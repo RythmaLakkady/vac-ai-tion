@@ -1,9 +1,9 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore"; 
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyMockKeyForEnvironmentSafety00",
   authDomain: "wandergen---ai-travel-planner.firebaseapp.com",
   projectId: "wandergen---ai-travel-planner",
   storageBucket: "wandergen---ai-travel-planner.appspot.com",
@@ -12,8 +12,8 @@ const firebaseConfig = {
   measurementId: "G-BMF6MV66M8"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-export { app, auth, db };  
+export { app, auth, db };
