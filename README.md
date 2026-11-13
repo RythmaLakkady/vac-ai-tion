@@ -26,38 +26,37 @@
 
 ## The experience
 
-Start with the details that shape a trip — destination, duration, travelers, budget, and travel style. vac-AI-tion generates a structured itinerary in the background, shows the work as it happens, and lets travelers refine the plan.
-
-<!-- Replace these with real product captures when available. -->
-<p align="center">
-  <img src="docs/images/app-screenshot.png" alt="vac-AI-tion itinerary screen" width="92%" />
-</p>
+Start with the details that shape a trip — destination, duration, travelers, budget, and travel style. vac-AI-tion generates a structured itinerary, shows generation progress as it happens, and lets travelers refine the plan.
 
 ## What it does
 
 | Plan | Explore | Make it yours |
 |---|---|---|
 | Generate multi-day trips from traveler preferences | View places and routes on an interactive map | Reorder activities across days with drag-and-drop |
-| Account for budget, travel style, saved places, and trip details | Follow agent progress as the itinerary is generated | Recalculate day-level totals and route details after edits |
+| Account for budget, travel style, saved places, and trip details | Follow agent progress as the itinerary is generated | Update the itinerary after changing the schedule |
 
-**More than a prompt and a response.** The generation flow uses a Manager → Planner → Critic sequence. The Manager outlines the trip strategy, the Planner structures the itinerary as JSON, and the Critic checks key constraints. Failed validations can feed back into the Planner for another attempt, with a bounded retry limit.
+**More than a prompt and a response.** The generation flow uses a Manager → Planner → Critic sequence. The Manager outlines a trip strategy, the Planner structures the itinerary as JSON, and the Critic checks key constraints. Validation feedback can be sent back to the Planner for another attempt, up to a fixed retry limit.
 
 ## How generation works
 
 ```mermaid
 flowchart TD
-    A[Trip preferences] --> B[Create generation job]
-    B --> C[(Firestore: agentJobs)]
-    C --> D[Manager agent]
-    D --> E[Planner agent]
-    E --> F[Critic validation]
-    F -->|Needs revision| E
-    F -->|Accepted or retry limit reached| G[(Firestore: UserTrips)]
-    C -. live job updates .-> H[React app]
-    G --> H
+    A[Trip preferences] --> B[POST /create-job]
+    B --> C[SHA-256 cache lookup]
+    C -->|Cache hit| H[Return cached itinerary]
+    C -->|Cache miss| D[Create agentJobs document]
+    D --> E[Start orchestrator]
+    E --> F[Manager agent]
+    F --> G[Planner agent]
+    G --> I[Critic validation]
+    I -->|Needs revision| G
+    I -->|Accepted or retry limit reached| J[Save trip to UserTrips]
+    D -. job status and logs .-> K[React app via Firestore listener]
+    J --> K
+    H --> K
 ```
 
-The API creates a job and returns a response while the client listens to Firestore for status and progress updates. Repeated requests can be served from a Firestore cache using a SHA-256 hash of normalized trip inputs.
+The API creates a job record and responds to the client while the orchestrator runs. The frontend listens to the job document for status and progress updates. Repeated requests can be served from Firestore using a SHA-256 hash of normalized trip inputs.
 
 ## Built with
 
@@ -65,19 +64,19 @@ The API creates a job and returns a response while the client listens to Firesto
 |---|---|
 | Frontend | React 18, Vite, Tailwind CSS, React Router |
 | Interaction & maps | @hello-pangea/dnd, Leaflet, React-Leaflet, Framer Motion |
-| Backend | Node.js, Express, Firebase Cloud Functions |
-| AI | Groq API — agent orchestration and structured itinerary generation |
+| Backend | Node.js, Express, Firebase Cloud Functions v2 |
+| AI | Groq API — `openai/gpt-oss-120b` for itinerary orchestration; `openai/gpt-oss-20b` for chat and travel insights |
 | Data & auth | Cloud Firestore, Firebase Authentication |
 | Testing & delivery | Vitest, React Testing Library, ESLint, GitHub Actions |
 | Hosting | Vercel (frontend), Render / Firebase Functions (API deployment paths) |
 
 ## Engineering decisions
 
-- **Asynchronous generation:** Long-running itinerary generation is separated from the browser request. A job document tracks status and logs, and the UI receives updates through Firestore listeners.
-- **Bounded planner–critic loop:** The orchestrator allows up to three planner attempts. The Critic checks duration, activity count, hotel/flight constraints, and JSON completeness; on a failed check, its feedback is included in the next planning prompt.
-- **Deterministic caching:** Normalized destination, duration, budget, and traveler count are hashed with SHA-256. A matching cache entry avoids another generation run.
-- **Graceful location fallback:** Location search is designed to use LocationIQ and fall back to OpenStreetMap Nominatim where supported.
-- **Public-trip privacy:** Shared itinerary views are intended to expose a read-only, sanitized representation rather than private profile information.
+- **Asynchronous generation:** Itinerary generation is separated from the browser's initial request. A job document tracks status and logs, and the UI receives updates through Firestore listeners.
+- **Bounded planner–critic loop:** The orchestrator allows up to three planner attempts. The Critic checks duration, activity count, hotel/flight constraints, and JSON validity; its failure feedback is included in the next planning prompt.
+- **Deterministic caching:** Destination, duration, budget, and traveler count are normalized and hashed with SHA-256. A matching cache entry avoids another generation run.
+- **Location fallback:** Place search tries the backend autocomplete endpoint, then LocationIQ when a client key is configured, and finally OpenStreetMap Nominatim.
+- **Graceful API routing:** `resolveFunctionUrl` prioritizes an explicit backend URL, supports the local Firebase Functions emulator when enabled, and otherwise falls back to the deployed API URL.
 
 ## Run locally
 
@@ -93,10 +92,31 @@ The API creates a job and returns a response while the client listens to Firesto
 git clone https://github.com/RythmaLakkady/vac-ai-tion.git
 cd vac-ai-tion
 npm install
+```
+
+Create a `.env` file in the project root with the Firebase client key and API URLs:
+
+```env
+VITE_FIREBASE_API_KEY=your_firebase_web_api_key
+VITE_FUNCTION_URL=https://vac-ai-tion.onrender.com
+VITE_PRICE_FUNCTION_URL=https://vac-ai-tion.onrender.com
+
+# Optional: direct browser-side LocationIQ fallback
+VITE__LOCATION_IQ_API_KEY=your_locationiq_key
+
+# Set true only when using the local Firebase Functions emulator
+VITE_USE_LOCAL_EMULATOR=false
+```
+
+Keep Groq and Firebase Admin credentials in the backend environment (for example, Render or Firebase Functions configuration), not in `VITE_*` variables. Vite exposes `VITE_*` values in browser-facing assets.
+
+Start the development server:
+
+```bash
 npm run dev
 ```
 
-Configure the required Firebase client settings and backend service URL in your local environment. Keep private API credentials on the server: **do not put Groq or other secret keys in `VITE_*` variables**, because Vite embeds those values in browser-facing assets.
+The app runs at `http://localhost:5173`.
 
 ### Checks
 
